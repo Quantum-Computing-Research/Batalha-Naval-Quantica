@@ -1,0 +1,23 @@
+.ranking-espera-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: flex-end;
+}
+
+.painel-box {
+    background: white;
+    border: 1px solid #ccc;
+    /* ← agora tem contorno */
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    /* ← sombra mais visível */
+    width: 250px;
+    text-align: left;
+}
+
+.painel-box h3 {
+    margin-top: 0;
+    text-align: center;
+}

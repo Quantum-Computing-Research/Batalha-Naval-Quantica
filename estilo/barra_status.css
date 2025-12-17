@@ -1,0 +1,17 @@
+#statusBar {
+    margin-top: 10px;
+}
+
+.vez-status {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 10px;
+}
+
+.vez-jogador {
+    color: green;
+}
+
+.vez-computador {
+    color: red;
+}

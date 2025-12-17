@@ -1,0 +1,22 @@
+/* Bolinhas para ataques errados */
+.erro-jogador::before,
+.erro-quantico::before {
+    content: '';
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    position: absolute;
+}
+
+.erro-jogador::before {
+    background-color: gray;
+}
+
+.erro-quantico::before {
+    background-color: blue;
+}
+
+/* Estilização dos acertos (emoji 🔥) */
+.acerto {
+    font-size: 24px;
+}

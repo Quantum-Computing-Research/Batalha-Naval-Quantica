@@ -1,0 +1,118 @@
+    /* Container da área de hover (região triangular) */
+    .hover-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100px;
+        /* Área maior */
+        height: 100px;
+        overflow: visible;
+        /* Permite que o conteúdo ultrapasse os limites */
+        z-index: 1000;
+    }
+
+    /* Região triangular que ativa a exibição das referências com background purple */
+    .hover-trigger {
+        position: relative;
+        width: 100px;
+        height: 100px;
+        background-color: gray;
+        /* Background purple */
+        clip-path: polygon(0 0, 100% 0, 0 100%);
+        cursor: pointer;
+    }
+
+    /* Texto exibido na diagonal dentro do triângulo */
+    .hover-text {
+        position: absolute;
+        top: 40%;
+        left: 40%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        font-size: 16px;
+        color: #fff;
+        white-space: nowrap;
+    }
+
+    /* Seção de referências (inicialmente oculta) */
+    .references {
+        position: absolute;
+        top: 0;
+        /* Ajuste conforme desejado para posicionamento final */
+        left: 0;
+        display: flex;
+        gap: 10px;
+        /* Espaço entre os artigos */
+        padding: 10px;
+        background-color: rgba(255, 255, 255, 0.9);
+        /* Fundo com leve transparência */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        /* Sombra */
+        border-radius: 5px;
+        /* Bordas arredondadas */
+        opacity: 0;
+        /* Inicia invisível */
+        transform: translate(-10px, -10px);
+        /* Pequeno deslocamento inicial */
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        width: 90vw;
+        height: 40vw;
+        pointer-events: none;
+    }
+
+    /* Ao passar o mouse sobre a área, as referências aparecem */
+    .hover-container:hover .references {
+        opacity: 1;
+        transform: translate(0, 0);
+        pointer-events: auto;
+    }
+
+    /* Estilo para cada artigo de referência */
+    .references article {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #ccc;
+        background-color: #fff;
+        position: relative;
+    }
+
+    .references article img {
+        max-width: 100%;
+        max-height: 100%;
+        /*      width: 80px;
+      height:100px;*/
+        object-fit: cover;
+        object-fit: contain;
+    }
+
+    /* Certifique-se de que o container seja posicionado relativamente */
+    .reference-item {
+        position: relative;
+    }
+
+    /* Estilização do tooltip, centralizado no container */
+    .reference-label {
+        position: absolute;
+        top: 70%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 4px;
+        white-space: nowrap;
+        font-size: 14px;
+        text-align: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        z-index: 9999;
+        /* para garantir que fique acima de outros elementos */
+    }
+
+    /* Exibe o tooltip ao passar o mouse sobre o <article> */
+    .references article:hover .reference-label {
+        opacity: 1;
+        visibility: visible;
+        transform: translate(-50%, -50%);
+    }

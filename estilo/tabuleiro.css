@@ -1,0 +1,84 @@
+.boards {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.linha {
+    display: flex;
+}
+
+.celula {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.celula.label {
+    background-color: #f0f0f0;
+    font-weight: bold;
+}
+
+.celula {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+/* === TABULEIROS === */
+.board-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+}
+
+.board-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.labels-wrapper {
+    display: grid;
+    grid-template-columns: 20px 500px;
+    grid-template-rows: 20px 500px;
+    gap: 2px;
+    position: relative;
+}
+
+.labels-row {
+    grid-column: 2;
+    display: flex;
+    justify-content: space-between;
+    width: 500px;
+    font-weight: bold;
+    font-family: monospace;
+}
+
+.labels-row div {
+    flex: 1;
+    text-align: center;
+}
+
+.labels-col {
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 500px;
+}
+
+.labels-col div {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: monospace;
+    font-weight: bold;
+}

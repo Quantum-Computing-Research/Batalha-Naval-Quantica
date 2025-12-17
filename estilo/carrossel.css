@@ -1,0 +1,128 @@
+/* Grid responsivo de cards */
+/* Container geral do carrossel com largura fixa */
+.carousel-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 20px;
+    width: 1000px;
+    /* Ajuste para exibir apenas 3 cards */
+    margin: 0 auto;
+    /* Centraliza na página, se desejar */
+}
+
+/* Botões de navegação */
+.nav-button {
+    background-color: #007BFF;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 18px;
+}
+
+.nav-button:hover {
+    background-color: #0056b3;
+}
+
+/* Container do carrossel (scrollable) */
+.carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    /* Habilita o scroll horizontal */
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 0;
+    /* Definindo a largura igual ao container pai para forçar o 'crop' */
+    width: 100%;
+}
+
+
+/* Cada card */
+.card {
+    flex: 0 0 auto;
+    width: 240px;
+    /* Largura fixa para cada card */
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    scroll-snap-align: start;
+    transition: opacity 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    /* opacity: 0.5; */
+}
+
+.card:not(.selecionado):not(.modo-selecao-ativo) {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modo-selecao-ativo .card:not(.selecionado) {
+    opacity: 0.4;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card img {
+    display: block;
+    /* Remove espaçamentos em linha (inline) */
+    margin: 0 auto;
+    /* Centraliza horizontalmente */
+    width: 100%;
+    /* Faz a imagem ocupar toda a largura disponível no card */
+    height: auto;
+    /* Mantém a proporção */
+    object-fit: contain;
+    /* Garante que não corte a imagem */
+    /* Se quiser limitar a altura e manter proporção, use max-height */
+    /* max-height: 250px; */
+}
+
+.company-link {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 6px 12px;
+    background-color: #007BFF;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.company-link:hover {
+    background-color: #0056b3;
+}
+
+/* === LISTA DE BACKENDS (IMAGENS) ===
+.backend-list {
+    margin-top: 20px;
+}
+
+.backend-list img {
+    width: 100px;
+    height: 80px;
+    object-fit: cover;
+    margin: 5px;
+    cursor: pointer;
+    transition: transform 0.2s, border 0.2s;
+    border: 2px solid transparent;
+    border-radius: 6px;
+}
+
+.backend-list img:hover {
+    transform: scale(1.05);
+    border-color: #0078d7;
+}
+
+.backend-list img.selected {
+    border-color: #0078d7;
+    transform: scale(1.05);
+} */
