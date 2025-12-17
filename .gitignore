@@ -1,0 +1,44 @@
+# === Serverless LAMBDA FUNCTIONS ===
+
+# Ignora bibliotecas instaladas localmente nas pastas das Lambdas
+**/package/redis/
+**/package/*.dist-info/
+**/package/__pycache__/
+**/package/*.pyc
+
+# Apenas versiona o requirements.txt e lambda_function.py
+!**/requirements.txt
+!**/lambda_function.py
+
+# === Terraform ===
+.terraform/
+*.tfstate
+*.tfstate.*
+*.backup
+.terraform.lock.hcl
+
+# === Python ===
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+env/
+.venv/
+venv/
+ENV/
+pip-log.txt
+
+# === Lambda Build Artifacts ===
+infrastructure/aws_serverless/builds/
+*.zip
+
+# === Node/Frontend (caso use no futuro) ===
+node_modules/
+dist/
+build/
+.npm/
+
+# === Sistema ===
+.DS_Store
+Thumbs.db
