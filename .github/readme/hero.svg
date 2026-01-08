@@ -1,4 +1,4 @@
-<svg data-build="2026-01-07T23:49:44.823112Z" width="1200" height="260" viewBox="0 0 1200 260" xmlns="http://www.w3.org/2000/svg">
+<svg data-build="2026-01-08T00:07:26.756714Z" width="1200" height="260" viewBox="0 0 1200 260" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0%" stop-color="#0b1220" />
@@ -27,6 +27,6 @@
   <text x="50%" y="185" text-anchor="middle"
     font-size="18" fill="#93c5fd"
     font-family="Inter, Arial, sans-serif" font-weight="500">
-    → Open full course website.
+    → Play a quantum battleship match
   </text>
 </svg>

@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="https://Quantum-Computing-Research.github.io/Batalha-Naval-Quantica">
-    <img src=".github/readme/hero.svg?v=2026-01-07T23:49:44.823112Z" width="100%" alt="Access the course website" />
+    <img src=".github/readme/hero.svg?v=2026-01-08T00:07:26.756714Z" width="100%" alt="Access the course website" />
   </a>
 </p>
 
