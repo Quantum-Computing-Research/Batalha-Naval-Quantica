@@ -1,0 +1,16 @@
+name: Listener Update README.md
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    uses: naavilam/github-infra-templates/.github/workflows/repositories-readme-update.yml@main
+    with:
+      repo: ${{ github.repository }}
+    secrets:
+      PROVISIONER_APP_ID: ${{ vars.PROVISIONER_APP_ID }}
+      PROVISIONER_PRIVATE_KEY_PEM: ${{ secrets.PROVISIONER_PRIVATE_KEY_PEM }}
