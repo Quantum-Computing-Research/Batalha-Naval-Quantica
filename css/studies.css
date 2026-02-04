@@ -2,7 +2,7 @@
 /* SOFTWARE LAYOUT */
 /* ============================= */
 
-/* container principal da página Software */
+/* container principal da página Studies */
 .main-wide {
   width: 90%;
   margin: 32px auto;
@@ -152,7 +152,7 @@
   }
 }
 
-/* ===== Software tree: 1 notebook por linha + scroll horizontal ===== */
+/* ===== Studies tree: 1 notebook por linha + scroll horizontal ===== */
 
 /* Sidebar deve poder rolar vertical e horizontal quando necessário */
 .sidebar {
@@ -187,7 +187,7 @@ a.file-notebook {
 
 /* notebook selecionado */
 a.file-notebook.is-active {
-  background: #e33cc2;
+  background: #b41b95;
   font-weight: 600;
   border-radius: 4px;
   /* box-shadow: inset 3px 0 0 #60a5fa; */
