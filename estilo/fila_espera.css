@@ -1,0 +1,35 @@
+/* Wrapper fixo no lado direito */
+.ranking-espera-wrapper {
+    position: fixed;
+    top: 120px;              /* ajuste vertical */
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    z-index: 999;
+}
+
+/* Caixa do painel */
+.painel-box {
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px 0 0 8px;   /* arredonda só lado esquerdo */
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    text-align: left;
+
+    /* ESCONDIDO */
+    transform: translateX(230px);   /* 250 - 20px visíveis */
+    transition: transform 0.3s ease;
+}
+
+/* Ao passar o mouse */
+.painel-box:hover {
+    transform: translateX(0);
+}
+
+.painel-box h3 {
+    margin-top: 0;
+    text-align: center;
+}
