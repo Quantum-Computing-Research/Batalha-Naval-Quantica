@@ -1,6 +1,6 @@
 variable "aws_region" {
   type    = string
-  default = "us-east-1"
+  default = "us-east-2"
 }
 
 variable "project_name" {
@@ -26,9 +26,4 @@ variable "game_ttl_seconds" {
 variable "cors_origin" {
   type    = string
   default = "*"
-}
-
-variable "env" {
-  type        = string
-  default     = "prod"
 }

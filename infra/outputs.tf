@@ -3,7 +3,7 @@ output "api_endpoint" {
 }
 
 output "cache_bucket" {
-  value = aws_s3_bucket.cache.bucket
+  value = aws_s3_bucket.artifacts.bucket
 }
 
 output "game_table" {

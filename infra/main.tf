@@ -27,29 +27,29 @@ data "aws_caller_identity" "me" {}
 
 locals {
   name        = var.project_name
-  fullname = "${var.project_name}-${var.env}"
+  fullname = "${var.project_name}"
   account_id  = data.aws_caller_identity.me.account_id
-  bucket_name = "${local.fullname}-cache"
+  bucket_name = "${local.fullname}-artifacts"
 }
 
 # -----------------------------
 # S3 (cache + history)
 # -----------------------------
-resource "aws_s3_bucket" "cache" {
+resource "aws_s3_bucket" "artifacts" {
   bucket        = local.bucket_name
   force_destroy = true
 }
 
-resource "aws_s3_bucket_public_access_block" "cache" {
-  bucket                  = aws_s3_bucket.cache.id
+resource "aws_s3_bucket_public_access_block" "artifacts" {
+  bucket                  = aws_s3_bucket.artifacts.id
   block_public_acls       = true
   ignore_public_acls      = true
   block_public_policy     = true
   restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_versioning" "cache" {
-  bucket = aws_s3_bucket.cache.id
+resource "aws_s3_bucket_versioning" "artifacts" {
+  bucket = aws_s3_bucket.artifacts.id
   versioning_configuration { status = "Enabled" }
 }
 
@@ -130,8 +130,8 @@ resource "aws_iam_policy" "lambda_data_policy" {
           "s3:ListBucket"
         ]
         Resource = [
-          aws_s3_bucket.cache.arn,
-          "${aws_s3_bucket.cache.arn}/*"
+          aws_s3_bucket.artifacts.arn,
+          "${aws_s3_bucket.artifacts.arn}/*"
         ]
       }
     ]
@@ -162,7 +162,7 @@ resource "aws_lambda_function" "api" {
   environment {
     variables = {
       GAME_TABLE       = aws_dynamodb_table.game.name
-      CACHE_BUCKET      = aws_s3_bucket.cache.bucket
+      CACHE_BUCKET      = aws_s3_bucket.artifacts.bucket
       CACHE_PREFIX      = var.cache_prefix
       GAME_TTL_SECONDS  = tostring(var.game_ttl_seconds)
       CORS_ORIGIN       = var.cors_origin
@@ -214,12 +214,6 @@ resource "aws_apigatewayv2_route" "encerrar" {
   api_id    = aws_apigatewayv2_api.api.id
   route_key = "POST /encerrar_jogo"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_stage" "prod" {
-  api_id      = aws_apigatewayv2_api.api.id
-  name        = "$default"
-  auto_deploy = true
 }
 
 # Permite API Gateway invocar o Lambda
