@@ -29,7 +29,7 @@ locals {
   name        = var.project_name
   fullname = "${var.project_name}-${var.env}"
   account_id  = data.aws_caller_identity.me.account_id
-  bucket_name = "${local.fullname}-cache-${local.account_id}"
+  bucket_name = "${local.fullname}-cache"
 }
 
 # -----------------------------
@@ -53,25 +53,11 @@ resource "aws_s3_bucket_versioning" "cache" {
   versioning_configuration { status = "Enabled" }
 }
 
-# (opcional) lifecycle: apaga debug/ em 7 dias
-resource "aws_s3_bucket_lifecycle_configuration" "cache" {
-  bucket = aws_s3_bucket.cache.id
-
-  rule {
-    id     = "expire-debug"
-    status = "Enabled"
-
-    filter { prefix = "debug/" }
-
-    expiration { days = 7 }
-  }
-}
-
 # -----------------------------
 # DynamoDB (estado do jogo) + TTL
 # -----------------------------
-resource "aws_dynamodb_table" "games" {
-  name         = "${local.fullname}-games"
+resource "aws_dynamodb_table" "game" {
+  name         = "${local.fullname}-game"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "game_id"
 
@@ -133,7 +119,7 @@ resource "aws_iam_policy" "lambda_data_policy" {
           "dynamodb:DeleteItem",
           "dynamodb:UpdateItem"
         ]
-        Resource = aws_dynamodb_table.games.arn
+        Resource = aws_dynamodb_table.game.arn
       },
       {
         Sid    = "S3CacheReadWrite"
@@ -175,7 +161,7 @@ resource "aws_lambda_function" "api" {
 
   environment {
     variables = {
-      GAMES_TABLE       = aws_dynamodb_table.games.name
+      GAME_TABLE       = aws_dynamodb_table.game.name
       CACHE_BUCKET      = aws_s3_bucket.cache.bucket
       CACHE_PREFIX      = var.cache_prefix
       GAME_TTL_SECONDS  = tostring(var.game_ttl_seconds)
