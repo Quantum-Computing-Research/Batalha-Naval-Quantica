@@ -20,7 +20,7 @@
     text-align: left;
 
     /* ESCONDIDO */
-    transform: translateX(230px);   /* 250 - 20px visíveis */
+    transform: translateX(240px);   /* 250 - 20px visíveis */
     transition: transform 0.3s ease;
 }
 
