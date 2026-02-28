@@ -1,9 +1,9 @@
 terraform {
   backend "remote" {
-    organization = "QLAB"
+    organization = "Graduate-APPs-USP"
 
     workspaces {
-      name = "bnq"
+      name = "Battleship"
     }
   }
 
