@@ -145,7 +145,7 @@
           <label for="tamanhoTabuleiro">Escolha o tamanho do tabuleiro:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
-              for (let i = 2; i <= 36; i *= 2) {
+              for (let i = 4; i <= 36; i *= 2) {
                 let option = document.createElement('option');
                 option.value = i;
                 option.textContent = `${i}x${i}`;
