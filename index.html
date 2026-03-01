@@ -142,13 +142,13 @@
       <!-- BARRA DE STATUS -->
       <div class="top-section">
         <div id="tabuleiroInputContainer" style="margin-top: 10px;">
-          <label for="tamanhoTabuleiro">Escolha o tamanho do tabuleiro:</label>
+          <label for="tamanhoTabuleiro">Escolha a quantidade de qubits:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
               for (let i = 4; i <= 36; i *= 2) {
                 let option = document.createElement('option');
                 option.value = i;
-                option.textContent = `${i}x${i}`;
+                option.textContent = `${i} qubits (tabuleiro ${i}x${i})`;
                 document.getElementById('tamanhoTabuleiro').appendChild(option);
                 if (i === 10) {
                   option.selected = true;
