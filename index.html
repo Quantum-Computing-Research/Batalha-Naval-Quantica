@@ -145,10 +145,9 @@
           <label for="tamanhoTabuleiro">Escolha a quantidade de qubits:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
-              // qubits pares garantem: 2^n = (2^(n/2))^2 => tabuleiro T x T sem rejeição
               const MIN_QUBITS = 4;
-              const MAX_QUBITS = 16; // ajuste como quiser
-              const DEFAULT_QUBITS = 8; // exemplo: 8 qubits => 16x16
+              const MAX_QUBITS = 16;
+              const DEFAULT_QUBITS = 8; 
 
               const sel = document.getElementById("tamanhoTabuleiro");
 
