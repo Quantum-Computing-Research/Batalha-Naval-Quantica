@@ -7,6 +7,10 @@ on:
       - "infra/lambda_src/**"
       - ".github/workflows/deploy-lambda-functions.yml"
 
+concurrency:
+  group: lambda-deploy-${{ github.ref }}
+  cancel-in-progress: true
+  
 env:
   AWS_REGION: us-east-2
   LAMBDA_JOGO_NAME: quantum-battleship-handler
