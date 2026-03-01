@@ -2,38 +2,27 @@ import random
 from quantum_task import QuantumTask
 
 class Jogo:
-    def __init__(self, tamanho_tabuleiro=10, num_navios=4):
-        self.quantum_task = QuantumTask()
-        self.tamanho_maximo = 20  # Tamanho máximo permitido para o tabuleiro
+    def __init__(self, tamanho_tabuleiro=10, num_navios=4, pilha_ataques_quanticos=None):
+        self.tamanho_maximo = 20
         if tamanho_tabuleiro > self.tamanho_maximo:
-            print(f"⚠️ Alerta: O tamanho máximo do tabuleiro é {self.tamanho_maximo}x{self.tamanho_maximo}.")
-            tamanho_tabuleiro = self.tamanho_maximo  # Ajusta o tabuleiro para o tamanho máximo permitido
+            tamanho_tabuleiro = self.tamanho_maximo
 
         self.tamanho_tabuleiro = tamanho_tabuleiro
         self.num_navios = num_navios
         self.tabuleiro_jogador = [[0] * tamanho_tabuleiro for _ in range(tamanho_tabuleiro)]
         self.tabuleiro_quantico = [[0] * tamanho_tabuleiro for _ in range(tamanho_tabuleiro)]
-        self.navios_jogador = []
-        self.navios_quantico = []
         self.vez_do_jogador = True
-        self.pilha_ataques_quanticos = []
 
-        self.codigos_vencedores = [
-            "dirac", "hilbert", "boltzmann", "feynman", "noether",
-            "pauli", "lorentz", "turing", "laplace", "gauss"
-        ]
+        self.pilha_ataques_quanticos = list(pilha_ataques_quanticos or [])
 
+        self.codigos_vencedores = ["dirac","hilbert","boltzmann","feynman","noether","pauli","lorentz","turing","laplace","gauss"]
         self.codigo_secreto = random.choice(self.codigos_vencedores)
-        print("******************************************************************")
-        print("******************************************************************")
-        print("********************* INICIO DA PARTIDA **************************")
-        print("******************************************************************")
-        print("******************************************************************")
-        print(self.codigo_secreto)
 
-        self.posicionar_navios(self.tabuleiro_jogador)  # Posicionando navios do jogador
-        self.posicionar_navios(self.tabuleiro_quantico)  # Posicionando navios do computador
-        self.gerar_ataques_quanticos(self.tamanho_tabuleiro)
+        self.posicionar_navios(self.tabuleiro_jogador)
+        self.posicionar_navios(self.tabuleiro_quantico)
+
+    def set_pilha(self, pilha):
+        self.pilha_ataques_quanticos = list(pilha or [])
 
 
     def ataque_jogador(self, coordenada):

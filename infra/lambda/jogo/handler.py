@@ -158,18 +158,12 @@ def _state_to_game(state: Dict[str, Any]) -> Jogo:
     game = Jogo(
         tamanho_tabuleiro=int(state.get("tamanho_tabuleiro", 10)),
         num_navios=int(state.get("num_navios", 4)),
+        pilha_ataques_quanticos=state.get("pilha", []),  # <<< injeta
     )
-    # restaura o que seu Jogo usa:
     game.tabuleiro_jogador = state["tabuleiro_jogador"]
     if state.get("tabuleiro_quantico") is not None:
-        try:
-            game.tabuleiro_quantico = state["tabuleiro_quantico"]
-        except Exception:
-            pass
-    try:
-        game.vez_do_jogador = state.get("vez_do_jogador", True)
-    except Exception:
-        pass
+        game.tabuleiro_quantico = state["tabuleiro_quantico"]
+    game.vez_do_jogador = state.get("vez_do_jogador", True)
     return game
 
 def coord_para_letra_numero(linha, coluna):
@@ -248,17 +242,23 @@ def handle_atacar(event):
         mensagem = "Jogo finalizado! Você venceu!"
         state["em_andamento"] = False
     else:
-        mensagem = f"Ataque do jogador em {coordenada} → {'Acertou!' if acertou else 'Errou!'}"
+        mensagem = (
+            f"Ataque do jogador em {coordenada.upper()} "
+            f"→ {'Acertou!' if acertou else 'Errou!'}"
+        )
 
-    # salva estado atualizado
+    # 🔹 Persistência COMPLETA do estado atualizado
     state["tabuleiro_jogador"] = game.tabuleiro_jogador
-    state["vez_do_jogador"] = getattr(game, "vez_do_jogador", state.get("vez_do_jogador", True))
+    state["tabuleiro_quantico"] = game.tabuleiro_quantico
+    state["vez_do_jogador"] = game.vez_do_jogador
+    state["pilha"] = game.pilha_ataques_quanticos
+
     _dynamo_put_game(game_id, state)
 
     return _resp(200, {
         "mensagem": mensagem,
         "status": "acerto" if acertou else "erro",
-        "vez_do_jogador": state.get("vez_do_jogador", True),
+        "vez_do_jogador": state["vez_do_jogador"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "fila_espera": state.get("fila_espera", []),
         "finalizado": finalizado,
@@ -274,28 +274,33 @@ def handle_ataque_quantico(event):
     if not state or not state.get("em_andamento", False):
         return _resp(404, {"error": "Jogo não encontrado ou encerrado."})
 
+    # Reconstrói o jogo incluindo pilha
     game = _state_to_game(state)
 
-    # aqui você escolhe como seu Jogo usa a pilha:
-    # opção A) se seu game.ataque_quantico() já desempilha internamente, ok.
-    # opção B) você desempilha aqui e chama um método específico.
     finalizado, mensagem, acertou, linha, coluna = game.ataque_quantico()
 
     if finalizado:
         mensagem = "Jogo finalizado! O computador quântico venceu!"
         state["em_andamento"] = False
     else:
-        mensagem = f"Ataque quântico em {coord_para_letra_numero(linha, coluna)} → {'Acertou!' if acertou else 'Errou!'}"
+        mensagem = (
+            f"Ataque quântico em {coord_para_letra_numero(linha, coluna)} "
+            f"→ {'Acertou!' if acertou else 'Errou!'}"
+        )
 
+    # 🔹 Persistência COMPLETA do estado atualizado
     state["tabuleiro_jogador"] = game.tabuleiro_jogador
-    state["vez_do_jogador"] = getattr(game, "vez_do_jogador", state.get("vez_do_jogador", True))
+    state["tabuleiro_quantico"] = game.tabuleiro_quantico
+    state["vez_do_jogador"] = game.vez_do_jogador
+    state["pilha"] = game.pilha_ataques_quanticos
+
     _dynamo_put_game(game_id, state)
 
     return _resp(200, {
         "jogada_quantica": [linha, coluna],
         "status": "acerto" if acertou else "erro",
         "mensagem": mensagem,
-        "vez_do_jogador": state.get("vez_do_jogador", True),
+        "vez_do_jogador": state["vez_do_jogador"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": finalizado,
     })
