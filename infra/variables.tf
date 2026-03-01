@@ -10,7 +10,7 @@ variable "project_name" {
 
 variable "lambda_source_dir" {
   type    = string
-  default = "lambda_src"
+  default = "infra/lambda"
 }
 
 variable "cache_prefix" {

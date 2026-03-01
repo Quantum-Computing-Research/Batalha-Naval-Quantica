@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "backend_serverless" ]
     paths:
-      - "infra/lambda_src/**"
+      - "infra/lambda/**"
       - ".github/workflows/deploy-lambda-functions.yml"
 
 concurrency:
@@ -14,6 +14,7 @@ concurrency:
 env:
   AWS_REGION: us-east-2
   LAMBDA_JOGO_NAME: quantum-battleship-handler
+  LAMBDA_JOGADAS_NAME: quantum-battleship-jogadas
   PYTHON_VERSION: "3.12"
 
 jobs:
@@ -29,7 +30,9 @@ jobs:
         with:
           filters: |
             handler:
-              - 'infra/lambda_src/jogo/**'
+              - 'infra/lambda/jogo/**'
+            jogadas:
+              - 'infra/lambda/jogadas/**'
 
   deploy-handler:
     needs: changes
@@ -61,14 +64,14 @@ jobs:
           mkdir -p dist build/package
 
           # instala dependências (se existir requirements.txt)
-          if [ -f "infra/lambda_src/jogo/requirements.txt" ]; then
+          if [ -f "infra/lambda/jogo/requirements.txt" ]; then
             python -m pip install --upgrade pip
-            python -m pip install -r infra/lambda_src/jogo/requirements.txt -t build/package
+            python -m pip install -r infra/lambda/jogo/requirements.txt -t build/package
           fi
 
           # copia o código do handler (e outros módulos do jogo)
           # IMPORTANTE: copie tudo que o handler importa (game.py, etc.)
-          cp -R infra/lambda_src/jogo/* build/package/
+          cp -R infra/lambda/jogo/* build/package/
 
           # remove lixo comum (opcional)
           find build/package -type d -name "__pycache__" -prune -exec rm -rf {} +
@@ -86,7 +89,30 @@ jobs:
             --function-name "${{ env.LAMBDA_JOGO_NAME }}" \
             --zip-file fileb://dist/handler.zip
 
-      # (opcional) força publish/version + aponta alias, se você usar
-      # - name: Publish new version
-      #   run: |
-      #     aws lambda publish-version --function-name "${{ env.LAMBDA_JOGO_NAME }}"
+  deploy-jogadas:
+    needs: changes
+    if: needs.changes.outputs.jogadas == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lambda-deploy
+
+      - name: Package jogadas
+        run: |
+          mkdir -p dist
+          cd infra/lambda
+          zip -j ../../dist/jogadas.zip jogadas/handler.py
+
+      - name: Deploy jogadas
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ env.LAMBDA_JOGADAS_NAME }}" \
+            --zip-file fileb://dist/jogadas.zip
