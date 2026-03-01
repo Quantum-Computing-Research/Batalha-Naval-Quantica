@@ -8,7 +8,7 @@ on:
       - ".github/workflows/deploy-lambda-functions.yml"
 
 env:
-  AWS_REGION: us-east-1
+  AWS_REGION: us-east-2
   LAMBDA_JOGO_NAME: quantum-battleship-handler
   PYTHON_VERSION: "3.12"
 
