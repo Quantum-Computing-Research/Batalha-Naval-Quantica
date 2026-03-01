@@ -1,0 +1,13 @@
+.card.offline {
+  opacity: 0.5;
+  filter: grayscale(1);
+  position: relative;
+}
+.card.offline::after {
+  content: "OFFLINE";
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
