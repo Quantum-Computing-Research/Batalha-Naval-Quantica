@@ -11,5 +11,10 @@ output "game_table" {
 }
 
 output "lambda_name" {
-  value = aws_lambda_function.api.function_name
+  value = aws_lambda_function.handler.function_name
+}
+
+output "github_lambda_writer_arn" {
+  description = "ARN da role assumida pelo GitHub Actions para deploy da Lambda"
+  value       = aws_iam_role.github_lambda_writer.arn
 }

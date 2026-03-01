@@ -146,18 +146,18 @@ resource "aws_iam_role_policy_attachment" "lambda_data_attach" {
 # -----------------------------
 # Lambda Function
 # -----------------------------
-resource "aws_lambda_function" "api" {
-  function_name = "${local.fullname}-api"
+resource "aws_lambda_function" "handler" {
+  function_name = "${local.fullname}-handler"
   role          = aws_iam_role.lambda_role.arn
 
   runtime = "python3.12"
-  handler = "lambda_app.handler"
+  handler = "handler.handler"
 
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
   timeout     = 15
-  memory_size = 512
+  memory_size = 128
 
   environment {
     variables = {
@@ -167,6 +167,13 @@ resource "aws_lambda_function" "api" {
       GAME_TTL_SECONDS  = tostring(var.game_ttl_seconds)
       CORS_ORIGIN       = var.cors_origin
     }
+  }
+
+  lifecycle {
+    ignore_changes = [
+      filename,
+      source_code_hash
+    ]
   }
 }
 
@@ -187,7 +194,7 @@ resource "aws_apigatewayv2_api" "api" {
 resource "aws_apigatewayv2_integration" "lambda" {
   api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "AWS_PROXY"
-  integration_uri        = aws_lambda_function.api.arn
+  integration_uri        = aws_lambda_function.handler.arn
   payload_format_version = "2.0"
 }
 
@@ -220,7 +227,7 @@ resource "aws_apigatewayv2_route" "encerrar" {
 resource "aws_lambda_permission" "allow_apigw" {
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.api.function_name
+  function_name = aws_lambda_function.handler.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }

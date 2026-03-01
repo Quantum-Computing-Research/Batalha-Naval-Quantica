@@ -1,0 +1,88 @@
+name: Deploy Lambda Functions
+
+on:
+  push:
+    branches: [ "backend_serverless" ]
+    paths:
+      - "infra/lambda_src/**"
+      - ".github/workflows/deploy-lambda-functions.yml"
+
+env:
+  AWS_REGION: us-east-1
+  LAMBDA_JOGO_NAME: quantum-battleship-handler
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      handler: ${{ steps.filter.outputs.handler }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            handler:
+              - 'infra/lambda_src/jogo/**'
+
+  deploy-handler:
+    needs: changes
+    if: needs.changes.outputs.handler == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lambda-deploy
+
+      - name: Package handler (code + deps)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rm -rf dist build
+          mkdir -p dist build/package
+
+          # instala dependências (se existir requirements.txt)
+          if [ -f "infra/lambda_src/jogo/requirements.txt" ]; then
+            python -m pip install --upgrade pip
+            python -m pip install -r infra/lambda_src/jogo/requirements.txt -t build/package
+          fi
+
+          # copia o código do handler (e outros módulos do jogo)
+          # IMPORTANTE: copie tudo que o handler importa (game.py, etc.)
+          cp -R infra/lambda_src/jogo/* build/package/
+
+          # remove lixo comum (opcional)
+          find build/package -type d -name "__pycache__" -prune -exec rm -rf {} +
+          find build/package -type f -name "*.pyc" -delete
+
+          # cria o zip com o conteúdo da package
+          (cd build/package && zip -r ../../dist/handler.zip .)
+
+          echo "Zip created:"
+          ls -lh dist/handler.zip
+
+      - name: Deploy handler
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ env.LAMBDA_JOGO_NAME }}" \
+            --zip-file fileb://dist/handler.zip
+
+      # (opcional) força publish/version + aponta alias, se você usar
+      # - name: Publish new version
+      #   run: |
+      #     aws lambda publish-version --function-name "${{ env.LAMBDA_JOGO_NAME }}"
