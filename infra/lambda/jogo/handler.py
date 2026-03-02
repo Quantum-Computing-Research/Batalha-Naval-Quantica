@@ -126,11 +126,25 @@ def _parse_json_body(event: Dict[str, Any]) -> Dict[str, Any]:
     except json.JSONDecodeError:
         return {}
 
-def _method_path(event: Dict[str, Any]) -> Tuple[str, str]:
+def _method_path(event):
+    # HTTP API v2
     rc = event.get("requestContext", {}) or {}
     http = rc.get("http", {}) or {}
-    method = (http.get("method") or event.get("httpMethod") or "").upper()
-    path = event.get("rawPath") or event.get("path") or "/"
+
+    method = http.get("method") or event.get("httpMethod") or "GET"
+
+    # rawPath é o melhor no v2
+    path = event.get("rawPath") or http.get("path") or event.get("path") or "/"
+
+    # se você criou stage "prod", o path vem como "/prod/..."
+    stage = rc.get("stage")
+    if stage and stage != "$default":
+        prefix = f"/{stage}"
+        if path == prefix:
+            path = "/"
+        elif path.startswith(prefix + "/"):
+            path = path[len(prefix):]  # remove "/prod"
+
     return method, path
 
 def _get_game_id(event: Dict[str, Any], body: Dict[str, Any]) -> Optional[str]:
