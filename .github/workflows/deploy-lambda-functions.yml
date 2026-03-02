@@ -63,26 +63,28 @@ jobs:
           rm -rf dist build
           mkdir -p dist build/package
 
-          # instala dependências (se existir requirements.txt)
+          # deps
           if [ -f "infra/lambda/jogo/requirements.txt" ]; then
             python -m pip install --upgrade pip
             python -m pip install -r infra/lambda/jogo/requirements.txt -t build/package
           fi
 
-          # copia o código do handler (e outros módulos do jogo)
-          # IMPORTANTE: copie tudo que o handler importa (game.py, etc.)
-          cp -R infra/lambda/jogo/* build/package/
+          # código do jogo -> RAIZ do zip
+          rsync -av \
+            --exclude '__pycache__' \
+            --exclude '*.pyc' \
+            infra/lambda/jogo/ build/package/
 
-          # remove lixo comum (opcional)
-          find build/package -type d -name "__pycache__" -prune -exec rm -rf {} +
-          find build/package -type f -name "*.pyc" -delete
+          # sanity checks: handler.py precisa estar no root do zip
+          test -f build/package/handler.py || (echo "[ERROR] handler.py não está no root do pacote" && ls -la build/package && exit 1)
 
-          # cria o zip com o conteúdo da package
+          # mostra o que vai pro zip (ajuda muito a debugar)
+          echo "=== package root ==="
+          ls -la build/package | sed -n '1,200p'
+
           (cd build/package && zip -r ../../dist/handler.zip .)
-
-          echo "Zip created:"
           ls -lh dist/handler.zip
-
+          
       - name: Deploy handler
         run: |
           aws lambda update-function-code \

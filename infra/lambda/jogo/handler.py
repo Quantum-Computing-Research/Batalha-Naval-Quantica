@@ -8,7 +8,7 @@ from typing import Any, Dict, Tuple, Optional
 import boto3
 
 # Seu engine do jogo
-from game import Jogo  # precisa estar no zip do lambda_src
+from game import Jogo  # precisa estar no zip do lambda
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

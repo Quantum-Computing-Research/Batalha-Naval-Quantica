@@ -187,7 +187,7 @@ resource "aws_apigatewayv2_api" "api" {
   cors_configuration {
     allow_origins = [var.cors_origin]
     allow_methods = ["GET", "POST", "OPTIONS"]
-    allow_headers = ["content-type"]
+    allow_headers = ["content-type", "x-game-id"]
   }
 }
 
@@ -196,31 +196,6 @@ resource "aws_apigatewayv2_integration" "lambda" {
   integration_type       = "AWS_PROXY"
   integration_uri        = aws_lambda_function.handler.arn
   payload_format_version = "2.0"
-}
-
-# rotas do jogo
-resource "aws_apigatewayv2_route" "iniciar" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /iniciar_jogo"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "atacar" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /atacar"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "ataque_quantico" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "GET /ataque-quantico"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
-}
-
-resource "aws_apigatewayv2_route" "encerrar" {
-  api_id    = aws_apigatewayv2_api.api.id
-  route_key = "POST /encerrar_jogo"
-  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
 # Permite API Gateway invocar o Lambda
