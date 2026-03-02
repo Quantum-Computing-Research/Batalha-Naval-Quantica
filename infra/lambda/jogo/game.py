@@ -1,5 +1,4 @@
 import random
-from quantum_task import QuantumTask
 
 class Jogo:
     def __init__(self, tamanho_tabuleiro=10, num_navios=4, pilha_ataques_quanticos=None, backend=None):
@@ -168,14 +167,14 @@ class Jogo:
                 if self.tabuleiro_quantico[x][y] == 1:
                     self.tabuleiro_quantico[x][y] = 2
 
-    def gerar_ataques_quanticos(self, hardware, tamanho_tabuleiro):
-        jogadas = self.quantum_task.get_and_replenish_jogada(hardware, tamanho_tabuleiro)
-        print(jogadas)
+    # def gerar_ataques_quanticos(self, hardware, tamanho_tabuleiro):
+    #     jogadas = self.quantum_task.get_and_replenish_jogada(hardware, tamanho_tabuleiro)
+    #     print(jogadas)
         
-        letras = 'ABCDEFGHIJ'
-        jogadas = [f"{random.choice(letras)}{random.randint(1, 10)}" for _ in range(quantidade)]
-        self.pilha_ataques_quanticos = jogadas
-        print(jogadas)
+    #     letras = 'ABCDEFGHIJ'
+    #     jogadas = [f"{random.choice(letras)}{random.randint(1, 10)}" for _ in range(quantidade)]
+    #     self.pilha_ataques_quanticos = jogadas
+    #     print(jogadas)
 
     def verificar_condicao_finalizacao(self, tabuleiro):
         # Verifica se todos os navios foram afundados
