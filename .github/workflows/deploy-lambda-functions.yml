@@ -13,7 +13,7 @@ concurrency:
   
 env:
   AWS_REGION: us-east-2
-  LAMBDA_JOGO_NAME: quantum-battleship-handler
+  LAMBDA_JOGO_NAME: quantum-battleship-prod-handler
   LAMBDA_JOGADAS_NAME: quantum-battleship-jogadas
   PYTHON_VERSION: "3.12"
 
@@ -84,7 +84,7 @@ jobs:
 
           (cd build/package && zip -r ../../dist/handler.zip .)
           ls -lh dist/handler.zip
-          
+
       - name: Deploy handler
         run: |
           aws lambda update-function-code \
