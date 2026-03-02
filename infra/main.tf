@@ -191,6 +191,17 @@ resource "aws_apigatewayv2_api" "api" {
   }
 }
 
+resource "aws_cloudwatch_log_group" "handler" {
+  name              = "/aws/lambda/${aws_lambda_function.handler.function_name}"
+  retention_in_days = 3
+}
+
+resource "aws_apigatewayv2_stage" "prod" {
+  api_id      = aws_apigatewayv2_api.api.id
+  name        = "${var.env}"
+  auto_deploy = true
+}
+
 resource "aws_apigatewayv2_integration" "lambda" {
   api_id                 = aws_apigatewayv2_api.api.id
   integration_type       = "AWS_PROXY"

@@ -91,30 +91,30 @@ jobs:
             --function-name "${{ env.LAMBDA_JOGO_NAME }}" \
             --zip-file fileb://dist/handler.zip
 
-  deploy-jogadas:
-    needs: changes
-    if: needs.changes.outputs.jogadas == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
+  # deploy-jogadas:
+  #   needs: changes
+  #   if: needs.changes.outputs.jogadas == 'true'
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     id-token: write
+  #     contents: read
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
-          aws-region: ${{ env.AWS_REGION }}
-          role-session-name: gha-lambda-deploy
+  #     - uses: aws-actions/configure-aws-credentials@v4
+  #       with:
+  #         role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
+  #         aws-region: ${{ env.AWS_REGION }}
+  #         role-session-name: gha-lambda-deploy
 
-      - name: Package jogadas
-        run: |
-          mkdir -p dist
-          cd infra/lambda
-          zip -j ../../dist/jogadas.zip jogadas/handler.py
+  #     - name: Package jogadas
+  #       run: |
+  #         mkdir -p dist
+  #         cd infra/lambda
+  #         zip -j ../../dist/jogadas.zip jogadas/handler.py
 
-      - name: Deploy jogadas
-        run: |
-          aws lambda update-function-code \
-            --function-name "${{ env.LAMBDA_JOGADAS_NAME }}" \
-            --zip-file fileb://dist/jogadas.zip
+  #     - name: Deploy jogadas
+  #       run: |
+  #         aws lambda update-function-code \
+  #           --function-name "${{ env.LAMBDA_JOGADAS_NAME }}" \
+  #           --zip-file fileb://dist/jogadas.zip

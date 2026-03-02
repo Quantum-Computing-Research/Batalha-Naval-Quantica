@@ -2,6 +2,10 @@ output "api_endpoint" {
   value = aws_apigatewayv2_api.api.api_endpoint
 }
 
+output "api_invoke_url_prod" {
+  value = aws_apigatewayv2_stage.prod.invoke_url
+}
+
 output "cache_bucket" {
   value = aws_s3_bucket.artifacts.bucket
 }
