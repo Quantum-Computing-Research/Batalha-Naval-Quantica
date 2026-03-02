@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Quantum Battleship • Análise</title>
+    <link rel="stylesheet" href="./assets/css/analytics.css" />
+    <!-- Chart.js (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="topbar-left">
+            <button id="backBtn" class="btn">← Voltar ao jogo</button>
+            <h1>📊 Análise de Randomicidade</h1>
+        </div>
+
+        <div class="topbar-right">
+            <label class="lbl">Hardware</label>
+            <select id="hardwareSelect"></select>
+
+            <label class="lbl">Shots</label>
+            <input id="shotsInput" type="number" min="50" step="50" value="200" />
+            <button id="reloadBtn" class="btn btn-primary">Recarregar</button>
+        </div>
+    </header>
+
+    <main class="wrap">
+        <section class="grid">
+            <div class="card">
+                <h2>Distribuição de 1s (Hamming weight)</h2>
+                <canvas id="chartHamming"></canvas>
+            </div>
+
+            <div class="card">
+                <h2>Frequência de bit = 1 (por qubit)</h2>
+                <canvas id="chartBitFreq"></canvas>
+            </div>
+
+            <div class="card">
+                <h2>Autocorrelação (lag 1 a 20)</h2>
+                <canvas id="chartAutoCorr"></canvas>
+            </div>
+
+            <div class="card">
+                <h2>Entropia por qubit</h2>
+                <canvas id="chartEntropy"></canvas>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Resumo</h2>
+            <pre id="summary" class="mono"></pre>
+        </section>
+    </main>
+
+    <script src="./assets/js/analytics.js"></script>
+</body>
+
+</html>

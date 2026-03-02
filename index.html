@@ -145,22 +145,14 @@
           <label for="tamanhoTabuleiro">Escolha a quantidade de qubits:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
-              const MIN_QUBITS = 4;
-              const MAX_QUBITS = 16;
-              const DEFAULT_QUBITS = 8;
-
-              const sel = document.getElementById("tamanhoTabuleiro");
-
-              for (let q = MIN_QUBITS; q <= MAX_QUBITS; q += 2) {
-                const T = 2 ** (q / 2);
-
-                const option = document.createElement("option");
-                option.value = String(q);
-                option.textContent = `${q} qubits (tabuleiro ${T}x${T})`;
-
-                if (q === DEFAULT_QUBITS) option.selected = true;
-
-                sel.appendChild(option);
+              for (let i = 2; i <= 36; i *= 2) {
+                let option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i}x${i}`;
+                document.getElementById('tamanhoTabuleiro').appendChild(option);
+                if (i === 10) {
+                  option.selected = true;
+                }
               }
             </script>
           </select>

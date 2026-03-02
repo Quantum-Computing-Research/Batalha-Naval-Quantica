@@ -53,16 +53,25 @@ function applyBackendStatusToCards(statusPayload) {
 
 // ---------- chamada p/ status de backends ----------
 async function refreshBackendStatus() {
-    const tamanho = parseInt(document.getElementById("tamanhoTabuleiro")?.value, 10) || 10;
+    const data = await apiFetch("/cache"); // GET
+    const map = new Map(data.hardwares.map(h => [h.hardware, h.online]));
 
-    // se o usuário já escolheu tamanho, a gente usa isso pra saber se há cache compatível
-    const data = await apiFetch(`/backends/status?tamanho_tabuleiro=${encodeURIComponent(tamanho)}`, {
-        method: "GET",
+    document.querySelectorAll(".card[data-backend]").forEach(card => {
+        const hw = card.dataset.backend;
+        const online = map.get(hw);
+        if (online === false) card.classList.add("offline");
+        else card.classList.remove("offline");
     });
-
-    applyBackendStatusToCards(data);
-    return data;
 }
+
+window.addEventListener("DOMContentLoaded", async () => {
+    const gameId = getGameId();
+    if (gameId) {
+        // opcional: tentar recuperar estado, ou pelo menos checar se existe
+        try { await apiFetch("/estado"); } catch (e) { clearGameId(); }
+    }
+    if (!getGameId()) await refreshBackendStatus();
+});
 
 // ---------- recuperar partida existente ----------
 async function tryRecoverGameFromServer(gameId) {
