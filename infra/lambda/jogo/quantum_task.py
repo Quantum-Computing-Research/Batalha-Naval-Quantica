@@ -158,3 +158,4 @@ class QuantumTask:
         
         # Retorna a instância do manager para ser usada na aplicação principal
         return manager
+
