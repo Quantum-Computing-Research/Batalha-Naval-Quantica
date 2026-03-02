@@ -1,45 +1,110 @@
+// ./scripts/analytics.js
+// Fonte de verdade: API Gateway (Lambda)
+// Rotas:
+//   GET  /cache
+//   GET  /cache/{hardware}
 
-const HARDWARE_FILES = {
-    "iqm_garnet": "./cache/iqm_garnet.json",
-    "quera_aquila": "./cache/quera_aquila.json",
-    "rigetti_ankaa": "./cache/rigetti_ankaa.json",
-    "ionq_aria2": "./cache/ionq_aria2.json",
-    "ionq_forte1": "./cache/ionq_forte1.json"
-};
+const URL_BASE = (() => {
+    // 1) Se você quiser fixar via window.__API_BASE__ no HTML, ele usa.
+    if (window.__API_BASE__) return window.__API_BASE__.replace(/\/$/, "");
+
+    // 2) Caso contrário, tente ler do localStorage (se você salvar no jogo)
+    const saved = localStorage.getItem("qb_api_base");
+    if (saved) return saved.replace(/\/$/, "");
+
+    // 3) Fallback: coloque seu endpoint aqui (com /prod se existir stage)
+    // EXEMPLO:
+    // return "https://5fd53e167e.execute-api.us-east-2.amazonaws.com/prod";
+    return "";
+})();
 
 let charts = {};
 
 function $(id) { return document.getElementById(id); }
 
-function fillHardwareSelect() {
-    const sel = $("hardwareSelect");
-    sel.innerHTML = "";
-    Object.keys(HARDWARE_FILES).forEach(hw => {
-        const opt = document.createElement("option");
-        opt.value = hw;
-        opt.textContent = hw;
-        sel.appendChild(opt);
-    });
-    sel.value = "ionq_aria2" in HARDWARE_FILES ? "ionq_aria2" : Object.keys(HARDWARE_FILES)[0];
+function ensureChart() {
+    if (typeof Chart === "undefined") {
+        throw new Error("Chart.js não carregou (Chart is undefined). Verifique o <script> CDN.");
+    }
+}
+
+async function apiFetch(path) {
+    if (!URL_BASE) {
+        throw new Error(
+            "URL_BASE não configurada. Defina window.__API_BASE__ no HTML ou qb_api_base no localStorage."
+        );
+    }
+
+    const url = `${URL_BASE}${path}`;
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+
+    // Se vier HTML (ex: 403/404 com página), explode cedo
+    if (text.trim().startsWith("<")) {
+        throw new Error(`Resposta não é JSON (parece HTML). URL: ${url}`);
+    }
+
+    let data = {};
+    try { data = JSON.parse(text); } catch { data = {}; }
+
+    if (!res.ok) {
+        throw new Error(data?.error || `HTTP ${res.status} em ${url}`);
+    }
+    return data;
+}
+
+async function loadHardwareList() {
+    // GET /cache
+    // Esperado: { hardwares: [...] } (mas aceito { items: [...] } etc)
+    const data = await apiFetch("/cache");
+
+    const hardwares =
+        data.hardwares ||
+        data.items ||
+        data.backends ||
+        [];
+
+    if (!Array.isArray(hardwares) || hardwares.length === 0) {
+        throw new Error("Endpoint /cache não retornou lista de hardwares.");
+    }
+
+    return hardwares;
 }
 
 async function loadHardware(hw) {
-    const url = HARDWARE_FILES[hw];
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`Falha ao carregar ${url} (HTTP ${res.status})`);
-    return res.json();
+    // GET /cache/{hardware}
+    // Esperado: { bitstrings: [...], n_qubits?: number }
+    const data = await apiFetch(`/cache/${encodeURIComponent(hw)}`);
+
+    const bitstrings =
+        data.bitstrings ||
+        data.data || // se você devolver direto como "data"
+        [];
+
+    if (!Array.isArray(bitstrings) || bitstrings.length === 0) {
+        throw new Error(`Sem bitstrings para ${hw} (cache vazio ou backend offline).`);
+    }
+
+    const nQ =
+        data.n_qubits ??
+        data.nQ ??
+        (bitstrings[0]?.length ?? 0);
+
+    return { hw, nQ, bitstrings };
 }
 
 function takeShots(bitstrings, n) {
     if (!Array.isArray(bitstrings)) return [];
-    if (n <= 0) return bitstrings;
+    if (!Number.isFinite(n) || n <= 0) return bitstrings;
     return bitstrings.slice(0, Math.min(n, bitstrings.length));
 }
 
 function bitFreqPerQubit(bitstrings, nQ) {
     const freq = new Array(nQ).fill(0);
     const N = bitstrings.length || 1;
+
     for (const s of bitstrings) {
+        // Se vier bitstring maior/menor, corta/ignora fora do range
         for (let i = 0; i < nQ; i++) {
             if (s[i] === "1") freq[i] += 1;
         }
@@ -48,7 +113,11 @@ function bitFreqPerQubit(bitstrings, nQ) {
 }
 
 function hammingWeights(bitstrings) {
-    return bitstrings.map(s => [...s].reduce((acc, ch) => acc + (ch === "1"), 0));
+    return bitstrings.map(s => {
+        let w = 0;
+        for (let i = 0; i < s.length; i++) if (s[i] === "1") w++;
+        return w;
+    });
 }
 
 function histogram(values, maxVal) {
@@ -60,7 +129,6 @@ function histogram(values, maxVal) {
 }
 
 function entropyBinary(p) {
-    // p in [0,1], entropy in bits
     if (p <= 0 || p >= 1) return 0;
     return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
 }
@@ -70,14 +138,17 @@ function entropyPerQubit(freq) {
 }
 
 function autocorrLag1toK(bitstrings, maxLag = 20) {
-    // converte cada shot em inteiro (0..2^n-1) e mede correlação simples
+    // Converte cada shot em inteiro e mede autocorr normalizada
     const xs = bitstrings.map(s => parseInt(s, 2));
     const N = xs.length;
+
     const mean = xs.reduce((a, b) => a + b, 0) / (N || 1);
     const varx = xs.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (N || 1);
+
     const out = [];
     for (let lag = 1; lag <= maxLag; lag++) {
         if (N - lag <= 1 || varx === 0) { out.push(0); continue; }
+
         let cov = 0;
         for (let i = 0; i < N - lag; i++) {
             cov += (xs[i] - mean) * (xs[i + lag] - mean);
@@ -120,7 +191,7 @@ function renderCharts({ hw, nQ, shots, bitstrings }) {
         }
     });
 
-    // 2) Bit frequency per qubit
+    // 2) Bit frequency
     charts.freq = new Chart($("chartBitFreq"), {
         type: "line",
         data: {
@@ -163,8 +234,8 @@ function renderCharts({ hw, nQ, shots, bitstrings }) {
     });
 
     // Summary
-    const avgFreq = freq.reduce((a, b) => a + b, 0) / freq.length;
-    const avgEnt = ent.reduce((a, b) => a + b, 0) / ent.length;
+    const avgFreq = freq.reduce((a, b) => a + b, 0) / (freq.length || 1);
+    const avgEnt = ent.reduce((a, b) => a + b, 0) / (ent.length || 1);
 
     $("summary").textContent =
         `hardware: ${hw}
@@ -179,16 +250,34 @@ nota:
 - autocorr ~ 0 (lags pequenos)`;
 }
 
+async function fillHardwareSelect() {
+    const sel = $("hardwareSelect");
+    sel.innerHTML = "";
+
+    const hardwares = await loadHardwareList();
+
+    hardwares.forEach(hw => {
+        const opt = document.createElement("option");
+        opt.value = hw;
+        opt.textContent = hw;
+        sel.appendChild(opt);
+    });
+
+    sel.value = hardwares.includes("ionq_aria2") ? "ionq_aria2" : hardwares[0];
+}
+
 async function reload() {
+    ensureChart();
+
     const hw = $("hardwareSelect").value;
     const desiredShots = parseInt($("shotsInput").value || "200", 10);
 
     const data = await loadHardware(hw);
-    const nQ = data.n_qubits ?? (data.bitstrings?.[0]?.length ?? 0);
-    const shots = Math.min(desiredShots, data.bitstrings?.length ?? 0);
-    const bitstrings = takeShots(data.bitstrings || [], shots);
 
-    renderCharts({ hw, nQ, shots, bitstrings });
+    const shots = Math.min(desiredShots, data.bitstrings.length);
+    const bitstrings = takeShots(data.bitstrings, shots);
+
+    renderCharts({ hw: data.hw, nQ: data.nQ, shots, bitstrings });
 }
 
 function wire() {
@@ -197,82 +286,12 @@ function wire() {
     $("hardwareSelect").addEventListener("change", () => reload().catch(e => alert(e.message)));
 }
 
-(function init() {
-    fillHardwareSelect();
-    wire();
-    reload().catch(e => alert(e.message));
+(async function init() {
+    try {
+        await fillHardwareSelect();
+        wire();
+        await reload();
+    } catch (e) {
+        alert(e.message);
+    }
 })();
-
-function setResumo(msg) {
-    const el = document.getElementById("resumo");
-    if (el) el.textContent = msg;
-    console.log("[analytics]", msg);
-}
-
-function qs(id) {
-    const el = document.getElementById(id);
-    if (!el) throw new Error(`Elemento #${id} não existe (canvas missing?)`);
-    return el;
-}
-
-async function fetchJson(url) {
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-
-    // se vier HTML (ex: index.html), isso acusa cedo
-    if (text.trim().startsWith("<")) {
-        throw new Error(`Resposta não é JSON (parece HTML). URL: ${url}`);
-    }
-    const data = JSON.parse(text);
-    if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
-    return data;
-}
-
-function ensureChart() {
-    if (typeof Chart === "undefined") {
-        throw new Error("Chart.js não carregou (Chart is undefined).");
-    }
-}
-
-function renderPlaceholder() {
-    // opcional: desenhar algo simples ou só atualizar resumo
-    setResumo("Sem dados ainda. Verifique o endpoint /cache ou /analytics/data.");
-}
-
-async function loadAndRender() {
-    ensureChart();
-
-    // exemplo: endpoint do handler que você quer criar:
-    // GET `${URL_BASE}/analytics/cache?hardware=ionq_aria2&shots=200`
-    // por enquanto use um mock local, se existir:
-    const hardware = document.getElementById("hardwareSelect")?.value || "ionq_aria2";
-    const shots = parseInt(document.getElementById("shotsSelect")?.value || "200", 10);
-
-    setResumo(`Carregando dados: hardware=${hardware}, shots=${shots}...`);
-
-    // ⚠️ ajuste aqui pro seu endpoint real
-    const url = `${URL_BASE}/analytics/cache?hardware=${encodeURIComponent(hardware)}&shots=${shots}`;
-    const payload = await fetchJson(url);
-
-    // payload.bitstrings = ["0101...","1110...",...]
-    const bitstrings = payload.bitstrings || [];
-    if (!bitstrings.length) {
-        setResumo(`Sem bitstrings para ${hardware}. (backend offline ou cache vazio)`);
-        renderPlaceholder();
-        return;
-    }
-
-    setResumo(`OK: ${bitstrings.length} bitstrings carregadas. Renderizando...`);
-
-    // >>> aqui você chama suas funções de análise e plota:
-    renderAllCharts(bitstrings);
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    // botão recarregar
-    const btn = document.getElementById("btnRecarregar");
-    if (btn) btn.addEventListener("click", () => loadAndRender().catch(e => setResumo("ERRO: " + e.message)));
-
-    // load inicial
-    loadAndRender().catch(e => setResumo("ERRO: " + e.message));
-});
