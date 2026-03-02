@@ -202,3 +202,77 @@ function wire() {
     wire();
     reload().catch(e => alert(e.message));
 })();
+
+function setResumo(msg) {
+    const el = document.getElementById("resumo");
+    if (el) el.textContent = msg;
+    console.log("[analytics]", msg);
+}
+
+function qs(id) {
+    const el = document.getElementById(id);
+    if (!el) throw new Error(`Elemento #${id} não existe (canvas missing?)`);
+    return el;
+}
+
+async function fetchJson(url) {
+    const res = await fetch(url, { cache: "no-store" });
+    const text = await res.text();
+
+    // se vier HTML (ex: index.html), isso acusa cedo
+    if (text.trim().startsWith("<")) {
+        throw new Error(`Resposta não é JSON (parece HTML). URL: ${url}`);
+    }
+    const data = JSON.parse(text);
+    if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+    return data;
+}
+
+function ensureChart() {
+    if (typeof Chart === "undefined") {
+        throw new Error("Chart.js não carregou (Chart is undefined).");
+    }
+}
+
+function renderPlaceholder() {
+    // opcional: desenhar algo simples ou só atualizar resumo
+    setResumo("Sem dados ainda. Verifique o endpoint /cache ou /analytics/data.");
+}
+
+async function loadAndRender() {
+    ensureChart();
+
+    // exemplo: endpoint do handler que você quer criar:
+    // GET `${URL_BASE}/analytics/cache?hardware=ionq_aria2&shots=200`
+    // por enquanto use um mock local, se existir:
+    const hardware = document.getElementById("hardwareSelect")?.value || "ionq_aria2";
+    const shots = parseInt(document.getElementById("shotsSelect")?.value || "200", 10);
+
+    setResumo(`Carregando dados: hardware=${hardware}, shots=${shots}...`);
+
+    // ⚠️ ajuste aqui pro seu endpoint real
+    const url = `${URL_BASE}/analytics/cache?hardware=${encodeURIComponent(hardware)}&shots=${shots}`;
+    const payload = await fetchJson(url);
+
+    // payload.bitstrings = ["0101...","1110...",...]
+    const bitstrings = payload.bitstrings || [];
+    if (!bitstrings.length) {
+        setResumo(`Sem bitstrings para ${hardware}. (backend offline ou cache vazio)`);
+        renderPlaceholder();
+        return;
+    }
+
+    setResumo(`OK: ${bitstrings.length} bitstrings carregadas. Renderizando...`);
+
+    // >>> aqui você chama suas funções de análise e plota:
+    renderAllCharts(bitstrings);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    // botão recarregar
+    const btn = document.getElementById("btnRecarregar");
+    if (btn) btn.addEventListener("click", () => loadAndRender().catch(e => setResumo("ERRO: " + e.message)));
+
+    // load inicial
+    loadAndRender().catch(e => setResumo("ERRO: " + e.message));
+});
