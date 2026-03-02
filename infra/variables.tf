@@ -27,3 +27,8 @@ variable "cors_origin" {
   type    = string
   default = "*"
 }
+
+variable "env" {
+  type        = string
+  default     = "prod"
+}

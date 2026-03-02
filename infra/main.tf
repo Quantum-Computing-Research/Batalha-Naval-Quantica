@@ -27,7 +27,7 @@ data "aws_caller_identity" "me" {}
 
 locals {
   name        = var.project_name
-  fullname = "${var.project_name}"
+  fullname = "${var.project_name}-${var.env}"
   account_id  = data.aws_caller_identity.me.account_id
   bucket_name = "${local.fullname}-artifacts"
 }
