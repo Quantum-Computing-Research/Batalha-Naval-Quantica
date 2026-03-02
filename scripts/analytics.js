@@ -4,19 +4,6 @@
 //   GET  /cache
 //   GET  /cache/{hardware}
 
-const URL_BASE = (() => {
-    // 1) Se você quiser fixar via window.__API_BASE__ no HTML, ele usa.
-    if (window.__API_BASE__) return window.__API_BASE__.replace(/\/$/, "");
-
-    // 2) Caso contrário, tente ler do localStorage (se você salvar no jogo)
-    const saved = localStorage.getItem("qb_api_base");
-    if (saved) return saved.replace(/\/$/, "");
-
-    // 3) Fallback: coloque seu endpoint aqui (com /prod se existir stage)
-    // EXEMPLO:
-    // return "https://5fd53e167e.execute-api.us-east-2.amazonaws.com/prod";
-    return "";
-})();
 
 let charts = {};
 
