@@ -293,6 +293,20 @@ def _state_to_game(state: Dict[str, Any]) -> Jogo:
 def coord_para_letra_numero(linha, coluna):
     return f"{chr(ord('A') + int(linha))}{coluna + 1}"
 
+def _frota_adversaria(state):
+    navios = state.get("navios_quantico")
+    if navios is None:
+        return None
+    tabuleiro = state["tabuleiro_quantico"]
+    return [
+        {
+            "id": f"navio_{indice + 1}",
+            "tamanho": len(navio),
+            "afundado": all(tabuleiro[int(linha)][int(coluna)] == 2 for linha, coluna in navio),
+        }
+        for indice, navio in enumerate(navios)
+    ]
+
 def _circuito_partida(tamanho, modo):
     bits = int(math.log2(tamanho))
     return {
@@ -373,6 +387,7 @@ def _resumo_partida(state):
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "tabuleiro_quantico": state["tabuleiro_quantico"],
         "historico": historico,
+        "frota_adversaria": _frota_adversaria(state),
         "circuito": meta.get("circuito"),
         "medicoes_brutas": meta.get("medicoes_brutas", []),
         "analise": _analise_medicoes(meta.get("medicoes_brutas", []), int(state["tamanho_tabuleiro"])),
@@ -472,6 +487,7 @@ def handle_iniciar(event):
         "fila_espera": fila_espera,
         "pilha_len": len(pilha),
         "tabuleiro_jogador": game.tabuleiro_jogador,
+        "frota_adversaria": _frota_adversaria(state),
     })
 
 def handle_atacar(event):
@@ -499,7 +515,18 @@ def handle_atacar(event):
         if not game.validar_coordenada_repetida(linha, coluna, game.tabuleiro_quantico):
             return _resp(409, {"error": "Coordenada repetida."})
 
+    frota_anterior = _frota_adversaria(state)
     finalizado, _msg, acertou, linha, coluna = game.ataque_jogador(coordenada)
+    frota = _frota_adversaria(state)
+    navio_afundado = None
+    if acertou and frota is not None:
+        for indice, navio in enumerate(frota):
+            if navio["afundado"] and not frota_anterior[indice]["afundado"]:
+                navio_afundado = {
+                    **navio,
+                    "coordenadas": [coord_para_letra_numero(int(linha_navio), int(coluna_navio)) for linha_navio, coluna_navio in state["navios_quantico"][indice]],
+                }
+                break
 
     # mensagem
     if finalizado:
@@ -510,6 +537,8 @@ def handle_atacar(event):
     else:
         mensagem = f"Ataque do jogador em {coordenada.upper()} → {'Acertou!' if acertou else 'Errou!'}"
         vencedor = None
+        if navio_afundado:
+            mensagem += f" Navio de {navio_afundado['tamanho']} posições afundado!"
 
     # placar + histórico
     if acertou:
@@ -542,6 +571,8 @@ def handle_atacar(event):
     return _resp(200, {
         "mensagem": mensagem,
         "status": "acerto" if acertou else "erro",
+        "frota_adversaria": frota,
+        "navio_afundado": navio_afundado,
         "vez_do_jogador": state["vez_do_jogador"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": bool(finalizado),
@@ -752,6 +783,7 @@ def handle_estado(event):
         "tamanho_tabuleiro": state["tamanho_tabuleiro"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "ataques_jogador": [[cell if cell in (2, 3) else 0 for cell in row] for row in state["tabuleiro_quantico"]],
+        "frota_adversaria": _frota_adversaria(state),
         "vez_do_jogador": state["vez_do_jogador"],
         "placar": state["meta"].get("placar", {}),
         "circuito": state["meta"].get("circuito"),

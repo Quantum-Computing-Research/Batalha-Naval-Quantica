@@ -141,6 +141,54 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertFalse(self.handler._analise_medicoes([], 8)["disponivel"])
         self.request("/iniciar_jogo", {"modo": "simulador", "tamanho_tabuleiro": 10}, expected=400)
 
+    def test_enemy_fleet_reveals_only_sizes_and_sunk_status(self):
+        game_id = self.start_game(8, 5)
+        state = self.states[game_id]
+        self.assertEqual(sorted(navio["tamanho"] for navio in self.handler._frota_adversaria(state)), [1, 2, 3, 4, 5])
+        self.assertTrue(all(set(navio) == {"id", "tamanho", "afundado"} for navio in self.handler._frota_adversaria(state)))
+        state["tabuleiro_quantico"] = [[0] * 8 for _ in range(8)]
+        state["navios_quantico"] = [[[0, 0], [0, 1], [0, 2], [0, 3]], [[0, 4]]]
+        for coluna in range(5):
+            state["tabuleiro_quantico"][0][coluna] = 1
+        for coluna in range(3):
+            result = self.request("/atacar", {"coordenada": f"A{coluna + 1}"}, game_id)
+            self.assertIsNone(result["navio_afundado"])
+            self.assertFalse(result["frota_adversaria"][0]["afundado"])
+        result = self.request("/atacar", {"coordenada": "A4"}, game_id)
+        self.assertEqual(result["navio_afundado"]["tamanho"], 4)
+        self.assertEqual(result["navio_afundado"]["coordenadas"], ["A1", "A2", "A3", "A4"])
+        self.assertFalse(result["frota_adversaria"][1]["afundado"])
+        self.assertIn("afundado", result["mensagem"])
+        restored = self.request("/estado", game_id=game_id, method="GET")
+        self.assertTrue(restored["frota_adversaria"][0]["afundado"])
+        result = self.request("/atacar", {"coordenada": "A5"}, game_id)
+        self.assertTrue(result["finalizado"])
+        self.assertEqual(result["navio_afundado"]["tamanho"], 1)
+        self.assertTrue(all(navio["afundado"] for navio in result["resumo"]["frota_adversaria"]))
+        del self.states[game_id]["navios_quantico"]
+        self.assertIsNone(self.handler._frota_adversaria(self.states[game_id]))
+
+    def test_vertical_five_cell_ship_and_miss(self):
+        game_id = self.start_game(8, 5)
+        state = self.states[game_id]
+        state["tabuleiro_quantico"] = [[0] * 8 for _ in range(8)]
+        state["navios_quantico"] = [[[linha, 0] for linha in range(5)], [[0, 1]]]
+        for linha in range(5):
+            state["tabuleiro_quantico"][linha][0] = 1
+        state["tabuleiro_quantico"][0][1] = 1
+        for linha in range(5):
+            result = self.request("/atacar", {"coordenada": f"{chr(65 + linha)}1"}, game_id)
+            if linha < 4:
+                self.assertIsNone(result["navio_afundado"])
+        self.assertEqual(result["navio_afundado"]["tamanho"], 5)
+        self.assertEqual(result["navio_afundado"]["coordenadas"], ["A1", "B1", "C1", "D1", "E1"])
+        self.request("/atacar", {"coordenada": "E1"}, game_id, expected=409)
+        result = self.request("/atacar", {"coordenada": "F2"}, game_id)
+        self.assertEqual(result["status"], "erro")
+        self.assertIsNone(result["navio_afundado"])
+        self.assertTrue(result["frota_adversaria"][0]["afundado"])
+        self.assertFalse(result["frota_adversaria"][1]["afundado"])
+
     def test_summary_survives_reload_and_supports_legacy_games(self):
         game_id = self.start_game()
         self.request("/atacar", {"coordenada": self.states[game_id]["codigo_secreto"]}, game_id)
