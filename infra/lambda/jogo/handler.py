@@ -293,6 +293,54 @@ def _state_to_game(state: Dict[str, Any]) -> Jogo:
 def coord_para_letra_numero(linha, coluna):
     return f"{chr(ord('A') + int(linha))}{coluna + 1}"
 
+def _circuito_partida(tamanho, modo):
+    bits = int(math.log2(tamanho))
+    return {
+        "modelo": "Hadamard independente + medição na base computacional",
+        "qubits_por_eixo": bits,
+        "qubits_total": 2 * bits,
+        "ordem_bits": "linha | coluna (mais significativo primeiro)",
+        "probabilidade_celula": f"1/{tamanho * tamanho}",
+        "origem": "Dados sintéticos · v0" if modo == "simulador" else "Cache · circuito de referência, execução não verificada",
+        "execucao_qpu": False,
+    }
+
+def _analise_medicoes(medicoes, tamanho):
+    if not medicoes:
+        return {"disponivel": False, "motivo": "Cache legado sem medições brutas ordenadas; ataques filtrados não permitem avaliar aleatoriedade."}
+    possibilidades = tamanho * tamanho
+    frequencias = [0] * possibilidades
+    valores = [int(bits, 2) for bits in medicoes]
+    for valor in valores:
+        frequencias[valor] += 1
+    amostras = len(valores)
+    esperado = amostras / possibilidades
+    chi2 = sum((freq - esperado) ** 2 / esperado for freq in frequencias)
+    entropia = -sum((freq / amostras) * math.log2(freq / amostras) for freq in frequencias if freq)
+    anteriores, seguintes = valores[:-1], valores[1:]
+    media_anterior = sum(anteriores) / len(anteriores) if anteriores else 0
+    media_seguinte = sum(seguintes) / len(seguintes) if seguintes else 0
+    variancia_anterior = sum((valor - media_anterior) ** 2 for valor in anteriores)
+    variancia_seguinte = sum((valor - media_seguinte) ** 2 for valor in seguintes)
+    denominador = math.sqrt(variancia_anterior * variancia_seguinte)
+    correlacao = sum((antes - media_anterior) * (depois - media_seguinte) for antes, depois in zip(anteriores, seguintes)) / denominador if denominador else None
+    return {
+        "disponivel": True,
+        "base": "Todas as medições brutas, incluindo repetições; não os ataques únicos",
+        "amostras": amostras,
+        "frequencias": frequencias,
+        "esperado_por_celula": esperado,
+        "celulas_observadas": sum(freq > 0 for freq in frequencias),
+        "repeticoes": amostras - sum(freq > 0 for freq in frequencias),
+        "qui_quadrado": chi2,
+        "graus_liberdade": possibilidades - 1,
+        "aproximacao_chi2_adequada": esperado >= 5,
+        "entropia_bits": entropia,
+        "entropia_maxima_bits": math.log2(possibilidades),
+        "correlacao_lag_1": correlacao,
+        "nota": "Indicadores descritivos, sem p-valor ou certificação de aleatoriedade quântica. Lote gerado inteiro, não apenas medições consumidas na partida.",
+    }
+
 def _resumo_partida(state):
     meta = state["meta"]
     historico = meta.get("historico", [])
@@ -325,6 +373,9 @@ def _resumo_partida(state):
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "tabuleiro_quantico": state["tabuleiro_quantico"],
         "historico": historico,
+        "circuito": meta.get("circuito"),
+        "medicoes_brutas": meta.get("medicoes_brutas", []),
+        "analise": _analise_medicoes(meta.get("medicoes_brutas", []), int(state["tamanho_tabuleiro"])),
     }
 
 # ----------------------------
@@ -335,12 +386,12 @@ def handle_iniciar(event):
 
     try:
         num_navios = int(str(body.get("num_navios", 4)).strip())
-        tamanho_tabuleiro = int(str(body.get("tamanho_tabuleiro", 10)).strip())
+        tamanho_tabuleiro = int(str(body.get("tamanho_tabuleiro", 8)).strip())
     except (ValueError, TypeError):
         return _resp(400, {"error": "Informe tamanho e quantidade de navios inteiros."})
 
-    if tamanho_tabuleiro < 4 or tamanho_tabuleiro > 20:
-        return _resp(400, {"error": "Tamanho do tabuleiro inválido."})
+    if tamanho_tabuleiro not in (4, 8, 16):
+        return _resp(400, {"error": "Escolha um tabuleiro 4×4, 8×8 ou 16×16."})
     if not 1 <= num_navios <= tamanho_tabuleiro:
         return _resp(400, {"error": "A quantidade de navios deve ser de 1 até o tamanho do tabuleiro."})
 
@@ -353,9 +404,11 @@ def handle_iniciar(event):
         return _resp(400, {"error": "Selecione um hardware para usar o cache."})
 
     # 1) tenta carregar cache primeiro
+    medicoes = []
     if modo == "simulador":
-        pilha = [coord_para_letra_numero(linha, coluna) for linha in range(tamanho_tabuleiro) for coluna in range(tamanho_tabuleiro)]
-        random.shuffle(pilha)
+        bits = 2 * int(math.log2(tamanho_tabuleiro))
+        medicoes = [format(random.getrandbits(bits), f"0{bits}b") for _ in range(32 * tamanho_tabuleiro * tamanho_tabuleiro)]
+        pilha = _normalize_moves(medicoes, tamanho_tabuleiro)
     else:
         pilha = _load_moves_from_s3(backend, tamanho_tabuleiro) or []
 
@@ -389,6 +442,8 @@ def handle_iniciar(event):
         "jogador_id": _player_id_from_name(jogador),
         "jogador_nome": jogador,
         "modo": modo,
+        "circuito": _circuito_partida(tamanho_tabuleiro, modo),
+        "medicoes_brutas": medicoes,
         "placar": {"jogador": 0, "computador": 0},
         "historico": [],
         "em_andamento": True,
@@ -408,6 +463,7 @@ def handle_iniciar(event):
 
     return _resp(200, {
         "backend_offline": False,
+        "circuito": meta["circuito"],
         "modo": modo,
         "game_id": game_id,
         "backend": backend,
@@ -698,6 +754,7 @@ def handle_estado(event):
         "ataques_jogador": [[cell if cell in (2, 3) else 0 for cell in row] for row in state["tabuleiro_quantico"]],
         "vez_do_jogador": state["vez_do_jogador"],
         "placar": state["meta"].get("placar", {}),
+        "circuito": state["meta"].get("circuito"),
         "resumo": _resumo_partida(state) if state["meta"].get("vencedor") else None,
         "backend": state.get("backend", ""),
         "jogador": state.get("jogador", ""),

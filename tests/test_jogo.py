@@ -44,11 +44,11 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertEqual(response["statusCode"], expected, data)
         return data
 
-    def start_game(self, size=10, ships=4):
+    def start_game(self, size=8, ships=4):
         return self.request("/iniciar_jogo", {"nome": "Teste", "modo": "simulador", "tamanho_tabuleiro": size, "num_navios": ships})["game_id"]
 
     def test_player_can_finish_every_board_size(self):
-        for size in range(4, 21):
+        for size in (4, 8, 16):
             with self.subTest(size=size):
                 game_id = self.start_game(size)
                 self.assertEqual(len(self.states[game_id]["pilha"]), size * size)
@@ -66,7 +66,7 @@ class JogoLambdaTest(unittest.TestCase):
                 self.request("/atacar", {"coordenada": "A1"}, game_id, expected=404)
 
     def test_computer_turn_and_final_hit(self):
-        game_id = self.start_game()
+        game_id = self.start_game(8)
         state = self.states[game_id]
         self.request("/ataque-quantico", game_id=game_id, method="GET", expected=409)
         state["tabuleiro_quantico"][0][0] = 0
@@ -125,6 +125,21 @@ class JogoLambdaTest(unittest.TestCase):
             game = self.handler.Jogo(4, 4)
         self.assertEqual(sum(map(sum, game.tabuleiro_jogador)), 10)
         self.assertEqual(sorted(map(len, game.navios_jogador)), [1, 2, 3, 4])
+
+    def test_circuit_and_raw_measurement_analysis(self):
+        game_id = self.start_game(8)
+        meta = self.states[game_id]["meta"]
+        self.assertEqual(meta["circuito"]["qubits_total"], 6)
+        self.assertEqual(meta["circuito"]["probabilidade_celula"], "1/64")
+        self.assertEqual(len(meta["medicoes_brutas"]), 2048)
+        self.assertTrue(all(len(bits) == 6 for bits in meta["medicoes_brutas"]))
+        self.assertEqual(sum(self.handler._analise_medicoes(meta["medicoes_brutas"], 8)["frequencias"]), 2048)
+        uniformes = [format(valor, "04b") for valor in range(16)] * 8
+        analyse = self.handler._analise_medicoes(uniformes, 4)
+        self.assertEqual(analyse["qui_quadrado"], 0)
+        self.assertEqual(analyse["entropia_bits"], 4)
+        self.assertFalse(self.handler._analise_medicoes([], 8)["disponivel"])
+        self.request("/iniciar_jogo", {"modo": "simulador", "tamanho_tabuleiro": 10}, expected=400)
 
     def test_summary_survives_reload_and_supports_legacy_games(self):
         game_id = self.start_game()
