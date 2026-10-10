@@ -110,6 +110,21 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .board-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 14px; }
 .board-heading h2 { font: normal 22px Georgia, serif; margin: 0; }
 .board-heading span { font-size: 10px; color: var(--muted); }
+.adversario-layout { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 16px; align-items: start; }
+.frota-adversaria { min-width: 0; border-left: 1px solid var(--line); padding-left: 12px; }
+.frota-adversaria h3 { margin: 0 0 6px; font-size: 11px; font-weight: 600; }
+#frota-resumo { margin: 0 0 10px; font-size: 10px; line-height: 1.5; color: var(--muted); }
+#frota-lista { list-style: none; margin: 0; padding: 0; }
+.frota-navio { padding: 6px 0 9px; border-bottom: 1px solid var(--line); }
+.frota-silhueta { position: relative; display: flex; align-items: center; height: 34px; width: 100%; }
+.frota-silhueta img { display: block; object-fit: contain; object-position: left center; max-width: 100%; height: 32px; }
+.frota-navio strong { display: block; font-size: 11px; font-weight: 600; }
+.frota-navio-status { display: block; font-size: 10px; margin-top: 3px; color: var(--muted); }
+.frota-navio.afundado img { opacity: 0.35; }
+.frota-navio.afundado .frota-silhueta::after { content: ''; position: absolute; width: 95%; border-top: 2px solid #a34a4f; transform: rotate(-10deg); }
+.frota-navio.afundado strong { text-decoration: line-through; color: var(--muted); }
+.frota-navio.afundado .frota-navio-status { color: #a34a4f; font-weight: 600; }
+.celula.navio-afundado { box-shadow: inset 0 0 0 1px #a34a4f; }
 .tabuleiro-jogador, .tabuleiro-computador { max-width: 100%; overflow: auto; padding-bottom: 4px; }
 .linha { width: max-content; }
 .celula { width: 34px; height: 34px; flex: 0 0 34px; border-color: #d2dfe1; background: #f9fcfc; font-size: 12px; }
@@ -163,6 +178,9 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .circuito-informacoes h3 { font-size: 15px; }
   .boards { grid-template-columns: minmax(0, 1fr); gap: 24px !important; }
   .board-heading h2 { font-size: 21px; }
+  .adversario-layout { grid-template-columns: minmax(0, 1fr); }
+  .frota-adversaria { border-left: none; border-top: 1px solid var(--line); padding: 14px 0 0; }
+  #frota-lista { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 20px; }
   .attack-controls { flex-wrap: wrap; }
   .attack-controls label { flex-basis: 100%; }
   #playerMove { flex: 1; min-width: 0; width: 150px; }

@@ -71,6 +71,7 @@ function finalizarComRegistro(data, atraso = 3000) {
     document.getElementById("tamanhoTabuleiro").value = resumo.tamanho_tabuleiro;
     document.getElementById("numNavios").value = resumo.num_navios;
     atualizarCircuitoPartida(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo));
+    atualizarFrotaAdversaria(resumo.frota_adversaria);
     for (const [id, seletor, board] of [
         ["playerBoard", ".tabuleiro-jogador", resumo.tabuleiro_jogador],
         ["computerBoard", ".tabuleiro-computador", resumo.tabuleiro_quantico],

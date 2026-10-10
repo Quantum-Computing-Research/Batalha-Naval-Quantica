@@ -229,6 +229,7 @@ async function iniciarJogo(nome) {
     setGameId(data.game_id);
     atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo));
     iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
+    atualizarFrotaAdversaria(data.frota_adversaria);
 
     // UI states
     placar.jogador = 0;
@@ -268,6 +269,7 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     }
 
     clearGameId();
+    atualizarFrotaAdversaria([]);
     clearTimeout(temporizadorResultado);
     resultadoFinalPendente = false;
     document.getElementById("playerMove").disabled = false;
@@ -331,6 +333,8 @@ async function atacar() {
     }
 
     if (data.status === "acerto") placar.jogador++;
+    if (data.frota_adversaria !== undefined) atualizarFrotaAdversaria(data.frota_adversaria);
+    marcarNavioAfundado(data.navio_afundado);
     if (/^[A-T]\d+$/i.test(coordenada)) registrarJogadaPartida("ataque_jogador", coordenada.toUpperCase(), data.status === "acerto");
 
     atualizarStatusBar(`Você atacou ${coordenada.toUpperCase()} → ${data.mensagem}`);

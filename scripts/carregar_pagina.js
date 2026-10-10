@@ -30,6 +30,7 @@ window.onload = async () => {
         }
         document.getElementById("tamanhoTabuleiro").value = data.tamanho_tabuleiro;
         atualizarCircuitoPartida(data.circuito);
+        atualizarFrotaAdversaria(data.frota_adversaria);
         renderizarTabuleiro(containerJogador, data.tamanho_tabuleiro, "playerBoard");
         renderizarTabuleiro(containerComputador, data.tamanho_tabuleiro, "computerBoard");
         desenharNavios(data.tabuleiro_jogador);
