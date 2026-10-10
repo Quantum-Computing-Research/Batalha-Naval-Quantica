@@ -80,35 +80,35 @@
         <div class="carousel-container">
           <button id="prev" class="nav-button">◀</button>
           <div class="carousel">
-            <div class="card">
+            <div class="card" data-backend="iqm_garnet">
               <img src="assets/img/aws-iqm.jpg" alt="Garnet">
               <h3>Garnet</h3>
               <p>Hardware de alta performance para simulações quânticas.</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
                 title="Conheça as especificações do hardware">IQM</a>
             </div>
-            <div class="card">
+            <div class="card" data-backend="quera_aquila">
               <img src="assets/img/aws-quera.jpg" alt="Aquila">
               <h3>Aquila</h3>
               <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
               <a class="company-link" href="https://www.empresaB.com" target="_blank"
                 title="Conheça as especificações do hardware">QuEra</a>
             </div>
-            <div class="card">
+            <div class="card" data-backend="rigetti_ankaa">
               <img src="assets/img/aws-rigetti.jpg" alt="Ankaa-3">
               <h3>Ankaa-3</h3>
               <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/rigetti/" target="_blank"
                 title="Conheça as especificações do hardware">Rigetti</a>
             </div>
-            <div class="card">
+            <div class="card" data-backend="ionq_aria2">
               <img src="assets/img/aws-ionq.png" alt="Aria 2">
               <h3>Aria 2</h3>
               <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
                 title="Conheça as especificações do hardware">IonQ</a>
             </div>
-            <div class="card">
+            <div class="card" data-backend="ionq_forti1">
               <img src="assets/img/aws-ionq.png" alt="Forte 1">
               <h3>Forte 1</h3>
               <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
@@ -143,10 +143,10 @@
       <!-- BARRA DE STATUS -->
       <div class="top-section">
         <div id="tabuleiroInputContainer" style="margin-top: 10px;">
-          <label for="tamanhoTabuleiro">Escolha a quantidade de qubits:</label>
+          <label for="tamanhoTabuleiro">Escolha o tamanho do tabuleiro:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
-              for (let i = 4; i <= 16; i *= 2) {
+              for (let i = 4; i <= 20; i++) {
                 let option = document.createElement('option');
                 option.value = i;
                 option.textContent = `${i}x${i}`;
@@ -158,6 +158,10 @@
             </script>
           </select>
         </div>
+        <label for="modoSimulador">
+          <input type="checkbox" id="modoSimulador" checked>
+          Usar dados simulados
+        </label>
         <label for="numNavios">Escolha o número de navios:</label>
         <select id="numNavios" name="numNavios">
           <option value="1">1 navio</option>
@@ -170,8 +174,8 @@
           <option value="8">8 navios</option>
           <option value="9">9 navios</option>
           <option value="10">10 navios</option>
-          <option value="10">11 navios</option>
-          <option value="10">12 navios</option>
+          <option value="11">11 navios</option>
+          <option value="12">12 navios</option>
         </select>
         <div>
           <div id="statusBar" style="margin-top: 10px; font-weight: bold;"></div>

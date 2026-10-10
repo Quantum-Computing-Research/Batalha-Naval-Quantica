@@ -105,7 +105,7 @@ function marcarBackendOfflineSeSelecionado() {
 function getBackendSelecionado() {
     const backendCard = document.querySelector(".card.selecionado");
     // tenta em ordem: data-backend, id, default
-    return backendCard?.dataset?.backend || backendCard?.id || "default";
+    return backendCard?.dataset?.backend || backendCard?.id || "simulador";
 }
 
 function limparInputJogada() {
@@ -188,6 +188,7 @@ async function iniciarJogo(nome) {
     const tamanhoTabuleiro = parseInt(document.getElementById("tamanhoTabuleiro")?.value, 10);
 
     const backend = getBackendSelecionado();
+    const modo = document.getElementById("modoSimulador")?.checked ? "simulador" : "cache";
 
     // travar botões enquanto inicia
     setButtonsState({ startEnabled: false, waitEnabled: false, endEnabled: false });
@@ -197,7 +198,7 @@ async function iniciarJogo(nome) {
     try {
         data = await apiFetch("/iniciar_jogo", {
             method: "POST",
-            body: { nome, backend, num_navios: numNavios, tamanho_tabuleiro: tamanhoTabuleiro },
+            body: { nome, backend, modo, num_navios: numNavios, tamanho_tabuleiro: tamanhoTabuleiro },
         });
     } catch (err) {
         // reabilita start se falhar
@@ -224,8 +225,10 @@ async function iniciarJogo(nome) {
     setGameId(data.game_id);
 
     // UI states
+    placar.jogador = 0;
+    placar.computador = 0;
     setButtonsState({ startEnabled: false, waitEnabled: true, endEnabled: true });
-    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome}`);
+    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} (${data.modo === "simulador" ? "dados simulados" : "cache"})`);
     atualizarVez(true);
 
     // desenha navios e outros painéis
@@ -310,17 +313,16 @@ async function atacar() {
     }
 
     // desenha ataque do jogador
-    const letra = coordenada[0].toUpperCase();
-    const numero = parseInt(coordenada.slice(1), 10);
-    const x = numero - 1;
-    const y = letra.charCodeAt(0) - 65;
-
-    desenharAtaqueJogador(x, y, data.status === "acerto");
+    if (/^[A-T]\d+$/i.test(coordenada)) {
+        const letra = coordenada[0].toUpperCase();
+        const numero = parseInt(coordenada.slice(1), 10);
+        desenharAtaqueJogador(numero - 1, letra.charCodeAt(0) - 65, data.status === "acerto");
+    }
 
     if (data.status === "acerto") placar.jogador++;
 
     atualizarStatusBar(`Você atacou ${coordenada.toUpperCase()} → ${data.mensagem}`);
-    processarRespostaAtaqueJogador(data);
+    if (!data.finalizado) processarRespostaAtaqueJogador(data);
 
     const finalizou = data.finalizado === true || data.finalizado === "true";
     if (finalizou) {
