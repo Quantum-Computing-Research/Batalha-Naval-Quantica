@@ -93,6 +93,10 @@ function setButtonsState({ startEnabled, waitEnabled, endEnabled }) {
     if (startBtn) startBtn.disabled = !startEnabled;
     if (waitBtn) waitBtn.disabled = !waitEnabled;
     if (endBtn) endBtn.disabled = !endEnabled;
+    for (const id of ["tamanhoTabuleiro", "numNavios", "modoSimulador"]) {
+        const controle = document.getElementById(id);
+        if (controle) controle.disabled = !startEnabled;
+    }
 }
 
 function marcarBackendOfflineSeSelecionado() {
@@ -223,6 +227,8 @@ async function iniciarJogo(nome) {
 
     // começou: salva game_id
     setGameId(data.game_id);
+    atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo));
+    iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
 
     // UI states
     placar.jogador = 0;
@@ -262,6 +268,10 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     }
 
     clearGameId();
+    clearTimeout(temporizadorResultado);
+    resultadoFinalPendente = false;
+    document.getElementById("playerMove").disabled = false;
+    document.querySelector(".attack-controls button").disabled = false;
 
     // UI reset
     setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
@@ -293,6 +303,7 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
 ========================= */
 
 async function atacar() {
+    if (resultadoFinalPendente) return;
     const coordenada = document.getElementById("playerMove")?.value?.trim();
     if (!coordenada) return alert("Digite uma coordenada válida!");
 
@@ -320,17 +331,14 @@ async function atacar() {
     }
 
     if (data.status === "acerto") placar.jogador++;
+    if (/^[A-T]\d+$/i.test(coordenada)) registrarJogadaPartida("ataque_jogador", coordenada.toUpperCase(), data.status === "acerto");
 
     atualizarStatusBar(`Você atacou ${coordenada.toUpperCase()} → ${data.mensagem}`);
     if (!data.finalizado) processarRespostaAtaqueJogador(data);
 
     const finalizou = data.finalizado === true || data.finalizado === "true";
     if (finalizou) {
-        mostrarAlertaFinal(data.mensagem);
-        if (data.tabuleiro_quantico) desenharTabuleiroAdversario(data.tabuleiro_quantico);
-
-        // encerra sem pedir confirmação (o jogo já acabou)
-        await encerrarJogo({ silentConfirm: true });
+        finalizarComRegistro(data);
         return;
     }
 
@@ -344,6 +352,7 @@ async function atacar() {
  * - se ainda for a vez do computador, agenda novo ataque
  */
 async function ataqueComputador() {
+    if (resultadoFinalPendente) return;
     // se não tem game id, não roda
     const gameId = getGameId();
     if (!gameId) return;
@@ -363,22 +372,17 @@ async function ataqueComputador() {
     // cuidado: seu desenho usa (coluna, linha)
     if (Number.isFinite(linha) && Number.isFinite(coluna)) {
         desenharAtaqueQuantico(coluna, linha, acertou);
+        atualizarCircuitoPartida(circuitoAtual, `${String.fromCharCode(65 + linha)}${coluna + 1}`);
     }
 
     atualizarStatusBar(data.mensagem || "Ataque quântico executado.");
     atualizarVez(!!data.vez_do_jogador);
 
     if (acertou) placar.computador++;
+    if (Number.isFinite(linha) && Number.isFinite(coluna)) registrarJogadaPartida("ataque_quantico", `${String.fromCharCode(65 + linha)}${coluna + 1}`, acertou);
 
     if (data.finalizado === true) {
-        if (data.tabuleiro_quantico) desenharTabuleiroAdversario(data.tabuleiro_quantico);
-
-        requestAnimationFrame(() => {
-            setTimeout(async () => {
-                mostrarAlertaFinal(data.mensagem);
-                await encerrarJogo({ silentConfirm: true });
-            }, 3300);
-        });
+        finalizarComRegistro(data);
         return;
     }
 

@@ -4,7 +4,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(24, 32, 28, 0.76);
+    backdrop-filter: blur(5px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -14,26 +15,269 @@
 
 #alerta-container {
     background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
+    --certificado-tinta: #252c28;
+    --certificado-verde: #365b49;
+    --certificado-muted: #626a64;
+    color: var(--certificado-tinta);
+    padding: 38px 40px 24px;
+    border: 1px solid #a18a52;
+    outline: 1px solid #e1e5df;
+    outline-offset: -8px;
+    border-radius: 3px;
+    box-sizing: border-box;
+    width: min(960px, calc(100% - 24px));
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
     text-align: center;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    font-family: Georgia, 'Times New Roman', serif;
+    letter-spacing: 0;
+    animation: certificado-entrada 350ms ease-out both;
 }
 
 #alerta-container h2 {
-    margin-top: 0;
+    margin: 12px 0;
+    font-size: 36px;
+    font-weight: normal;
+    line-height: 1.15;
 }
 
 #alerta-container p {
-    margin: 15px 0;
+    margin: 6px 0;
 }
 
 #alerta-container button {
-    margin-top: 20px;
+    margin-top: 0;
     padding: 10px 20px;
-    border: none;
-    background-color: #d9534f;
-    color: #fff;
-    border-radius: 5px;
+    border: 1px solid #cbd3cd;
+    background-color: #fff;
+    color: var(--certificado-verde);
+    border-radius: 4px;
     cursor: pointer;
+    font: 15px Georgia, 'Times New Roman', serif;
+    min-height: 44px;
+    line-height: 1.35;
+}
+
+#alerta-container button:first-child {
+    background-color: var(--certificado-verde);
+    border-color: var(--certificado-verde);
+    color: #fff;
+}
+
+#alerta-container button:hover {
+    box-shadow: 0 0 0 2px #e1e5df;
+}
+
+#alerta-container button:focus-visible {
+    outline: 2px solid #a18a52;
+    outline-offset: 3px;
+}
+
+#alerta-container canvas {
+    display: block;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    height: auto;
+    margin-top: 16px;
+}
+
+.resultado-detalhes {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+    padding: 20px 0;
+    margin-top: 24px;
+    border-top: 1px solid #d8d1bd;
+    border-bottom: 1px solid #e1e5df;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.resultado-detalhes span,
+.resultado-detalhes strong {
+    display: block;
+}
+
+.resultado-detalhes span {
+    color: var(--certificado-muted);
+    font-size: 12px;
+    margin-bottom: 5px;
+}
+
+.resultado-detalhes strong {
+    font-weight: normal;
+    font-size: 16px;
+}
+
+#alerta-container .certificado-marca {
+    color: var(--certificado-verde);
+    font-size: 13px;
+    text-transform: uppercase;
+}
+
+#alerta-container .certificado-resultado {
+    color: var(--certificado-muted);
+    font-style: italic;
+    font-size: 17px;
+}
+
+#alerta-container .certificado-jogador {
+    margin-top: 18px;
+    font-size: 28px;
+    line-height: 1.2;
+}
+
+.certificado-estatisticas {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px;
+    text-align: left;
+    padding: 20px 0 8px;
+}
+
+.certificado-estatisticas h3 {
+    font-size: 15px;
+    color: var(--certificado-verde);
+    margin: 0 0 14px;
+    font-weight: normal;
+}
+
+.certificado-estatisticas dl {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0;
+}
+
+.certificado-estatisticas dd {
+    margin: 0 0 5px;
+    font-size: 23px;
+    white-space: nowrap;
+}
+
+.certificado-estatisticas dt {
+    color: var(--certificado-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.certificado-rodape {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 14px;
+    border-top: 1px solid #e1e5df;
+    font-size: 11px;
+    color: var(--certificado-muted);
+    text-align: left;
+}
+
+.certificado-tabuleiros {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+    text-align: left;
+}
+
+.certificado-tabuleiros h3 {
+    font-size: 16px;
+    font-weight: normal;
+    margin: 0 0 12px;
+}
+
+.certificado-tabuleiro-area {
+    overflow: auto;
+    max-width: 100%;
+}
+
+.certificado-tabuleiro {
+    width: max-content;
+    background: #fff;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+}
+
+.certificado-tabuleiro .celula {
+    flex: 0 0 40px;
+}
+
+.certificado-rodape span {
+    min-width: 0;
+}
+
+.resultado-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+#alerta-container button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+@keyframes certificado-entrada {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.circuito-partida {
+    margin: 24px 0;
+    border-block: 1px solid #cbd3cd;
+    padding: 20px 0;
+    text-align: left;
+}
+
+.circuito-diagrama { font-family: Georgia, serif; color: #252c28; min-width: 0; }
+.circuito-diagrama h3 { font-size: 19px; margin: 0 0 8px; font-weight: normal; }
+.circuito-diagrama h4 { font-size: 14px; margin: 12px 0; font-weight: normal; }
+.circuito-origem { font-size: 13px; line-height: 1.5; color: #626a64; }
+.circuito-grupos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.circuito-qubit { display: grid; grid-template-columns: 65px minmax(80px, 1fr) 25px; align-items: center; gap: 8px; height: 40px; font-family: monospace; font-size: 13px; }
+.circuito-fio { display: flex; justify-content: space-around; position: relative; align-items: center; }
+.circuito-fio::before { content: ''; position: absolute; inset: 50% 0 auto; border-top: 1px solid #626a64; }
+.circuito-porta { position: relative; background: #fff; color: #365b49; border: 1px solid #365b49; width: 28px; height: 28px; display: grid; place-items: center; }
+.circuito-medicao { color: #755d27; border-color: #a18a52; }
+.circuito-bit { color: #365b49; font-weight: bold; }
+.circuito-leitura { font-family: monospace; font-size: 14px; padding-top: 12px; }
+.certificado-relatorio { text-align: left; padding: 20px 0; border-top: 1px solid #e1e5df; }
+.certificado-analise { margin-top: 24px; }
+.certificado-analise h3 { font-size: 19px; font-weight: normal; }
+.certificado-analise dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.certificado-analise dt { font-size: 12px; color: #626a64; }
+.certificado-analise dd { margin: 6px 0 0; font-size: 20px; }
+.certificado-analise p { font-size: 12px; line-height: 1.6; color: #626a64; }
+.medicoes-histograma { height: 120px; display: flex; align-items: end; gap: 1px; position: relative; margin: 24px 0 16px; border-bottom: 1px solid #626a64; }
+.medicoes-histograma > span { flex: 1; background: #365b49; min-width: 0; }
+.medicoes-esperado { position: absolute; width: 100%; border-top: 1px dashed #ae4550; pointer-events: none; }
+
+@media (max-width: 640px) {
+    #alerta-container { padding: 28px 20px 20px; }
+    #alerta-container h2 { font-size: 28px; }
+    #alerta-container .certificado-jogador { font-size: 24px; }
+    .resultado-detalhes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .certificado-estatisticas { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    .certificado-tabuleiros { grid-template-columns: minmax(0, 1fr); }
+    .circuito-grupos { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+    .certificado-analise dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .certificado-estatisticas dd { font-size: 22px; }
+    .certificado-rodape { flex-direction: column; gap: 5px; }
+    .resultado-acoes { gap: 8px; }
+    #alerta-container button { flex: 1 1 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #alerta-container { animation: none; }
 }

@@ -18,6 +18,7 @@
   <link rel="stylesheet" href="estilo/referencias.css">
   <link rel="stylesheet" href="estilo/tabuleiro.css">
   <script src="scripts/navios.js" defer></script>
+  <script src="assets/vendor/html-to-image.js" defer></script>
   <script src="scripts/alerta_final.js" defer></script>
   <script src="scripts/ataques.js" defer></script>
   <script src="scripts/barra_status.js" defer></script>
@@ -146,12 +147,12 @@
           <label for="tamanhoTabuleiro">Escolha o tamanho do tabuleiro:</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
-              for (let i = 4; i <= 20; i++) {
+              for (let i = 4; i <= 16; i *= 2) {
                 let option = document.createElement('option');
                 option.value = i;
                 option.textContent = `${i}x${i}`;
                 document.getElementById('tamanhoTabuleiro').appendChild(option);
-                if (i === 10) {
+                if (i === 8) {
                   option.selected = true;
                 }
               }
@@ -160,7 +161,7 @@
         </div>
         <label for="modoSimulador">
           <input type="checkbox" id="modoSimulador" checked>
-          Usar dados simulados
+          Dados sintéticos · v0
         </label>
         <label for="numNavios">Escolha o número de navios:</label>
         <select id="numNavios" name="numNavios">
@@ -189,6 +190,7 @@
       </div>
 
       <!-- TABULEIROS -->
+      <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
       <div class="boards">
         <div class="tabuleiro-jogador">
           <h2>Seu Tabuleiro</h2>

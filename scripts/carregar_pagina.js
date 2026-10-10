@@ -10,13 +10,18 @@ window.onload = async () => {
     const containerJogador = document.querySelector('.tabuleiro-jogador');
     const containerComputador = document.querySelector('.tabuleiro-computador');
 
-    renderizarTabuleiro(containerJogador, 10, 'playerBoard');
-    renderizarTabuleiro(containerComputador, 10, 'computerBoard');
+    renderizarTabuleiro(containerJogador, 8, 'playerBoard');
+    renderizarTabuleiro(containerComputador, 8, 'computerBoard');
+    if (recuperarResultadoSalvo()) return;
 
     try {
         const data = await apiFetch("/estado");
         atualizarRanking(data.ranking || []);
         atualizarFila(data.fila_espera || []);
+        if (data.resumo) {
+            finalizarComRegistro({ resumo: data.resumo, mensagem: data.resumo.vencedor === "jogador" ? "Você venceu!" : data.resumo.vencedor === "computador" ? "O computador venceu!" : "Partida concluída sem vencedor." }, 0);
+            return;
+        }
         if (!data.em_andamento) {
             clearGameId();
             setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
@@ -24,6 +29,7 @@ window.onload = async () => {
             return;
         }
         document.getElementById("tamanhoTabuleiro").value = data.tamanho_tabuleiro;
+        atualizarCircuitoPartida(data.circuito);
         renderizarTabuleiro(containerJogador, data.tamanho_tabuleiro, "playerBoard");
         renderizarTabuleiro(containerComputador, data.tamanho_tabuleiro, "computerBoard");
         desenharNavios(data.tabuleiro_jogador);
