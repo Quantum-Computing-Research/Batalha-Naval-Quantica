@@ -16,8 +16,8 @@ class Jogo:
 
         self.pilha_ataques_quanticos = list(pilha_ataques_quanticos or [])
 
-        self.posicionar_navios(self.tabuleiro_jogador)
-        self.posicionar_navios(self.tabuleiro_quantico)
+        self.navios_jogador = self.posicionar_navios(self.tabuleiro_jogador)
+        self.navios_quantico = self.posicionar_navios(self.tabuleiro_quantico)
 
 
     def set_pilha(self, pilha):
@@ -117,6 +117,7 @@ class Jogo:
             raise ValueError("Quantidade de navios incompatível com o tabuleiro.")
         tamanhos = list(range(self.num_navios, 0, -1))
         tentativas = 0
+        navios = []
         for tamanho in tamanhos:
             colocado = False
             while not colocado:
@@ -125,7 +126,7 @@ class Jogo:
                     for linha in range(self.tamanho_tabuleiro):
                         tabuleiro[linha] = [1] * max(0, self.num_navios - linha) + [0] * (self.tamanho_tabuleiro - max(0, self.num_navios - linha))
                     random.shuffle(tabuleiro)
-                    return
+                    return [[[linha, coluna] for coluna, cell in enumerate(row) if cell == 1] for linha, row in enumerate(tabuleiro) if 1 in row]
                 linha = random.randint(0, self.tamanho_tabuleiro - 1)
                 coluna = random.randint(0, self.tamanho_tabuleiro - 1)
                 direcao = random.choice(['H', 'V'])
@@ -134,13 +135,16 @@ class Jogo:
                     if all(tabuleiro[linha][coluna+i] == 0 for i in range(tamanho)):
                         for i in range(tamanho):
                             tabuleiro[linha][coluna+i] = 1  # Marca com '1' para navio
+                        navios.append([[linha, coluna + deslocamento] for deslocamento in range(tamanho)])
                         colocado = True
 
                 elif direcao == 'V' and linha + tamanho <= self.tamanho_tabuleiro:
                     if all(tabuleiro[linha+i][coluna] == 0 for i in range(tamanho)):
                         for i in range(tamanho):
                             tabuleiro[linha+i][coluna] = 1  # Marca com '1' para navio
+                        navios.append([[linha + deslocamento, coluna] for deslocamento in range(tamanho)])
                         colocado = True
+        return navios
 
     def validar_coordenada_repetida(self, linha, coluna, tabuleiro):
         return (tabuleiro[linha][coluna] != 2) and (tabuleiro[linha][coluna] != 3) 

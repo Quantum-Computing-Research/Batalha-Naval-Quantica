@@ -57,6 +57,10 @@ class JogoLambdaTest(unittest.TestCase):
                         if cell == 1:
                             result = self.request("/atacar", {"coordenada": self.handler.coord_para_letra_numero(linha, coluna)}, game_id)
                 self.assertTrue(result["finalizado"])
+                self.assertEqual(result["resumo"]["estatisticas"]["jogador"]["navios_afundados"], 4)
+                self.assertEqual(result["resumo"]["estatisticas"]["jogador"]["jogadas"], 10)
+                self.assertEqual(result["resumo"]["tamanho_tabuleiro"], size)
+                self.assertGreaterEqual(result["resumo"]["duracao_segundos"], 0)
                 self.assertEqual(self.states[game_id]["meta"]["placar"]["jogador"], 10)
                 self.request("/encerrar_jogo", game_id=game_id)
                 self.request("/atacar", {"coordenada": "A1"}, game_id, expected=404)
@@ -120,6 +124,14 @@ class JogoLambdaTest(unittest.TestCase):
         with patch.object(random, "randint", return_value=0), patch.object(random, "choice", return_value="H"):
             game = self.handler.Jogo(4, 4)
         self.assertEqual(sum(map(sum, game.tabuleiro_jogador)), 10)
+        self.assertEqual(sorted(map(len, game.navios_jogador)), [1, 2, 3, 4])
+
+    def test_summary_survives_reload_and_supports_legacy_games(self):
+        game_id = self.start_game()
+        self.request("/atacar", {"coordenada": self.states[game_id]["codigo_secreto"]}, game_id)
+        self.assertEqual(self.request("/estado", game_id=game_id, method="GET")["resumo"]["vencedor"], "jogador")
+        del self.states[game_id]["navios_quantico"]
+        self.assertIsNone(self.handler._resumo_partida(self.states[game_id])["estatisticas"]["jogador"]["navios_afundados"])
 
     def test_state_queue_and_cancel(self):
         self.assertFalse(self.request("/estado", method="GET")["em_andamento"])

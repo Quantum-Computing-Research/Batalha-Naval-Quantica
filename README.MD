@@ -38,3 +38,16 @@ O backend_serverful deve permanecer ate validar o frontend com a Lambda
 publicada, incluindo uma partida completa e os recursos de analise.
 O diretorio `infra/lambda/jogadas` ainda contem o produtor antigo baseado
 em arquivos e threads, e nao participa deste fluxo de jogo.
+
+## Registro final
+
+As respostas de vitoria e `/estado` incluem `resumo`: identificacao da
+partida, adversario, modo, inicio/fim, duracao em segundos, jogadas,
+acertos, erros, navios afundados, historico e os dois tabuleiros finais.
+O resumo tambem integra o documento da partida salvo no S3.
+Navios sao identificados pelas celulas originais; partidas anteriores a
+esse registro retornam `null` na contagem de navios afundados.
+
+O frontend preserva os tabuleiros, aguarda 3 segundos e abre o resultado.
+Permite baixar PNG ou JSON, recupera o resultado local apos recarregar
+e so limpa a tela quando o jogador escolhe Nova partida.

@@ -265,6 +265,8 @@ def _game_to_state(game: Jogo, meta: Dict[str, Any]) -> Dict[str, Any]:
         "num_navios": getattr(game, "num_navios", 4),
         "vez_do_jogador": getattr(game, "vez_do_jogador", True),
         "codigo_secreto": game.codigo_secreto,
+        "navios_jogador": game.navios_jogador,
+        "navios_quantico": game.navios_quantico,
         "tabuleiro_jogador": game.tabuleiro_jogador,
         "tabuleiro_quantico": getattr(game, "tabuleiro_quantico", None),
         # pilha de jogadas quânticas (strings tipo "A1")
@@ -290,6 +292,40 @@ def _state_to_game(state: Dict[str, Any]) -> Jogo:
 
 def coord_para_letra_numero(linha, coluna):
     return f"{chr(ord('A') + int(linha))}{coluna + 1}"
+
+def _resumo_partida(state):
+    meta = state["meta"]
+    historico = meta.get("historico", [])
+    ended_at = meta.get("ended_at") or _now_iso()
+    fim = datetime.fromisoformat(ended_at).timestamp()
+    def estatisticas(tipo, tabuleiro, navios):
+        ataques = [ataque for ataque in historico if ataque["tipo"] == tipo and ataque.get("linha") is not None]
+        acertos = sum(bool(ataque["acertou"]) for ataque in ataques)
+        return {
+            "jogadas": len(ataques),
+            "acertos": acertos,
+            "erros": len(ataques) - acertos,
+            "navios_afundados": sum(all(tabuleiro[int(linha)][int(coluna)] == 2 for linha, coluna in navio) for navio in navios) if navios is not None else None,
+        }
+    return {
+        "partida_id": meta.get("partida_id"),
+        "jogador": meta.get("jogador_nome", meta.get("jogador", "")),
+        "backend": meta.get("backend"),
+        "modo": meta.get("modo", "cache"),
+        "vencedor": meta.get("vencedor"),
+        "inicio": datetime.fromtimestamp(int(meta["created_at"]), timezone.utc).isoformat(),
+        "fim": ended_at,
+        "duracao_segundos": max(0, int(fim - int(meta["created_at"]))),
+        "tamanho_tabuleiro": state["tamanho_tabuleiro"],
+        "num_navios": state["num_navios"],
+        "estatisticas": {
+            "jogador": estatisticas("ataque_jogador", state["tabuleiro_quantico"], state.get("navios_quantico")),
+            "computador": estatisticas("ataque_quantico", state["tabuleiro_jogador"], state.get("navios_jogador")),
+        },
+        "tabuleiro_jogador": state["tabuleiro_jogador"],
+        "tabuleiro_quantico": state["tabuleiro_quantico"],
+        "historico": historico,
+    }
 
 # ----------------------------
 # Rotas 
@@ -454,6 +490,7 @@ def handle_atacar(event):
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": bool(finalizado),
         "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
+        "resumo": _resumo_partida(state) if finalizado else None,
     })
 
 def handle_ataque_quantico(event):
@@ -515,6 +552,7 @@ def handle_ataque_quantico(event):
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": bool(finalizado),
         "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
+        "resumo": _resumo_partida(state) if finalizado else None,
     })
 
 def handle_encerrar(event):
@@ -547,6 +585,7 @@ def _persist_partida_e_jogador_no_s3(state: dict):
     partida_key = f"{MATCH_PREFIX}{partida_id}.json"
     partida_doc = {
         "partida_id": partida_id,
+        "resumo": _resumo_partida(state),
         "modo": meta.get("modo", "cache"),
         "created_at": meta.get("created_at"),
         "ended_at": meta.get("ended_at") or _now_iso(),
@@ -659,6 +698,7 @@ def handle_estado(event):
         "ataques_jogador": [[cell if cell in (2, 3) else 0 for cell in row] for row in state["tabuleiro_quantico"]],
         "vez_do_jogador": state["vez_do_jogador"],
         "placar": state["meta"].get("placar", {}),
+        "resumo": _resumo_partida(state) if state["meta"].get("vencedor") else None,
         "backend": state.get("backend", ""),
         "jogador": state.get("jogador", ""),
     })
