@@ -87,54 +87,66 @@
   <!-- CARROSSEL -->
   <div class="container">
     <div class="main-content">
-      <div class="backend-list">
-        <div class="section-heading">
-          <h2>Computador</h2><span>AWS Braket</span>
-        </div>
-        <div class="carousel-container">
-          <button id="prev" class="nav-button" aria-label="Computadores anteriores" title="Computadores anteriores"><i
-              data-lucide="chevron-left" aria-hidden="true"></i></button>
-          <div class="carousel">
-            <div class="card" data-backend="iqm_garnet">
-              <img src="assets/img/aws-iqm.jpg" alt="Garnet">
-              <h3>Garnet</h3>
-              <p>Supercondutor</p>
-              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
-                title="Conheça as especificações do hardware">IQM</a>
-            </div>
-            <div class="card" data-backend="quera_aquila">
-              <img src="assets/img/aws-quera.jpg" alt="Aquila">
-              <h3>Aquila</h3>
-              <p>Átomos neutros</p>
-              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/quera/" target="_blank"
-                title="Conheça as especificações do hardware">QuEra</a>
-            </div>
-            <div class="card" data-backend="rigetti_ankaa">
-              <img src="assets/img/aws-rigetti.jpg" alt="Ankaa-3">
-              <h3>Ankaa-3</h3>
-              <p>Supercondutor</p>
-              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/rigetti/" target="_blank"
-                title="Conheça as especificações do hardware">Rigetti</a>
-            </div>
-            <div class="card" data-backend="ionq_aria2">
-              <img src="assets/img/aws-ionq.png" alt="Aria 2">
-              <h3>Aria 2</h3>
-              <p>Íons aprisionados</p>
-              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
-                title="Conheça as especificações do hardware">IonQ</a>
-            </div>
-            <div class="card" data-backend="ionq_forti1">
-              <img src="assets/img/aws-ionq.png" alt="Forte 1">
-              <h3>Forte 1</h3>
-              <p>Íons aprisionados</p>
-              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
-                title="Conheça as especificações do hardware">IonQ</a>
-            </div>
+      <section class="hardware-section" aria-label="Computadores, ranking e fila">
+        <div class="backend-list">
+          <div class="section-heading">
+            <h2>Computador</h2><span>AWS Braket</span>
           </div>
-          <button id="next" class="nav-button" aria-label="Próximos computadores" title="Próximos computadores"><i
-              data-lucide="chevron-right" aria-hidden="true"></i></button>
+          <div class="carousel-container">
+            <button id="prev" class="nav-button" aria-label="Computadores anteriores" title="Computadores anteriores"><i
+                data-lucide="chevron-left" aria-hidden="true"></i></button>
+            <div class="carousel">
+              <div class="card" data-backend="iqm_garnet">
+                <img src="assets/img/aws-iqm.jpg" alt="Garnet">
+                <h3>Garnet</h3>
+                <p>Supercondutor</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
+                  title="Conheça as especificações do hardware">IQM</a>
+              </div>
+              <div class="card" data-backend="quera_aquila">
+                <img src="assets/img/aws-quera.jpg" alt="Aquila">
+                <h3>Aquila</h3>
+                <p>Átomos neutros</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/quera/" target="_blank"
+                  title="Conheça as especificações do hardware">QuEra</a>
+              </div>
+              <div class="card" data-backend="rigetti_ankaa">
+                <img src="assets/img/aws-rigetti.jpg" alt="Ankaa-3">
+                <h3>Ankaa-3</h3>
+                <p>Supercondutor</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/rigetti/"
+                  target="_blank" title="Conheça as especificações do hardware">Rigetti</a>
+              </div>
+              <div class="card" data-backend="ionq_aria2">
+                <img src="assets/img/aws-ionq.png" alt="Aria 2">
+                <h3>Aria 2</h3>
+                <p>Íons aprisionados</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
+                  title="Conheça as especificações do hardware">IonQ</a>
+              </div>
+              <div class="card" data-backend="ionq_forti1">
+                <img src="assets/img/aws-ionq.png" alt="Forte 1">
+                <h3>Forte 1</h3>
+                <p>Íons aprisionados</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
+                  title="Conheça as especificações do hardware">IonQ</a>
+              </div>
+            </div>
+            <button id="next" class="nav-button" aria-label="Próximos computadores" title="Próximos computadores"><i
+                data-lucide="chevron-right" aria-hidden="true"></i></button>
+          </div>
         </div>
-      </div>
+        <aside class="ranking-espera-wrapper">
+          <div id="ranking" class="painel-box">
+            <h3><i data-lucide="trophy" aria-hidden="true"></i> Ranking</h3>
+            <ol id="rankingList"></ol>
+          </div>
+          <div id="filaEspera" class="painel-box">
+            <h3><i data-lucide="users" aria-hidden="true"></i> Fila de espera</h3>
+            <ul id="esperaList"></ul>
+          </div>
+        </aside>
+      </section>
 
 
       <!-- JANELA DE CONSENTIMENTO -->
@@ -203,54 +215,46 @@
             aria-label="Entrar na fila"><i data-lucide="users" aria-hidden="true"></i></button>
         </div>
       </div>
-      <div class="match-status">
-        <div id="statusBar"></div>
-        <div id="vez-indicador" class="vez-status">Pronto para jogar</div>
-      </div>
-
-      <!-- TABULEIROS -->
-      <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
-      <div class="boards">
-        <section class="board-zone">
-          <div class="board-heading">
-            <h2>Sua frota</h2><span>Jogador</span>
+      <div class="partida-layout">
+        <section class="partida-painel" aria-label="Painel da partida">
+          <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
+          <div class="partida-operacao">
+            <div class="match-status">
+              <div id="vez-indicador" class="vez-status">Pronto para jogar</div>
+              <div id="statusBar"></div>
+            </div>
+            <div class="attack-controls">
+              <label for="playerMove">Coordenada</label>
+              <input type="text" id="playerMove" placeholder="Digite a coordenada (ex: A5)" autocomplete="off">
+              <button onclick="atacar()"><i data-lucide="crosshair" aria-hidden="true"></i> Atacar</button>
+            </div>
           </div>
-          <div class="tabuleiro-jogador">
-          </div>
+          <aside class="frota-adversaria" aria-labelledby="frota-titulo">
+            <h3 id="frota-titulo">Navios adversários</h3>
+            <p id="frota-resumo" role="status">Nenhuma partida ativa</p>
+            <ol id="frota-lista"></ol>
+          </aside>
         </section>
-        <section class="board-zone">
-          <div class="board-heading">
-            <h2>Frota adversária</h2><span>Computador</span>
-          </div>
-          <div class="adversario-layout">
+
+        <!-- TABULEIROS -->
+        <div class="boards">
+          <section class="board-zone">
+            <div class="board-heading">
+              <h2>Sua frota</h2><span>Jogador</span>
+            </div>
+            <div class="tabuleiro-jogador">
+            </div>
+          </section>
+          <section class="board-zone">
+            <div class="board-heading">
+              <h2>Frota adversária</h2><span>Computador</span>
+            </div>
             <div class="tabuleiro-computador">
             </div>
-            <aside class="frota-adversaria" aria-labelledby="frota-titulo">
-              <h3 id="frota-titulo">Navios adversários</h3>
-              <p id="frota-resumo" role="status">Nenhuma partida ativa</p>
-              <ol id="frota-lista"></ol>
-            </aside>
-          </div>
-        </section>
-      </div>
-      <div class="attack-controls">
-        <label for="playerMove">Coordenada</label>
-        <input type="text" id="playerMove" placeholder="Digite a coordenada (ex: A5)" autocomplete="off">
-        <button onclick="atacar()"><i data-lucide="crosshair" aria-hidden="true"></i> Atacar</button>
+          </section>
+        </div>
       </div>
     </div>
-
-    <!-- RANKING E FILA DE ESPERA -->
-    <aside class="ranking-espera-wrapper">
-      <div id="ranking" class="painel-box">
-        <h3><i data-lucide="trophy" aria-hidden="true"></i> Ranking</h3>
-        <ol id="rankingList"></ol>
-      </div>
-      <div id="filaEspera" class="painel-box">
-        <h3><i data-lucide="users" aria-hidden="true"></i> Fila de espera</h3>
-        <ul id="esperaList"></ul>
-      </div>
-    </aside>
   </div>
 </body>
 

@@ -18,3 +18,14 @@ Os qubits aparecem em sequencia unica, com Hadamard e simbolo de medicao.
 Metadados e probabilidades ficam ao lado do circuito em desktop e abaixo no
 celular. Tabuleiros grandes usam rolagem local, sem alargar a pagina.
 Os icones usam Lucide 0.468.0 local, com licenca em assets/vendor.
+
+Hardware tem imagens ampliadas e ranking/fila ficam apenas junto ao seletor.
+O painel da partida agrupa circuito, turno, status, ataque e frota adversaria.
+Com janela de pelo menos 1280px e proporcao largura/altura >= 8/5, fica a
+direita dos tabuleiros. Em janelas mais quadradas, verticais ou estreitas,
+fica acima. A alternancia e CSS: redimensionar nao recria o estado do jogo.
+
+A frota ilustra os tamanhos sem revelar posicoes. A API atualiza o estado
+Afundado somente quando todas as casas do navio forem atingidas, inclusive
+quando navios distintos estiverem encostados. Partidas antigas sem registro
+individual dos navios mostram frota indisponivel, sem inferir posicoes.
