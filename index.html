@@ -13,11 +13,12 @@
   <link rel="stylesheet" href="estilo/jogadas.css">
   <link rel="stylesheet" href="estilo/modal.css">
   <link rel="stylesheet" href="estilo/navio.css">
-  <link rel="stylesheet" href="estilo/pagina.css">
   <link rel="stylesheet" href="estilo/ranking.css">
   <link rel="stylesheet" href="estilo/referencias.css">
   <link rel="stylesheet" href="estilo/tabuleiro.css">
+  <link rel="stylesheet" href="estilo/pagina.css">
   <script src="scripts/navios.js" defer></script>
+  <script src="assets/vendor/lucide.min.js" defer></script>
   <script src="assets/vendor/html-to-image.js" defer></script>
   <script src="scripts/alerta_final.js" defer></script>
   <script src="scripts/ataques.js" defer></script>
@@ -40,84 +41,98 @@
 </head>
 
 <body>
-
-  <!-- REFERÊNCIAS -->
-  <div class="hover-container">
-    <div class="hover-trigger">
-      <span class="hover-text">Referências</span>
+  <header class="app-header">
+    <div class="app-identity">
+      <span class="brand-mark" aria-hidden="true"><i data-lucide="radar"></i></span>
+      <div>
+        <p class="app-eyebrow">Experimento · AWS Braket</p>
+        <h1>Batalha Naval Quântica</h1>
+      </div>
     </div>
-    <div class="references">
-      <article>
-        <a href="https://www.nature.com/articles/s41586-025-08737-1.pdf" target="_blank">
-          <img src="assets/img/ref01.png" alt="Referência 1">
-          <span class="reference-label"><b>Nature: Certified Randomness</b> Using <br>A Trapped-Ion Quantum
-            Processor</span>
-        </a>
-      </article>
-      <article>
-        <a href="https://teses.usp.br/teses/disponiveis/43/43133/tde-22062012-154558/publico/45405Coutinho.pdf"
-          target="_blank">
-          <img src="assets/img/ref02.png" alt="Referência 2">
-          <span class="reference-label"><b>USP:</b> Profa. Kaline Coutinho - <br><b>Sessão 2.3.5 Gerador de Números
-              Aleatórios</b></span>
-        </a>
-      </article>
-      <article>
-        <a href="https://link.springer.com/book/10.1007/978-1-4842-9991-3" target="_blank">
-          <img src="assets/img/ref03.png" alt="Referência 3">
-          <span class="reference-label"><b>Springer: </b><b>Sessão 5.1 Quantum Random Number Generation</b></span>
-        </a>
-      </article>
+    <div class="header-actions">
+      <button id="analyticsButton" class="btn btn-ghost"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>
+        Análise</button>
+      <!-- REFERÊNCIAS -->
+      <div class="hover-container">
+        <div class="hover-trigger" tabindex="0" aria-label="Referências científicas">
+          <span class="hover-text">Referências</span>
+        </div>
+        <div class="references">
+          <article>
+            <a href="https://www.nature.com/articles/s41586-025-08737-1.pdf" target="_blank">
+              <img src="assets/img/ref01.png" alt="Referência 1">
+              <span class="reference-label"><b>Nature: Certified Randomness</b> Using <br>A Trapped-Ion Quantum
+                Processor</span>
+            </a>
+          </article>
+          <article>
+            <a href="https://teses.usp.br/teses/disponiveis/43/43133/tde-22062012-154558/publico/45405Coutinho.pdf"
+              target="_blank">
+              <img src="assets/img/ref02.png" alt="Referência 2">
+              <span class="reference-label"><b>USP:</b> Profa. Kaline Coutinho - <br><b>Sessão 2.3.5 Gerador de Números
+                  Aleatórios</b></span>
+            </a>
+          </article>
+          <article>
+            <a href="https://link.springer.com/book/10.1007/978-1-4842-9991-3" target="_blank">
+              <img src="assets/img/ref03.png" alt="Referência 3">
+              <span class="reference-label"><b>Springer: </b><b>Sessão 5.1 Quantum Random Number Generation</b></span>
+            </a>
+          </article>
+        </div>
+      </div>
     </div>
-  </div>
-
+  </header>
 
   <!-- CARROSSEL -->
   <div class="container">
     <div class="main-content">
-      <h1>Batalha Naval Quântica</h1>
       <div class="backend-list">
-        <h2>Escolha o Backend AWS:</h2>
+        <div class="section-heading">
+          <h2>Computador</h2><span>AWS Braket</span>
+        </div>
         <div class="carousel-container">
-          <button id="prev" class="nav-button">◀</button>
+          <button id="prev" class="nav-button" aria-label="Computadores anteriores" title="Computadores anteriores"><i
+              data-lucide="chevron-left" aria-hidden="true"></i></button>
           <div class="carousel">
             <div class="card" data-backend="iqm_garnet">
               <img src="assets/img/aws-iqm.jpg" alt="Garnet">
               <h3>Garnet</h3>
-              <p>Hardware de alta performance para simulações quânticas.</p>
+              <p>Supercondutor</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
                 title="Conheça as especificações do hardware">IQM</a>
             </div>
             <div class="card" data-backend="quera_aquila">
               <img src="assets/img/aws-quera.jpg" alt="Aquila">
               <h3>Aquila</h3>
-              <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
-              <a class="company-link" href="https://www.empresaB.com" target="_blank"
+              <p>Átomos neutros</p>
+              <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/quera/" target="_blank"
                 title="Conheça as especificações do hardware">QuEra</a>
             </div>
             <div class="card" data-backend="rigetti_ankaa">
               <img src="assets/img/aws-rigetti.jpg" alt="Ankaa-3">
               <h3>Ankaa-3</h3>
-              <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
+              <p>Supercondutor</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/rigetti/" target="_blank"
                 title="Conheça as especificações do hardware">Rigetti</a>
             </div>
             <div class="card" data-backend="ionq_aria2">
               <img src="assets/img/aws-ionq.png" alt="Aria 2">
               <h3>Aria 2</h3>
-              <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
+              <p>Íons aprisionados</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
                 title="Conheça as especificações do hardware">IonQ</a>
             </div>
             <div class="card" data-backend="ionq_forti1">
               <img src="assets/img/aws-ionq.png" alt="Forte 1">
               <h3>Forte 1</h3>
-              <p>Design inovador com ótimo desempenho em algoritmos quânticos.</p>
+              <p>Íons aprisionados</p>
               <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
                 title="Conheça as especificações do hardware">IonQ</a>
             </div>
           </div>
-          <button id="next" class="nav-button">▶</button>
+          <button id="next" class="nav-button" aria-label="Próximos computadores" title="Próximos computadores"><i
+              data-lucide="chevron-right" aria-hidden="true"></i></button>
         </div>
       </div>
 
@@ -125,12 +140,12 @@
       <!-- JANELA DE CONSENTIMENTO -->
       <div id="consentimentoModal" class="modal">
         <div class="modal-content">
-          <h2>Bem-vindo ao Experimento Quântico de Números Randômicos!</h2>
+          <h2>Participar do experimento</h2>
           <p>Digite seu nome:</p>
           <input type="text" id="nomeJogadorInput" placeholder="Seu nome" autocomplete="off" />
           <p class="mensagem">
             Este jogo é um <strong>experimento científico</strong> e, ao final, você receberá uma análise
-            referente aos numeros randômicos produzidos pelo computador quântico escolhido nesta partida.<br><br>
+            referente aos números produzidos nesta partida. Na v0, os dados são sintéticos.<br><br>
             Para isso, é importante jogar a partida até o final. Deseja continuar?
           </p>
           <div class="botoes">
@@ -139,12 +154,11 @@
           </div>
         </div>
       </div>
-      <button id="analyticsButton" class="btn btn-ghost">📊 Análise / Gráficos</button>
 
       <!-- BARRA DE STATUS -->
       <div class="top-section">
-        <div id="tabuleiroInputContainer" style="margin-top: 10px;">
-          <label for="tamanhoTabuleiro">Escolha o tamanho do tabuleiro:</label>
+        <div id="tabuleiroInputContainer" class="config-field">
+          <label for="tamanhoTabuleiro">Tabuleiro</label>
           <select id="tamanhoTabuleiro" name="tamanhoTabuleiro">
             <script>
               for (let i = 4; i <= 16; i *= 2) {
@@ -159,64 +173,77 @@
             </script>
           </select>
         </div>
-        <label for="modoSimulador">
+        <label for="modoSimulador" class="synthetic-toggle">
           <input type="checkbox" id="modoSimulador" checked>
           Dados sintéticos · v0
         </label>
-        <label for="numNavios">Escolha o número de navios:</label>
-        <select id="numNavios" name="numNavios">
-          <option value="1">1 navio</option>
-          <option value="2">2 navios</option>
-          <option value="3">3 navios</option>
-          <option value="4" selected>4 navios</option>
-          <option value="5">5 navios</option>
-          <option value="6">6 navios</option>
-          <option value="7">7 navios</option>
-          <option value="8">8 navios</option>
-          <option value="9">9 navios</option>
-          <option value="10">10 navios</option>
-          <option value="11">11 navios</option>
-          <option value="12">12 navios</option>
-        </select>
-        <div>
-          <div id="statusBar" style="margin-top: 10px; font-weight: bold;"></div>
-          <div id="vez-indicador" class="vez-status">⏳</div>
+        <div class="config-field fleet-field">
+          <label for="numNavios">Navios</label>
+          <select id="numNavios" name="numNavios">
+            <option value="1">1 navio</option>
+            <option value="2">2 navios</option>
+            <option value="3">3 navios</option>
+            <option value="4" selected>4 navios</option>
+            <option value="5">5 navios</option>
+            <option value="6">6 navios</option>
+            <option value="7">7 navios</option>
+            <option value="8">8 navios</option>
+            <option value="9">9 navios</option>
+            <option value="10">10 navios</option>
+            <option value="11">11 navios</option>
+            <option value="12">12 navios</option>
+          </select>
         </div>
         <div class="action-buttons">
-          <button id="startButton" onclick="consentimento()">Iniciar Jogo</button>
-          <button id="endButton" onclick="encerrarJogo()" disabled>Encerrar Jogo</button>
-          <button id="waitButton" onclick="entrarNaFila()" disabled>Entrar na Fila</button>
+          <button id="startButton" onclick="consentimento()"><i data-lucide="play" aria-hidden="true"></i> Iniciar
+            partida</button>
+          <button id="endButton" onclick="encerrarJogo()" disabled title="Encerrar partida"
+            aria-label="Encerrar partida"><i data-lucide="square" aria-hidden="true"></i></button>
+          <button id="waitButton" onclick="entrarNaFila()" disabled title="Entrar na fila"
+            aria-label="Entrar na fila"><i data-lucide="users" aria-hidden="true"></i></button>
         </div>
+      </div>
+      <div class="match-status">
+        <div id="statusBar"></div>
+        <div id="vez-indicador" class="vez-status">Pronto para jogar</div>
       </div>
 
       <!-- TABULEIROS -->
       <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
       <div class="boards">
-        <div class="tabuleiro-jogador">
-          <h2>Seu Tabuleiro</h2>
-        </div>
-        <div class="tabuleiro-computador">
-          <h2>Tabuleiro do Adversário</h2>
-        </div>
+        <section class="board-zone">
+          <div class="board-heading">
+            <h2>Sua frota</h2><span>Jogador</span>
+          </div>
+          <div class="tabuleiro-jogador">
+          </div>
+        </section>
+        <section class="board-zone">
+          <div class="board-heading">
+            <h2>Frota adversária</h2><span>Computador</span>
+          </div>
+          <div class="tabuleiro-computador">
+          </div>
+        </section>
       </div>
-      <div class="attack-controls" style="margin-top: 30px;">
-        <input type="text" id="playerMove" placeholder="Digite a coordenada (ex: A5)"
-          style="padding: 10px; font-size: 16px; width: 200px;" autocomplete="off">
-        <button onclick="atacar()">Atacar</button>
+      <div class="attack-controls">
+        <label for="playerMove">Coordenada</label>
+        <input type="text" id="playerMove" placeholder="Digite a coordenada (ex: A5)" autocomplete="off">
+        <button onclick="atacar()"><i data-lucide="crosshair" aria-hidden="true"></i> Atacar</button>
       </div>
     </div>
 
     <!-- RANKING E FILA DE ESPERA -->
-    <div class="ranking-espera-wrapper">
+    <aside class="ranking-espera-wrapper">
       <div id="ranking" class="painel-box">
-        <h3>Ranking dos Jogadores </h3>
+        <h3><i data-lucide="trophy" aria-hidden="true"></i> Ranking</h3>
         <ol id="rankingList"></ol>
       </div>
       <div id="filaEspera" class="painel-box">
-        <h3>Fila de Espera </h3>
+        <h3><i data-lucide="users" aria-hidden="true"></i> Fila de espera</h3>
         <ul id="esperaList"></ul>
       </div>
-    </div>
+    </aside>
   </div>
 </body>
 

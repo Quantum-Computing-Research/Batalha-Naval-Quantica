@@ -34,42 +34,55 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     const origem = document.createElement("p");
     origem.className = "circuito-origem";
     origem.textContent = `${circuito.origem} · P(célula) ideal = ${circuito.probabilidade_celula}`;
-    diagrama.append(titulo, origem);
+    const informacoes = document.createElement("div");
+    informacoes.className = "circuito-informacoes";
+    informacoes.append(titulo, origem);
     const grupos = document.createElement("div");
     grupos.className = "circuito-grupos";
-    for (const [eixo, nome] of [[0, "Linha"], [1, "Coluna"]]) {
-        const grupo = document.createElement("section");
-        const cabecalho = document.createElement("h4");
-        cabecalho.textContent = `${nome} · ${bits} qubits`;
-        grupo.appendChild(cabecalho);
-        for (let indice = 0; indice < bits; indice++) {
-            const linha = document.createElement("div");
-            linha.className = "circuito-qubit";
-            const rotulo = document.createElement("span");
-            rotulo.textContent = `q${eixo * bits + indice} |0⟩`;
-            const fio = document.createElement("div");
-            fio.className = "circuito-fio";
-            const porta = document.createElement("span");
-            porta.className = "circuito-porta";
-            porta.textContent = "H";
-            porta.title = "Hadamard: superposição uniforme de 0 e 1";
-            const medir = document.createElement("span");
-            medir.className = "circuito-porta circuito-medicao";
-            medir.textContent = "M";
-            medir.title = "Medição na base computacional";
-            fio.append(porta, medir);
-            const valor = document.createElement("span");
-            valor.className = "circuito-bit";
-            valor.textContent = medicao ? medicao[eixo][indice] : "—";
-            linha.append(rotulo, fio, valor);
-            grupo.appendChild(linha);
-        }
-        grupos.appendChild(grupo);
+    const sequencia = medicao?.join("");
+    for (let indice = 0; indice < circuito.qubits_total; indice++) {
+        const linha = document.createElement("div");
+        linha.className = "circuito-qubit";
+        const rotulo = document.createElement("span");
+        rotulo.textContent = `q${indice} |0⟩`;
+        const fio = document.createElement("div");
+        fio.className = "circuito-fio";
+        const porta = document.createElement("span");
+        porta.className = "circuito-porta";
+        porta.textContent = "H";
+        porta.title = "Hadamard: superposição uniforme de 0 e 1";
+        const medir = document.createElement("span");
+        medir.className = "circuito-porta circuito-medicao";
+        const visor = lucide.createElement(lucide.icons.Gauge);
+        visor.setAttribute("aria-hidden", "true");
+        medir.appendChild(visor);
+        medir.setAttribute("role", "img");
+        medir.setAttribute("aria-label", "Medição");
+        medir.title = "Medição na base computacional";
+        fio.append(porta, medir);
+        const valor = document.createElement("span");
+        valor.className = "circuito-bit";
+        valor.textContent = sequencia ? sequencia[indice] : "—";
+        linha.append(rotulo, fio, valor);
+        grupos.appendChild(linha);
     }
     const resultado = document.createElement("p");
     resultado.className = "circuito-leitura";
     resultado.textContent = medicao ? `Ataque selecionado: ${medicao.join(" | ")} → ${coordenada}` : "|0⟩ → H → medição · Linha | Coluna";
-    diagrama.append(grupos, resultado);
+    informacoes.appendChild(resultado);
+    const resumo = document.createElement("dl");
+    resumo.className = "circuito-numeros";
+    for (const [label, valor] of [["Qubits", circuito.qubits_total], ["Estados", 2 ** circuito.qubits_total], ["P(célula)", circuito.probabilidade_celula]]) {
+        const item = document.createElement("div");
+        const nome = document.createElement("dt");
+        nome.textContent = label;
+        const numero = document.createElement("dd");
+        numero.textContent = valor;
+        item.append(numero, nome);
+        resumo.appendChild(item);
+    }
+    informacoes.appendChild(resumo);
+    diagrama.append(grupos, informacoes);
     return diagrama;
 }
 
@@ -132,3 +145,4 @@ function criarAnalisePartida(analise) {
 document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarCircuitoPartida());
 document.getElementById("modoSimulador").addEventListener("change", () => atualizarCircuitoPartida(modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value), document.getElementById("modoSimulador").checked ? "simulador" : "cache")));
 atualizarCircuitoPartida();
+lucide.createIcons();
