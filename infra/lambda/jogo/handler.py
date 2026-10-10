@@ -3,6 +3,9 @@ import json
 import time
 import uuid
 import logging
+import math
+import random
+from decimal import Decimal
 from typing import Any, Dict, Tuple, Optional
 
 import boto3
@@ -32,7 +35,7 @@ HARDWARE_FILES = {
     "rigetti_ankaa": "rigetti_ankaa.json",
 }
 
-def _cache_key(filename: str) -> str:
+def _hardware_cache_key(filename: str) -> str:
     return f"{CACHE_PREFIX.rstrip('/')}/{filename}"
 
 def _s3_exists(bucket: str, key: str) -> bool:
@@ -53,7 +56,7 @@ def handle_cache_list(event):
 
     items = []
     for hw, fname in HARDWARE_FILES.items():
-        key = _cache_key(fname)
+        key = _hardware_cache_key(fname)
         online = _s3_exists(CACHE_BUCKET, key)
         items.append({
             "hardware": hw,
@@ -75,7 +78,7 @@ def handle_cache_get(event, hardware: str):
     if not fname:
         return _resp(404, {"error": f"Unknown hardware: {hardware}", "known": list(HARDWARE_FILES.keys())})
 
-    key = _cache_key(fname)
+    key = _hardware_cache_key(fname)
     if not _s3_exists(CACHE_BUCKET, key):
         return _resp(404, {"error": "Cache not found", "hardware": hardware, "s3_key": key, "backend_offline": True})
 
@@ -111,7 +114,7 @@ def _resp(status: int, body: Any, extra_headers: Optional[Dict[str, str]] = None
     return {
         "statusCode": status,
         "headers": headers,
-        "body": json.dumps(body, ensure_ascii=False),
+        "body": json.dumps(body, ensure_ascii=False, default=lambda value: int(value) if isinstance(value, Decimal) and value == int(value) else float(value)),
     }
 
 def _parse_json_body(event: Dict[str, Any]) -> Dict[str, Any]:
@@ -172,9 +175,9 @@ def _dynamo_put_game(game_id: str, state: Dict[str, Any]):
     table.put_item(Item=item)
 
 def _dynamo_get_game(game_id: str) -> Optional[Dict[str, Any]]:
-    resp = table.get_item(Key={"game_id": game_id})
+    resp = table.get_item(Key={"game_id": game_id}, ConsistentRead=True)
     item = resp.get("Item")
-    if not item:
+    if not item or int(item.get("ttl", 0)) <= int(time.time()):
         return None
     return item.get("state")
 
@@ -199,29 +202,53 @@ def _load_moves_from_s3(backend: str, tamanho_tabuleiro: int) -> Optional[list]:
         return None
 
     prefix = CACHE_PREFIX.rstrip("/")
-    key = f"{prefix}/{backend}/tamanho_{int(tamanho_tabuleiro)}.json"
+    keys = [
+        f"{prefix}/{backend}/tamanho_{tamanho_tabuleiro}.json",
+        f"{prefix}/{backend}/{tamanho_tabuleiro}.json",
+        f"{prefix}/{backend}.json",
+    ]
+    for key in keys:
+        try:
+            data = _load_json_from_s3(CACHE_BUCKET, key)
+        except s3.exceptions.NoSuchKey:
+            continue
+        moves = _normalize_moves(data, tamanho_tabuleiro)
+        if moves:
+            return moves
+    return []
 
-    try:
-        obj = s3.get_object(Bucket=CACHE_BUCKET, Key=key)
-        raw = obj["Body"].read().decode("utf-8", errors="replace")
-        data = json.loads(raw)
-
-        if isinstance(data, list):
-            return data
-
+def _normalize_moves(data, tamanho):
+    if isinstance(data, dict):
+        data = data.get("data", data)
         if isinstance(data, dict):
-            moves = data.get("moves")
-            if isinstance(moves, list):
-                return moves
-
-        return None
-
-    except s3.exceptions.NoSuchKey:
-        logger.warning("Cache file not found: s3://%s/%s", CACHE_BUCKET, key)
-        return None
-    except Exception as e:
-        logger.exception("Failed to load cache from S3: %s", e)
-        return None
+            data = data.get(f"tamanho_tabuleiro_{tamanho}", data.get("moves", data.get("dados_randomicos_gerados", [])))
+    if not isinstance(data, list):
+        return []
+    bits = math.ceil(math.log2(tamanho))
+    moves = []
+    seen = set()
+    for value in data:
+        if isinstance(value, dict):
+            coord = value.get("coordenada", {})
+            linha, coluna = coord.get("x"), coord.get("y")
+            if not isinstance(linha, int) or not isinstance(coluna, int):
+                continue
+        elif isinstance(value, str):
+            value = value.strip().upper()
+            if len(value) == 2 * bits and set(value) <= {"0", "1"}:
+                linha, coluna = int(value[:bits], 2), int(value[bits:], 2)
+            elif len(value) >= 2 and value[0].isalpha() and value[1:].isdigit():
+                linha, coluna = ord(value[0]) - ord("A"), int(value[1:]) - 1
+            else:
+                continue
+        else:
+            continue
+        if 0 <= linha < tamanho and 0 <= coluna < tamanho:
+            move = coord_para_letra_numero(linha, coluna)
+            if move not in seen:
+                seen.add(move)
+                moves.append(move)
+    return moves
 
 # ----------------------------
 # Serialização mínima do jogo
@@ -237,6 +264,7 @@ def _game_to_state(game: Jogo, meta: Dict[str, Any]) -> Dict[str, Any]:
         "tamanho_tabuleiro": getattr(game, "tamanho_tabuleiro", 10),
         "num_navios": getattr(game, "num_navios", 4),
         "vez_do_jogador": getattr(game, "vez_do_jogador", True),
+        "codigo_secreto": game.codigo_secreto,
         "tabuleiro_jogador": game.tabuleiro_jogador,
         "tabuleiro_quantico": getattr(game, "tabuleiro_quantico", None),
         # pilha de jogadas quânticas (strings tipo "A1")
@@ -249,11 +277,11 @@ def _game_to_state(game: Jogo, meta: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 def _state_to_game(state: Dict[str, Any]) -> Jogo:
-    game = Jogo(
-        tamanho_tabuleiro=int(state.get("tamanho_tabuleiro", 10)),
-        num_navios=int(state.get("num_navios", 4)),
-        pilha_ataques_quanticos=state.get("pilha", []),  # <<< injeta
-    )
+    game = Jogo.__new__(Jogo)
+    game.tamanho_tabuleiro = int(state["tamanho_tabuleiro"])
+    game.num_navios = int(state["num_navios"])
+    game.pilha_ataques_quanticos = list(state.get("pilha", []))
+    game.codigo_secreto = state.get("codigo_secreto", "")
     game.tabuleiro_jogador = state["tabuleiro_jogador"]
     if state.get("tabuleiro_quantico") is not None:
         game.tabuleiro_quantico = state["tabuleiro_quantico"]
@@ -269,17 +297,31 @@ def coord_para_letra_numero(linha, coluna):
 def handle_iniciar(event):
     body = _parse_json_body(event)
 
-    num_navios = int(str(body.get("num_navios", 4)).strip())
-    tamanho_tabuleiro = int(body.get("tamanho_tabuleiro", 10))
+    try:
+        num_navios = int(str(body.get("num_navios", 4)).strip())
+        tamanho_tabuleiro = int(str(body.get("tamanho_tabuleiro", 10)).strip())
+    except (ValueError, TypeError):
+        return _resp(400, {"error": "Informe tamanho e quantidade de navios inteiros."})
 
-    if tamanho_tabuleiro < 5 or tamanho_tabuleiro > 20:
+    if tamanho_tabuleiro < 4 or tamanho_tabuleiro > 20:
         return _resp(400, {"error": "Tamanho do tabuleiro inválido."})
+    if not 1 <= num_navios <= tamanho_tabuleiro:
+        return _resp(400, {"error": "A quantidade de navios deve ser de 1 até o tamanho do tabuleiro."})
 
     jogador = (body.get("nome") or "").strip()
-    backend = body.get("backend") or "default"
+    modo = body.get("modo", "cache")
+    if modo not in ("simulador", "cache"):
+        return _resp(400, {"error": "Modo inválido."})
+    backend = body.get("backend") or "simulador"
+    if modo == "cache" and backend not in HARDWARE_FILES:
+        return _resp(400, {"error": "Selecione um hardware para usar o cache."})
 
     # 1) tenta carregar cache primeiro
-    pilha = _load_moves_from_s3(backend, tamanho_tabuleiro) or []
+    if modo == "simulador":
+        pilha = [coord_para_letra_numero(linha, coluna) for linha in range(tamanho_tabuleiro) for coluna in range(tamanho_tabuleiro)]
+        random.shuffle(pilha)
+    else:
+        pilha = _load_moves_from_s3(backend, tamanho_tabuleiro) or []
 
     # 2) se não tem jogadas, backend OFFLINE para esse tamanho
     if len(pilha) == 0:
@@ -307,6 +349,12 @@ def handle_iniciar(event):
     fila_espera = []
 
     meta = {
+        "partida_id": game_id,
+        "jogador_id": _player_id_from_name(jogador),
+        "jogador_nome": jogador,
+        "modo": modo,
+        "placar": {"jogador": 0, "computador": 0},
+        "historico": [],
         "em_andamento": True,
         "jogador": jogador,
         "backend": backend,
@@ -324,6 +372,7 @@ def handle_iniciar(event):
 
     return _resp(200, {
         "backend_offline": False,
+        "modo": modo,
         "game_id": game_id,
         "backend": backend,
         "tamanho_tabuleiro": tamanho_tabuleiro,
@@ -348,6 +397,15 @@ def handle_atacar(event):
         return _resp(400, {"error": "Missing coordenada"})
 
     game = _state_to_game(state)
+
+    if not game.vez_do_jogador:
+        return _resp(409, {"error": "Aguarde o ataque do computador."})
+    if not game.verificar_codigo_secreto(coordenada):
+        if not game.validar_coordenada(coordenada):
+            return _resp(400, {"error": "Coordenada inválida."})
+        linha, coluna = game.recupera_coordenada(coordenada)
+        if not game.validar_coordenada_repetida(linha, coluna, game.tabuleiro_quantico):
+            return _resp(409, {"error": "Coordenada repetida."})
 
     finalizado, _msg, acertou, linha, coluna = game.ataque_jogador(coordenada)
 
@@ -395,6 +453,7 @@ def handle_atacar(event):
         "vez_do_jogador": state["vez_do_jogador"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": bool(finalizado),
+        "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
     })
 
 def handle_ataque_quantico(event):
@@ -408,14 +467,16 @@ def handle_ataque_quantico(event):
         return _resp(404, {"error": "Jogo não encontrado ou encerrado."})
 
     game = _state_to_game(state)
+    if game.vez_do_jogador:
+        return _resp(409, {"error": "Agora é a vez do jogador."})
 
     finalizado, _msg, acertou, linha, coluna = game.ataque_quantico()
 
     if finalizado:
-        mensagem = "Jogo finalizado! O computador quântico venceu!"
+        mensagem = _msg
         state["meta"]["em_andamento"] = False
         state["meta"]["ended_at"] = _now_iso()
-        vencedor = "computador"
+        vencedor = "computador" if game.verificar_condicao_finalizacao(game.tabuleiro_jogador) else "sem_jogadas"
     else:
         mensagem = f"Ataque quântico em {coord_para_letra_numero(linha, coluna)} → {'Acertou!' if acertou else 'Errou!'}"
         vencedor = None
@@ -426,7 +487,7 @@ def handle_ataque_quantico(event):
     state["meta"]["historico"].append({
         "t": _now_iso(),
         "tipo": "ataque_quantico",
-        "coord": coord_para_letra_numero(linha, coluna),
+        "coord": coord_para_letra_numero(linha, coluna) if linha is not None else None,
         "acertou": bool(acertou),
         "linha": linha,
         "coluna": coluna,
@@ -453,6 +514,7 @@ def handle_ataque_quantico(event):
         "vez_do_jogador": state["vez_do_jogador"],
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "finalizado": bool(finalizado),
+        "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
     })
 
 def handle_encerrar(event):
@@ -465,6 +527,7 @@ def handle_encerrar(event):
     state = _dynamo_get_game(game_id)
     if state:
         state["em_andamento"] = False
+        state["meta"]["em_andamento"] = False
         _dynamo_put_game(game_id, state)
 
     # opção 2 (mais “cache-like”): apaga o item
@@ -484,6 +547,7 @@ def _persist_partida_e_jogador_no_s3(state: dict):
     partida_key = f"{MATCH_PREFIX}{partida_id}.json"
     partida_doc = {
         "partida_id": partida_id,
+        "modo": meta.get("modo", "cache"),
         "created_at": meta.get("created_at"),
         "ended_at": meta.get("ended_at") or _now_iso(),
         "backend": meta.get("backend"),
@@ -580,7 +644,7 @@ def handle_estado(event):
     body = _parse_json_body(event)
     game_id = _get_game_id(event, body)
     if not game_id:
-        return _resp(400, {"error": "Missing game_id"})
+        return _resp(200, {"ranking": [], "fila_espera": [], "em_andamento": False})
 
     state = _dynamo_get_game(game_id)
     if not state:
@@ -589,7 +653,12 @@ def handle_estado(event):
     return _resp(200, {
         "ranking": state.get("ranking", []),
         "fila_espera": state.get("fila_espera", []),
-        "em_andamento": state.get("em_andamento", False),
+        "em_andamento": state.get("meta", {}).get("em_andamento", False),
+        "tamanho_tabuleiro": state["tamanho_tabuleiro"],
+        "tabuleiro_jogador": state["tabuleiro_jogador"],
+        "ataques_jogador": [[cell if cell in (2, 3) else 0 for cell in row] for row in state["tabuleiro_quantico"]],
+        "vez_do_jogador": state["vez_do_jogador"],
+        "placar": state["meta"].get("placar", {}),
         "backend": state.get("backend", ""),
         "jogador": state.get("jogador", ""),
     })
@@ -631,7 +700,7 @@ def _s3_put_json(key: str, data: dict):
     s3.put_object(
         Bucket=CACHE_BUCKET,
         Key=key,
-        Body=json.dumps(data, ensure_ascii=False).encode("utf-8"),
+        Body=json.dumps(data, ensure_ascii=False, default=lambda value: int(value) if isinstance(value, Decimal) and value == int(value) else float(value)).encode("utf-8"),
         ContentType="application/json; charset=utf-8",
     )
 
@@ -647,13 +716,7 @@ def _list_known_backends() -> list:
     Opção A (mais simples): hardcode inicial.
     Opção B: listar prefixos em cache/ via list_objects_v2 Delimiter="/".
     """
-    return [
-        "ionq_aria1",
-        "ionq_aria2",
-        "iqm_garnet",
-        "quera_aquila",
-        "rigetti_ankaa",
-    ]
+    return list(HARDWARE_FILES)
 
 def handle_backends_status(event):
     # pega querystring
@@ -667,10 +730,6 @@ def handle_backends_status(event):
     for backend in backends:
         key = f"{prefix}/{backend}/tamanho_{tamanho_tabuleiro}.json"
         if not CACHE_BUCKET:
-            out.append({"backend": backend, "online": False, "moves_count": 0})
-            continue
-
-        if not _s3_exists(CACHE_BUCKET, key):
             out.append({"backend": backend, "online": False, "moves_count": 0})
             continue
 

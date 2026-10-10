@@ -49,6 +49,9 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
+      - name: Test game lifecycle
+        run: python -B -m unittest discover -s tests -v
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}

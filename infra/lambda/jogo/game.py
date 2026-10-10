@@ -5,6 +5,10 @@ class Jogo:
         self.tamanho_tabuleiro = tamanho_tabuleiro
         self.num_navios = num_navios
         self.backend = backend
+        self.codigo_secreto = random.choice([
+            "dirac", "hilbert", "boltzmann", "feynman", "noether",
+            "pauli", "lorentz", "turing", "laplace", "gauss",
+        ])
 
         self.tabuleiro_jogador = [[0]*tamanho_tabuleiro for _ in range(tamanho_tabuleiro)]
         self.tabuleiro_quantico = [[0]*tamanho_tabuleiro for _ in range(tamanho_tabuleiro)]
@@ -39,7 +43,7 @@ class Jogo:
 
         # Verifica se o jogo acabou
         if self.verificar_condicao_finalizacao(self.tabuleiro_quantico):
-            return True, "Jogo finalizado! O jogador venceu.", False, None, None
+            return True, "Jogo finalizado! O jogador venceu.", acerto, linha, coluna
 
         # Passa a vez de jogar se errou
         if not acerto:
@@ -51,26 +55,21 @@ class Jogo:
 
     def ataque_quantico(self):
 
-        if not self.pilha_ataques_quanticos:
-            return True, "Jogo Finalizado porque não tem mais jogadas quânticas.", False, None, None
-
-
-        coordenada = self.pilha_ataques_quanticos.pop(0)
-
-        linha, coluna = self.recupera_coordenada(coordenada)  
-
-
-        print(linha)
-        print(coluna)
-
-        if not self.validar_coordenada_repetida(linha, coluna, self.tabuleiro_jogador):
-            return False, "Coordenada Repetida", False, linha, coluna
+        while self.pilha_ataques_quanticos:
+            coordenada = self.pilha_ataques_quanticos.pop(0)
+            if not self.validar_coordenada(coordenada):
+                continue
+            linha, coluna = self.recupera_coordenada(coordenada)
+            if self.validar_coordenada_repetida(linha, coluna, self.tabuleiro_jogador):
+                break
+        else:
+            return True, "Jogo finalizado: cache de jogadas esgotado, sem vencedor.", False, None, None
 
         acerto = self.performar_ataque(linha, coluna, self.tabuleiro_jogador)
 
         # Verifica se o jogo acabou
         if self.verificar_condicao_finalizacao(self.tabuleiro_jogador):
-            return True, "Jogo finalizado! O computador quântico venceu.", False, None, None
+            return True, "Jogo finalizado! O computador quântico venceu.", acerto, linha, coluna
 
         # Passa a vez de jogar se errou
         if not acerto:
@@ -114,10 +113,19 @@ class Jogo:
 
 
     def posicionar_navios(self, tabuleiro):
-        tamanhos = list(range(1, self.num_navios + 1))  # Tamanhos de 1 até N
+        if not 1 <= self.num_navios <= self.tamanho_tabuleiro:
+            raise ValueError("Quantidade de navios incompatível com o tabuleiro.")
+        tamanhos = list(range(self.num_navios, 0, -1))
+        tentativas = 0
         for tamanho in tamanhos:
             colocado = False
             while not colocado:
+                tentativas += 1
+                if tentativas > 1000:
+                    for linha in range(self.tamanho_tabuleiro):
+                        tabuleiro[linha] = [1] * max(0, self.num_navios - linha) + [0] * (self.tamanho_tabuleiro - max(0, self.num_navios - linha))
+                    random.shuffle(tabuleiro)
+                    return
                 linha = random.randint(0, self.tamanho_tabuleiro - 1)
                 coluna = random.randint(0, self.tamanho_tabuleiro - 1)
                 direcao = random.choice(['H', 'V'])
