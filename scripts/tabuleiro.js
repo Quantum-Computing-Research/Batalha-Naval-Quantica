@@ -23,7 +23,10 @@ function ajustarLayoutPartida() {
         area.dataset.layout = 'superior';
     }
     const lateral = area.dataset.layout === 'lateral';
-    const larguraTabuleiros = largura - (lateral ? larguraLateral + 28 : 0);
+    const larguraAreaTabuleiros = largura - (lateral ? larguraLateral + 28 : 0);
+    const frotaLateral = colunas === 2 && larguraAreaTabuleiros >= 2 * Math.max(240, (tamanho + 1) * 22) + 184;
+    area.dataset.frota = frotaLateral ? 'lateral' : 'abaixo';
+    const larguraTabuleiros = larguraAreaTabuleiros - (frotaLateral ? 160 : 0);
     const painelAltura = lateral ? 0 : area.querySelector('.partida-painel').getBoundingClientRect().height;
     const alturaTabuleiro = Math.max(180, altura - painelAltura - 100);
     const porLargura = (larguraTabuleiros - (colunas - 1) * 24) / colunas / (tamanho + 1);

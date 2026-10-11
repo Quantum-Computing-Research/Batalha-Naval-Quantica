@@ -21,7 +21,19 @@ rankingButton.addEventListener("click", () => {
     rankingButton.setAttribute("aria-expanded", "true");
 });
 
-document.getElementById("rankingCloseButton").addEventListener("click", () => rankingPopup.close());
+function fecharRanking() {
+    rankingPopup.close();
+    rankingButton.setAttribute("aria-expanded", "false");
+    rankingButton.focus({ preventScroll: true });
+}
+
+document.getElementById("rankingCloseButton").addEventListener("click", fecharRanking);
+rankingPopup.addEventListener("keydown", event => {
+    if (event.key === "Escape") {
+        event.preventDefault();
+        fecharRanking();
+    }
+});
 rankingPopup.addEventListener("close", () => {
     rankingButton.setAttribute("aria-expanded", "false");
     rankingButton.focus({ preventScroll: true });
@@ -29,6 +41,6 @@ rankingPopup.addEventListener("close", () => {
 rankingPopup.addEventListener("click", event => {
     if (event.target !== rankingPopup) return;
     const limites = rankingPopup.getBoundingClientRect();
-    if (event.clientX < limites.left || event.clientX > limites.right || event.clientY < limites.top || event.clientY > limites.bottom) rankingPopup.close();
+    if (event.clientX < limites.left || event.clientX > limites.right || event.clientY < limites.top || event.clientY > limites.bottom) fecharRanking();
 });
 

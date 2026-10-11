@@ -286,3 +286,21 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout[data-layout] .partida-chips { max-height: 190px; }
   .partida-layout[data-layout] #frota-lista { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 108px; grid-template-rows: auto; overflow-x: auto; max-height: 90px; }
 }
+
+.partida-tabuleiros { min-width: 0; display: grid; gap: 24px; align-items: start; }
+.partida-layout[data-layout='superior'] > .partida-tabuleiros { grid-column: 1; grid-row: 2; }
+.partida-layout[data-layout='lateral'] > .partida-tabuleiros { grid-column: 1; grid-row: 1; }
+.partida-layout[data-layout] .partida-tabuleiros > .boards { grid-template-columns: repeat(var(--partida-colunas), minmax(0, var(--partida-tabuleiro))); justify-content: center; }
+.partida-layout[data-frota='lateral'] .partida-tabuleiros { grid-template-columns: minmax(0, 1fr) 136px; }
+.partida-layout[data-frota='lateral'] .frota-adversaria { border-top: none; border-left: 1px solid var(--line); padding: 0 0 0 12px; }
+.partida-layout[data-frota='lateral'] #frota-lista { display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-auto-columns: auto; max-height: none; overflow: visible; }
+.partida-layout[data-layout='superior'] .partida-painel { grid-template-columns: minmax(0, 1fr) 260px; }
+@media (min-width: 1101px) {
+  .partida-layout[data-layout='superior'] .partida-chips:has(.chip-classico:not([hidden])) .circuito-diagrama { grid-template-columns: minmax(130px, 0.85fr) minmax(0, 1fr); }
+}
+@media (max-width: 1100px) {
+  .partida-layout[data-layout='superior'] .partida-chips { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .partida-layout[data-layout='superior'] .partida-painel { grid-template-columns: minmax(0, 1fr); }
+}
