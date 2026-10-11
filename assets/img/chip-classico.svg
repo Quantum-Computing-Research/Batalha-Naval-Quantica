@@ -23,16 +23,16 @@
         <path
             d="M442 104h54v10h-54zM442 124h54v10h-54zM442 144h54v10h-54zM442 164h54v10h-54zM442 184h54v10h-54zM442 204h54v10h-54zM442 224h54v10h-54zM442 244h54v10h-54zM442 264h54v10h-54zM442 284h54v10h-54zM442 304h54v10h-54zM442 324h54v10h-54zM442 344h54v10h-54zM442 364h54v10h-54zM442 384h54v10h-54zM442 404h54v10h-54z" />
     </g>
-    <path d="M92 78 111 61h290l19 18 30 30v294l-20 22-19 14H111l-19-18-22-18V110z" fill="#111214" />
-    <path d="M102 84q0-14 15-14h278q15 0 15 15v293q0 17-17 17H118l-16-15z" fill="url(#package)"
-        stroke="#090a0b" stroke-width="5" />
-    <path d="M112 80h279q9 0 9 9v288q0 9-10 9H119l-7-8z" fill="#fff" opacity=".025" />
-    <path d="M112 80h281l-66 303H112z" fill="#fff" opacity=".035" />
+    <path d="M61 94Q61 70 86 70h340q25 0 25 25v320q0 27-27 27H96l-35-35z" fill="#111214" />
+    <path d="M70 94Q70 78 87 78h340q9 0 9 10v326q0 20-20 20H100l-30-30z" fill="url(#package)"
+        stroke="#090a0b" stroke-width="4" />
+    <path d="M78 96q0-10 10-10h347v324q0 16-16 16H101l-23-23z" fill="#fff" opacity=".025" />
+    <path d="M78 86h218l-98 340h-97l-23-23z" fill="#fff" opacity=".035" />
     <g fill="#26282a" stroke="#111214" stroke-width="2">
-        <circle cx="140" cy="110" r="12" />
-        <circle cx="372" cy="110" r="12" />
-        <circle cx="140" cy="402" r="12" />
-        <circle cx="372" cy="402" r="12" />
+        <circle cx="110" cy="110" r="12" />
+        <circle cx="402" cy="110" r="12" />
+        <circle cx="110" cy="402" r="12" />
+        <circle cx="402" cy="402" r="12" />
     </g>
     <g fill="#a6a7a8" font-family="monospace" letter-spacing="3">
         <text x="122" y="214" font-size="27" font-weight="bold">CPU</text>

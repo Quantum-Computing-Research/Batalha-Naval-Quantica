@@ -115,7 +115,6 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
         const porta = document.createElement("span");
         porta.className = "circuito-porta";
         porta.textContent = "H";
-        porta.title = "Hadamard: superposição uniforme de 0 e 1";
         const medir = document.createElement("span");
         medir.className = "circuito-porta circuito-medicao";
         const visor = lucide.createElement(lucide.icons.Gauge);
@@ -123,7 +122,6 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
         medir.appendChild(visor);
         medir.setAttribute("role", "img");
         medir.setAttribute("aria-label", "Medição");
-        medir.title = "Medição na base computacional";
         fio.append(porta, medir);
         const valor = document.createElement("span");
         valor.className = "circuito-bit";
