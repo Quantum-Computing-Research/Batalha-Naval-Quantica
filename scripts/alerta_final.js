@@ -96,6 +96,7 @@ function finalizarComRegistro(data, atraso = 3000) {
     document.getElementById("playerMove").disabled = true;
     document.querySelector(".attack-controls button").disabled = true;
     atualizarStatusBar(data.mensagem);
+    atualizarVez(null);
     document.getElementById("vez-indicador").textContent = "Partida concluída";
     temporizadorResultado = setTimeout(() => mostrarAlertaFinal(resumo), atraso);
 }

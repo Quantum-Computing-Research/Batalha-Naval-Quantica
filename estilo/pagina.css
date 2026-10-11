@@ -106,6 +106,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 #startButton, .attack-controls button { background: var(--accent); color: #fff; border-color: var(--accent); }
 #startButton:hover, .attack-controls button:hover { background: #085b5e; }
 .partida-painel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 0.28fr); gap: 20px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.partida-painel.vez-computador { outline: 2px solid #3286ab; outline-offset: 8px; border-radius: 4px; background: #edf6f7; }
 .partida-layout { min-width: 0; }
 .partida-chips { min-width: 0; }
 .difficulty-field { display: grid; gap: 5px; font-size: 11px; color: var(--muted); }
@@ -152,7 +153,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .chip-hardware { margin: 0; min-width: 0; align-self: center; }
 .chip-hardware img { display: block; width: 100%; max-height: 112px; object-fit: contain; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
-.chip-executando { background: #f8f1de; box-shadow: none; padding-left: 0; outline: 2px solid #ac842a; outline-offset: 3px; }
+.chip-executando { background: #fff0e3; box-shadow: none; padding-left: 0; outline: 2px solid #e87924; outline-offset: 3px; }
 .partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: none; padding: 0; outline: 2px solid var(--accent); outline-offset: 3px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
@@ -179,6 +180,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .circuito-numeros dt { font-size: 10px; color: var(--muted); }
 .boards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px !important; justify-content: normal; }
 .board-zone { min-width: 0; }
+.board-zone-jogador.vez-jogador { outline: 2px solid #3286ab; outline-offset: 8px; border-radius: 4px; background: #edf6f7; }
 .board-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 14px; }
 .board-heading h2 { font: normal 22px Georgia, serif; margin: 0; }
 .board-heading span { font-size: 10px; color: var(--muted); }
