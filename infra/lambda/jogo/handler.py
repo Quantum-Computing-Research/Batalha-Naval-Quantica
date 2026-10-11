@@ -293,11 +293,11 @@ def _state_to_game(state: Dict[str, Any]) -> Jogo:
 def coord_para_letra_numero(linha, coluna):
     return f"{chr(ord('A') + int(linha))}{coluna + 1}"
 
-def _frota_adversaria(state):
-    navios = state.get("navios_quantico")
+def _frota_adversaria(state, lado="quantico"):
+    navios = state.get(f"navios_{lado}")
     if navios is None:
         return None
-    tabuleiro = state["tabuleiro_quantico"]
+    tabuleiro = state[f"tabuleiro_{lado}"]
     return [
         {
             "id": f"navio_{indice + 1}",
@@ -432,6 +432,7 @@ def _resumo_partida(state):
         "tabuleiro_quantico": state["tabuleiro_quantico"],
         "historico": historico,
         "frota_adversaria": _frota_adversaria(state),
+        "frota_jogador": _frota_adversaria(state, "jogador"),
         "circuito": meta.get("circuito"),
         "medicoes_brutas": meta.get("medicoes_brutas", []),
         "analise": _analise_medicoes(meta.get("medicoes_brutas", []), int(state["tamanho_tabuleiro"])),
@@ -536,6 +537,7 @@ def handle_iniciar(event):
         "pilha_len": len(pilha),
         "tabuleiro_jogador": game.tabuleiro_jogador,
         "frota_adversaria": _frota_adversaria(state),
+        "frota_jogador": _frota_adversaria(state, "jogador"),
     })
 
 def handle_atacar(event):
@@ -684,6 +686,7 @@ def handle_ataque_quantico(event):
 
     return _resp(200, {
         "jogada_quantica": [linha, coluna],
+        "frota_jogador": _frota_adversaria(state, "jogador"),
         "fonte_ataque": fonte,
         "chip_classico_ativo": state.get("chip_classico", {}).get("ativo", False),
         "status": "acerto" if acertou else "erro",
@@ -837,6 +840,7 @@ def handle_estado(event):
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "ataques_jogador": [[cell if cell in (2, 3) else 0 for cell in row] for row in state["tabuleiro_quantico"]],
         "frota_adversaria": _frota_adversaria(state),
+        "frota_jogador": _frota_adversaria(state, "jogador"),
         "vez_do_jogador": state["vez_do_jogador"],
         "placar": state["meta"].get("placar", {}),
         "circuito": state["meta"].get("circuito"),

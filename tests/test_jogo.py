@@ -225,6 +225,23 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertEqual(summary["estatisticas"]["computador"]["jogadas"], 6)
         self.assertEqual(summary["dificuldade"], "plus")
 
+    def test_player_fleet_updates_after_computer_attack(self):
+        game_id = self.start_game(8)
+        state = self.states[game_id]
+        state["tabuleiro_jogador"] = [[0] * 8 for _ in range(8)]
+        state["navios_jogador"] = [[[0, 0], [0, 1]], [[7, 7]]]
+        for row, col in [[0, 0], [0, 1], [7, 7]]:
+            state["tabuleiro_jogador"][row][col] = 1
+        state["pilha"] = ["A1", "A2"]
+        state["vez_do_jogador"] = False
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertFalse(result["frota_jogador"][0]["afundado"])
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertTrue(result["frota_jogador"][0]["afundado"])
+        self.assertFalse(result["frota_jogador"][1]["afundado"])
+        self.assertEqual(self.request("/estado", game_id=game_id, method="GET")["frota_jogador"], result["frota_jogador"])
+        self.assertEqual(self.handler._resumo_partida(self.states[game_id])["frota_jogador"], result["frota_jogador"])
+
     def test_plus_single_ship_and_vertical_border(self):
         game_id = self.request("/iniciar_jogo", {"modo": "simulador", "dificuldade": "plus"})["game_id"]
         state = self.states[game_id]
