@@ -78,32 +78,34 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     diagrama.style.height = `${altura}px`;
     const fios = [];
     const portas = [];
+    const saidas = [];
     for (let camada = 0; camada < 3; camada++) {
-        const esquerda = 30 + camada * 76;
+        const esquerda = 20 + camada * 38;
         for (let indice = 0; indice < bits; indice++) {
             const centro = indice * 32 + 16;
             if (camada === 0) {
                 const bifurcacao = esquerda - 12;
-                fios.push(`<path d="M18 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
+                fios.push(`<path d="M0 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
             } else {
-                const saidaAnteriorX = esquerda - 46;
+                const saidaAnteriorX = esquerda - 8;
                 const fontes = [indice, (indice + 1) % bits];
                 fontes.forEach((fonte, entrada) => {
                     const yOrigem = fonte * 32 + 16;
                     const yDestino = centro + (entrada === 0 ? -5 : 5);
-                    const rotaX = saidaAnteriorX + 12 + entrada * 10;
+                    const rotaX = saidaAnteriorX + 2 + entrada * 3;
                     fios.push(`<path d="M${saidaAnteriorX} ${yOrigem}H${rotaX}V${yDestino}H${esquerda}"/>`);
                 });
             }
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
             if (camada === 2) {
-                fios.push(`<path d="M${esquerda + 30} ${centro}H250"/>`);
+                fios.push(`<path d="M${esquerda + 30} ${centro}H144"/>`);
+                saidas.push(`<text x="150" y="${centro + 4}" fill="#365b49" stroke="none" font-family="monospace" font-size="11">${sequencia ? sequencia[indice] : "—"}</text>`);
             }
         }
     }
     const rede = document.createElement("img");
     rede.className = "chip-rede-imagem";
-    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}</svg>`)}`;
+    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}${saidas.join("")}</svg>`)}`;
     rede.alt = `Circuito clássico ilustrativo com ${bits} entradas e portas NAND interligadas`;
     rede.width = 256;
     rede.height = altura;
@@ -117,16 +119,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     }
     const areaRede = document.createElement("div");
     areaRede.className = "chip-rede-scroll";
-    const saidas = document.createElement("div");
-    saidas.className = "chip-rede-saidas";
-    for (let indice = 0; indice < bits; indice++) {
-        const valor = document.createElement("span");
-        valor.className = "chip-bit-saida";
-        valor.setAttribute("aria-label", `Bit de saída b${indice}`);
-        valor.textContent = sequencia ? sequencia[indice] : "—";
-        saidas.appendChild(valor);
-    }
-    areaRede.append(rede, saidas);
+    areaRede.appendChild(rede);
     diagrama.append(entradas, areaRede);
     composicao.append(figuraChip, diagrama, leitura);
     area.appendChild(composicao);
