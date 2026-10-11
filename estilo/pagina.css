@@ -95,6 +95,16 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .partida-layout { min-width: 0; }
 .partida-chips { min-width: 0; }
 .difficulty-field { display: grid; gap: 5px; font-size: 11px; color: var(--muted); }
+.plus-control { position: relative; display: flex; align-items: center; }
+#dificuldade { width: 44px; height: 44px; padding: 8px; }
+#dificuldade svg { width: 26px; height: 26px; }
+#dificuldade .plus-chip-icon { width: 30px; height: 30px; stroke-width: 1.8; }
+#dificuldade .plus-chip-icon rect { fill: #55d99b; stroke: #26383c; }
+#dificuldade .plus-chip-icon rect + rect { fill: #dddfe9; }
+#dificuldade .plus-chip-icon path { stroke: #e8bd37; }
+#dificuldade[aria-pressed='true'] { background: #dceee3; color: #24643c; border-color: #609e77; box-shadow: inset 0 2px 4px #24643c33; }
+#plus-tooltip { display: none; position: absolute; bottom: calc(100% + 10px); right: 0; width: 240px; max-width: calc(100vw - 36px); padding: 12px; border: 1px solid var(--line); border-radius: 5px; background: #fff; color: var(--ink); font-size: 12px; line-height: 1.5; box-shadow: 0 8px 24px #26383c22; z-index: 20; }
+.plus-control:hover #plus-tooltip, .plus-control:focus-within #plus-tooltip { display: block; }
 .action-buttons { align-items: end; }
 .chip-classico { margin-top: 18px; padding: 14px 0 0; border-top: 1px solid var(--line); color: var(--muted); }
 .chip-classico[hidden] { display: none; }
@@ -106,6 +116,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-bit-saida { color: #80611f; font-weight: bold; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
 .chip-executando { background: #f8f1de; box-shadow: inset 3px 0 #ac842a; padding-left: 12px; }
+.partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: inset 3px 0 var(--accent); padding: 12px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
 #statusBar { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0; }
@@ -203,6 +214,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .app-eyebrow { font-size: 10px; }
   .brand-mark svg { width: 32px; height: 32px; }
   .header-actions { margin-left: 48px; }
+  #plus-tooltip { right: auto; left: 0; }
   .container { padding: 20px 18px 32px; }
   .hardware-section { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .ranking-espera-wrapper { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 16px 0 0; border-left: none; border-top: 1px solid var(--line); }

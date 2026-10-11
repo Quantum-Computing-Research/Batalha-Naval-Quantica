@@ -12,7 +12,16 @@ function selecionarBackend(backend) {
 let circuitoAtual = null;
 let estadoChipClassico = { ativo: false, coordenada: null, executando: false };
 
+function atualizarBotaoPlus() {
+    const botao = document.getElementById("dificuldade");
+    const selecionado = botao.value === "plus";
+    botao.setAttribute("aria-pressed", String(selecionado));
+    botao.setAttribute("aria-label", selecionado ? "Desativar ajuda clássica Plus" : "Ativar ajuda clássica Plus");
+}
+
 function atualizarChipClassico(ativo = false, coordenada = null, executando = false) {
+    atualizarBotaoPlus();
+    if (executando) document.getElementById("circuitoPartida").classList.remove("quantico-executando");
     estadoChipClassico = { ativo, coordenada: coordenada || estadoChipClassico.coordenada, executando };
     const area = document.getElementById("chipClassico");
     area.hidden = document.getElementById("dificuldade").value !== "plus";
@@ -198,7 +207,11 @@ function criarAnalisePartida(analise) {
 }
 
 document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarCircuitoPartida());
-document.getElementById("dificuldade").addEventListener("change", () => atualizarChipClassico());
+document.getElementById("dificuldade").addEventListener("click", event => {
+    const botao = event.currentTarget;
+    botao.value = botao.value === "plus" ? "normal" : "plus";
+    atualizarChipClassico();
+});
 document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarChipClassico());
 document.getElementById("modoSimulador").addEventListener("change", () => atualizarCircuitoPartida(modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value), document.getElementById("modoSimulador").checked ? "simulador" : "cache")));
 atualizarCircuitoPartida();

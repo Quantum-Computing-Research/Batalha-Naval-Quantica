@@ -232,6 +232,7 @@ async function iniciarJogo(nome) {
     iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, dificuldade, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
     estadoChipClassico = { ativo: false, coordenada: null, executando: false };
     atualizarChipClassico();
+    document.getElementById("circuitoPartida").classList.remove("quantico-executando");
     atualizarFrotaAdversaria(data.frota_adversaria);
 
     // UI states
@@ -330,6 +331,8 @@ async function atacar() {
         return;
     }
 
+    document.getElementById("circuitoPartida").classList.remove("quantico-executando");
+    atualizarChipClassico(estadoChipClassico.ativo);
     // desenha ataque do jogador
     if (/^[A-T]\d+$/i.test(coordenada)) {
         const letra = coordenada[0].toUpperCase();
@@ -384,6 +387,7 @@ async function ataqueComputador() {
         desenharAtaqueQuantico(coluna, linha, acertou);
         const coordenada = `${String.fromCharCode(65 + linha)}${coluna + 1}`;
         if (data.fonte_ataque !== "classico") atualizarCircuitoPartida(circuitoAtual, coordenada);
+        document.getElementById("circuitoPartida").classList.toggle("quantico-executando", data.fonte_ataque !== "classico");
         atualizarChipClassico(!!data.chip_classico_ativo, data.fonte_ataque === "classico" ? coordenada : null, data.fonte_ataque === "classico");
     }
 

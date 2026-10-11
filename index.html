@@ -207,12 +207,14 @@
           </select>
         </div>
         <div class="action-buttons">
-          <label class="difficulty-field" for="dificuldade">Modo
-            <select id="dificuldade">
-              <option value="normal">Quântico</option>
-              <option value="plus">Plus · difícil</option>
-            </select>
-          </label>
+          <div class="plus-control">
+            <button id="dificuldade" type="button" value="normal" aria-pressed="false"
+              aria-label="Ativar ajuda clássica Plus" aria-describedby="plus-tooltip">
+              <i data-lucide="cpu" class="plus-chip-icon" aria-hidden="true"></i>
+            </button>
+            <span id="plus-tooltip" role="tooltip">Quando selecionado, o computador quântico terá ajuda de um computador
+              clássico para afundar navios.</span>
+          </div>
           <button id="startButton" onclick="consentimento()"><i data-lucide="play" aria-hidden="true"></i> Iniciar
             partida</button>
           <button id="endButton" onclick="encerrarJogo()" disabled title="Encerrar partida"
