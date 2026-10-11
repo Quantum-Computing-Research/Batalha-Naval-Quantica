@@ -122,7 +122,6 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .chip-nands { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; }
 .chip-linha { display: grid; grid-template-columns: 22px minmax(65px, 1fr) 14px; align-items: center; min-height: 36px; gap: 5px; font: 11px monospace; }
 .chip-portas { display: block; width: 100%; height: auto; max-height: 52px; }
-.chip-bit-saida { color: #80611f; font-weight: bold; }
 .circuito-com-hardware { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .circuito-com-hardware > .circuito-diagrama { flex: 1; min-width: 0; }
 .circuito-com-hardware > .circuito-diagrama { grid-template-columns: minmax(0, 1fr); }
@@ -137,11 +136,11 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .chip-diagrama .circuito-informacoes { grid-column: 1 / -1; }
   .chip-hardware img { max-height: 76px; }
 }
-.chip-rede { display: grid; grid-template-columns: 24px minmax(0, 1fr) 38px; align-items: stretch; min-width: 0; }
-.chip-rede-imagem { display: block; width: 100%; height: 100%; min-height: 0; object-fit: fill; }
-.chip-bits-entrada, .chip-rede-saidas { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
+.chip-rede { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: stretch; min-width: 0; }
+.chip-rede-scroll { width: 100%; height: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.chip-rede-imagem { display: block; width: 256px; height: 100%; min-width: 256px; min-height: 0; }
+.chip-bits-entrada { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
 .chip-bits-entrada { color: #69777b; text-align: left; }
-.chip-rede-saida { display: grid; grid-template-columns: 24px 14px; align-items: center; gap: 0; white-space: nowrap; }
 .chip-bit-rotulo { color: #80611f; font: 11px monospace; }
 .partida-painel .chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
 .partida-layout[data-layout] .partida-painel .circuito-diagrama.chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
@@ -362,7 +361,6 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .partida-painel .chip-hardware { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
 .partida-painel .chip-hardware img { width: 100%; height: 100%; max-height: none; min-height: 0; object-fit: contain; }
 .partida-painel .chip-rede { height: 100% !important; min-height: calc(var(--qubits-total, 4) * 32px); }
-.partida-painel .chip-rede-saidas { grid-auto-rows: 32px; }
 
 .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { align-items: center; grid-auto-rows: var(--chip-panel-height); }
 .partida-painel #circuitoPartida,
@@ -430,6 +428,6 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .partida-layout[data-layout] .circuito-porta { width: 18px; height: 18px; }
   .partida-layout[data-layout] .circuito-medicao svg { width: 14px; height: 14px; }
   .partida-layout[data-layout] .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px; }
-  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 22px minmax(0, 1fr) 38px; }
+  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 24px minmax(0, 1fr); }
   .partida-layout[data-layout] .chip-rede-imagem { min-width: 0; width: 100%; }
 }

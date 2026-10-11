@@ -70,7 +70,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const leitura = criarLeituraJogada(coord, eixo, executando);
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
-    const sequencia = coord ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("") : null;
+    diagrama.style.gridTemplateColumns = "24px minmax(0, 1fr)";
     const altura = alturaCircuito;
     diagrama.style.height = `${altura}px`;
     const fios = [];
@@ -101,31 +101,21 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const rede = document.createElement("img");
     rede.className = "chip-rede-imagem";
     rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}</svg>`)}`;
-    rede.alt = `Circuito clássico ilustrativo com portas NAND interligadas e ${bits} saídas`;
+    rede.alt = `Circuito clássico ilustrativo com ${bits} entradas e portas NAND interligadas`;
     rede.width = 256;
     rede.height = altura;
     const entradas = document.createElement("div");
     entradas.className = "chip-bits-entrada";
-    const saidas = document.createElement("div");
-    saidas.className = "chip-rede-saidas";
     for (let indice = 0; indice < bits; indice++) {
         const entrada = document.createElement("span");
         entrada.className = "chip-bit-rotulo";
         entrada.textContent = `b${indice}`;
         entradas.appendChild(entrada);
-        const linhaSaida = document.createElement("div");
-        linhaSaida.className = "chip-rede-saida";
-        const rotuloSaida = document.createElement("span");
-        rotuloSaida.className = "chip-bit-rotulo";
-        rotuloSaida.textContent = `b${indice}`;
-        const valor = document.createElement("span");
-        valor.className = "chip-bit-saida";
-        valor.setAttribute("aria-label", `Bit de saída b${indice}`);
-        valor.textContent = executando && sequencia ? sequencia[indice] : "—";
-        linhaSaida.append(rotuloSaida, valor);
-        saidas.appendChild(linhaSaida);
     }
-    diagrama.append(entradas, rede, saidas);
+    const areaRede = document.createElement("div");
+    areaRede.className = "chip-rede-scroll";
+    areaRede.appendChild(rede);
+    diagrama.append(entradas, areaRede);
     composicao.append(figuraChip, diagrama, leitura);
     area.appendChild(composicao);
 }
