@@ -36,12 +36,10 @@ function atualizarFrotaAdversaria(frota) {
         imagem.height = 32;
         imagem.style.width = `${Math.min(120, 46 + navio.tamanho * 13)}px`;
         silhueta.appendChild(imagem);
-        const tamanho = document.createElement("strong");
-        tamanho.textContent = `${navio.tamanho} ${navio.tamanho === 1 ? "casa" : "casas"}`;
         const status = document.createElement("span");
         status.className = "frota-navio-status";
         status.textContent = navio.afundado ? "Afundado" : "Em combate";
-        item.append(silhueta, tamanho, status);
+        item.append(silhueta, status);
         lista.appendChild(item);
     });
     if (typeof registroPartida !== "undefined" && registroPartida) {
@@ -58,7 +56,7 @@ function marcarNavioAfundado(navio) {
         const celula = document.querySelector(`#computerBoard [data-row="${linha}"][data-col="${coluna}"]`);
         if (celula) {
             celula.classList.add("navio-afundado");
-            celula.title = `Navio de ${navio.tamanho} casas afundado`;
+            celula.title = "Navio afundado";
         }
     }
 }

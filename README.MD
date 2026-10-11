@@ -29,3 +29,8 @@ A frota ilustra os tamanhos sem revelar posicoes. A API atualiza o estado
 Afundado somente quando todas as casas do navio forem atingidas, inclusive
 quando navios distintos estiverem encostados. Partidas antigas sem registro
 individual dos navios mostram frota indisponivel, sem inferir posicoes.
+
+Modo Plus adiciona busca classica apos acerto quantico. O painel NAND e uma
+ilustracao, nao uma netlist funcional do algoritmo. Tem tantos bits de saida
+quanto qubits do circuito, destaca o ataque classico e conserva o alvo entre
+turnos. O certificado distingue a dificuldade e as fontes dos ataques.

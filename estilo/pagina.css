@@ -93,6 +93,20 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 #startButton:hover, .attack-controls button:hover { background: #085b5e; }
 .partida-painel { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(230px, 0.9fr) minmax(210px, 0.9fr); gap: 24px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
 .partida-layout { min-width: 0; }
+.partida-chips { min-width: 0; }
+.difficulty-field { display: grid; gap: 5px; font-size: 11px; color: var(--muted); }
+.action-buttons { align-items: end; }
+.chip-classico { margin-top: 18px; padding: 14px 0 0; border-top: 1px solid var(--line); color: var(--muted); }
+.chip-classico[hidden] { display: none; }
+.chip-classico h3 { font-size: 13px; margin: 0 0 8px; }
+.chip-status, .chip-leitura { font-size: 11px; line-height: 1.5; margin: 8px 0; }
+.chip-nands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 18px; }
+.chip-linha { display: grid; grid-template-columns: 25px minmax(50px, 1fr) 14px; align-items: center; height: 26px; gap: 5px; font: 11px monospace; }
+.chip-portas { display: flex; justify-content: space-around; align-items: center; position: relative; }
+.chip-portas::before { content: ''; position: absolute; width: 100%; border-top: 1px solid #9dabb0; }
+.chip-nand { position: relative; background: #f3f7f7; font-size: 21px; line-height: 22px; }
+.chip-ativo { color: #80611f; border-top-color: #c9b16c; }
+.chip-executando { background: #f8f1de; box-shadow: inset 3px 0 #ac842a; padding-left: 12px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
 #statusBar { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0; }
@@ -127,11 +141,9 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .frota-navio { padding: 6px 0 9px; border-bottom: 1px solid var(--line); }
 .frota-silhueta { position: relative; display: flex; align-items: center; height: 34px; width: 100%; }
 .frota-silhueta img { display: block; object-fit: contain; object-position: left center; max-width: 100%; height: 32px; }
-.frota-navio strong { display: block; font-size: 11px; font-weight: 600; }
 .frota-navio-status { display: block; font-size: 10px; margin-top: 3px; color: var(--muted); }
 .frota-navio.afundado img { opacity: 0.35; }
-.frota-navio.afundado .frota-silhueta::after { content: ''; position: absolute; width: 95%; border-top: 2px solid #a34a4f; transform: rotate(-10deg); }
-.frota-navio.afundado strong { text-decoration: line-through; color: var(--muted); }
+.frota-navio.afundado .frota-silhueta::after { content: ''; position: absolute; left: 0; top: 50%; width: 95%; border-top: 2px solid #a34a4f; }
 .frota-navio.afundado .frota-navio-status { color: #a34a4f; font-weight: 600; }
 .celula.navio-afundado { box-shadow: inset 0 0 0 1px #a34a4f; }
 .tabuleiro-jogador, .tabuleiro-computador { max-width: 100%; overflow: auto; padding-bottom: 4px; }
@@ -169,7 +181,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 @media (max-width: 1100px) {
   .hardware-section { grid-template-columns: minmax(0, 1fr) 180px; gap: 24px; }
   .partida-painel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
-  .partida-painel .circuito-partida { grid-column: 1 / -1; }
+  .partida-painel .partida-chips { grid-column: 1 / -1; }
   .partida-painel .circuito-diagrama { grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1fr); }
   .partida-operacao { border-left: none; padding-left: 0; }
 }
@@ -179,6 +191,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 28px; align-items: start; padding-top: 24px; }
   .partida-layout > .boards { grid-column: 1; grid-row: 1; }
   .partida-painel { grid-column: 2; grid-row: 1; grid-template-columns: minmax(0, 1fr); gap: 20px; margin: 0; padding: 0 0 0 22px; border-bottom: none; border-left: 1px solid var(--line); }
+  .partida-painel .partida-chips { grid-column: auto; }
   .partida-operacao { border-inline: none; border-block: 1px solid var(--line); padding: 16px 0; }
   .partida-painel .circuito-diagrama { grid-template-columns: minmax(140px, 1fr) minmax(0, 1fr); gap: 14px; }
   .partida-painel .circuito-grupos { max-width: 160px; }
@@ -204,7 +217,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   #startButton { flex: 1; }
   .partida-painel { grid-template-columns: minmax(0, 1fr); gap: 20px; }
   .partida-operacao { border: none; padding: 0; grid-row: 1; }
-  .partida-painel .circuito-partida { grid-column: auto; }
+  .partida-painel .partida-chips { grid-column: auto; }
   .match-status { gap: 8px; }
   .circuito-diagrama, .partida-painel .circuito-diagrama, #alerta-container .circuito-diagrama { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .circuito-grupos { max-width: none; }

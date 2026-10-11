@@ -10,6 +10,53 @@ function selecionarBackend(backend) {
 }
 
 let circuitoAtual = null;
+let estadoChipClassico = { ativo: false, coordenada: null, executando: false };
+
+function atualizarChipClassico(ativo = false, coordenada = null, executando = false) {
+    estadoChipClassico = { ativo, coordenada: coordenada || estadoChipClassico.coordenada, executando };
+    const area = document.getElementById("chipClassico");
+    area.hidden = document.getElementById("dificuldade").value !== "plus";
+    if (area.hidden) return;
+    area.replaceChildren();
+    area.classList.toggle("chip-ativo", ativo);
+    area.classList.toggle("chip-executando", executando);
+    const titulo = document.createElement("h3");
+    const bits = circuitoAtual?.qubits_total || 2 * Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
+    titulo.textContent = `Chip clássico · ${bits} bits de saída`;
+    const status = document.createElement("p");
+    status.className = "chip-status";
+    status.setAttribute("role", "status");
+    status.textContent = executando ? ativo ? "Ataque clássico · alvo mantido" : "Ataque clássico · navio afundado" : ativo ? "Alvo mantido · busca adjacente" : "Em espera · acionado por acerto quântico";
+    area.append(titulo, status);
+    const diagrama = document.createElement("div");
+    diagrama.className = "chip-nands";
+    const coord = estadoChipClassico.coordenada;
+    const eixo = bits / 2;
+    const sequencia = coord ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("") : null;
+    for (let indice = 0; indice < bits; indice++) {
+        const linha = document.createElement("div");
+        linha.className = "chip-linha";
+        const label = document.createElement("span");
+        label.textContent = `b${indice}`;
+        const portas = document.createElement("div");
+        portas.className = "chip-portas";
+        for (let porta = 0; porta < 2; porta++) {
+            const nand = document.createElement("span");
+            nand.className = "chip-nand";
+            nand.textContent = "⊼";
+            nand.title = "Porta NAND · representação ilustrativa da lógica clássica";
+            portas.appendChild(nand);
+        }
+        const valor = document.createElement("span");
+        valor.textContent = sequencia ? sequencia[indice] : "—";
+        linha.append(label, portas, valor);
+        diagrama.appendChild(linha);
+    }
+    const leitura = document.createElement("p");
+    leitura.textContent = coord ? `Saída clássica: ${sequencia} → ${coord}` : "NAND · circuito ilustrativo do controlador de busca";
+    leitura.className = "chip-leitura";
+    area.append(diagrama, leitura);
+}
 
 function modeloCircuito(tamanho, modo = "simulador") {
     const bits = Math.log2(tamanho);
@@ -143,6 +190,8 @@ function criarAnalisePartida(analise) {
 }
 
 document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarCircuitoPartida());
+document.getElementById("dificuldade").addEventListener("change", () => atualizarChipClassico());
+document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarChipClassico());
 document.getElementById("modoSimulador").addEventListener("change", () => atualizarCircuitoPartida(modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value), document.getElementById("modoSimulador").checked ? "simulador" : "cache")));
 atualizarCircuitoPartida();
 lucide.createIcons();

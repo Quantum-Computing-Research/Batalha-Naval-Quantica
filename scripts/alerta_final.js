@@ -43,7 +43,7 @@ function resumoLocalPartida(data) {
     const registro = registroPartida?.partida_id === getGameId() ? registroPartida : {};
     const historico = registro.historico || [];
     const estatisticas = tipo => {
-        const ataques = historico.filter(ataque => ataque.tipo === tipo);
+        const ataques = historico.filter(ataque => ataque.tipo === tipo || tipo === "ataque_quantico" && ataque.tipo === "ataque_classico");
         const acertos = ataques.filter(ataque => ataque.acertou).length;
         return { jogadas: ataques.length, acertos, erros: ataques.length - acertos, navios_afundados: null };
     };
@@ -70,6 +70,8 @@ function finalizarComRegistro(data, atraso = 3000) {
     guardarRegistro("qb_ultimo_resultado", resumo);
     document.getElementById("tamanhoTabuleiro").value = resumo.tamanho_tabuleiro;
     document.getElementById("numNavios").value = resumo.num_navios;
+    document.getElementById("dificuldade").value = resumo.dificuldade || "normal";
+    atualizarChipClassico(false);
     atualizarCircuitoPartida(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo));
     atualizarFrotaAdversaria(resumo.frota_adversaria);
     for (const [id, seletor, board] of [
@@ -166,7 +168,7 @@ async function criarImagemPartida(resumo, tabuleiros, relatorio = null) {
         contexto.font = "17px Georgia";
         contexto.fillStyle = "#626a64";
         const tempo = formatarDuracaoPartida(resumo.duracao_segundos);
-        contexto.fillText(`${nomeHardwarePartida(resumo.backend)}  ·  ${resumo.modo === "simulador" ? "Dados simulados" : "Cache"}  ·  ${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}  ·  ${tempo}`, 600, 254, 1040);
+        contexto.fillText(`${nomeHardwarePartida(resumo.backend)}  ·  ${resumo.modo === "simulador" ? "Dados simulados" : "Cache"}  ·  ${resumo.dificuldade === "plus" ? "Plus" : "Quântico"}  ·  ${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}  ·  ${tempo}`, 600, 254, 1040);
         contexto.textAlign = "left";
         for (const [lado, nome, esquerda] of [["jogador", "Jogador", 76], ["computador", "Computador", 652]]) {
             const stats = resumo.estatisticas[lado];
@@ -250,6 +252,7 @@ function mostrarAlertaFinal(resumo) {
     const detalhes = document.createElement("div");
     detalhes.className = "resultado-detalhes";
     for (const [label, valor] of [
+        ["Dificuldade", resumo.dificuldade === "plus" ? "Plus · quântico + clássico" : "Quântico"],
         ["Adversário", nomeHardwarePartida(resumo.backend)],
         ["Origem dos dados", resumo.modo === "simulador" ? "Dados simulados" : "Cache"],
         ["Tabuleiro", `${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}`],
@@ -310,6 +313,14 @@ function mostrarAlertaFinal(resumo) {
     const relatorio = document.createElement("div");
     relatorio.className = "certificado-relatorio";
     relatorio.append(criarDiagramaCircuito(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo)), criarAnalisePartida(resumo.analise));
+    if (resumo.dificuldade === "plus") {
+        const fontes = document.createElement("p");
+        fontes.textContent = `Ataques quânticos: ${resumo.ataques_por_fonte?.quantico ?? "—"} · Ataques clássicos: ${resumo.ataques_por_fonte?.classico ?? "—"}`;
+        const chip = document.getElementById("chipClassico").cloneNode(true);
+        chip.removeAttribute("id");
+        chip.hidden = false;
+        relatorio.append(fontes, chip);
+    }
     alerta.appendChild(relatorio);
     const rodape = document.createElement("footer");
     rodape.className = "certificado-rodape";

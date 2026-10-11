@@ -93,7 +93,7 @@ function setButtonsState({ startEnabled, waitEnabled, endEnabled }) {
     if (startBtn) startBtn.disabled = !startEnabled;
     if (waitBtn) waitBtn.disabled = !waitEnabled;
     if (endBtn) endBtn.disabled = !endEnabled;
-    for (const id of ["tamanhoTabuleiro", "numNavios", "modoSimulador"]) {
+    for (const id of ["tamanhoTabuleiro", "numNavios", "modoSimulador", "dificuldade"]) {
         const controle = document.getElementById(id);
         if (controle) controle.disabled = !startEnabled;
     }
@@ -193,6 +193,7 @@ async function iniciarJogo(nome) {
 
     const backend = getBackendSelecionado();
     const modo = document.getElementById("modoSimulador")?.checked ? "simulador" : "cache";
+    const dificuldade = document.getElementById("dificuldade").value;
 
     // travar botões enquanto inicia
     setButtonsState({ startEnabled: false, waitEnabled: false, endEnabled: false });
@@ -202,7 +203,7 @@ async function iniciarJogo(nome) {
     try {
         data = await apiFetch("/iniciar_jogo", {
             method: "POST",
-            body: { nome, backend, modo, num_navios: numNavios, tamanho_tabuleiro: tamanhoTabuleiro },
+            body: { nome, backend, modo, dificuldade, num_navios: numNavios, tamanho_tabuleiro: tamanhoTabuleiro },
         });
     } catch (err) {
         // reabilita start se falhar
@@ -228,7 +229,9 @@ async function iniciarJogo(nome) {
     // começou: salva game_id
     setGameId(data.game_id);
     atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo));
-    iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
+    iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, dificuldade, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
+    estadoChipClassico = { ativo: false, coordenada: null, executando: false };
+    atualizarChipClassico();
     atualizarFrotaAdversaria(data.frota_adversaria);
 
     // UI states
@@ -269,6 +272,8 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     }
 
     clearGameId();
+    estadoChipClassico = { ativo: false, coordenada: null, executando: false };
+    atualizarChipClassico();
     atualizarFrotaAdversaria([]);
     clearTimeout(temporizadorResultado);
     resultadoFinalPendente = false;
@@ -339,6 +344,7 @@ async function atacar() {
 
     atualizarStatusBar(`Você atacou ${coordenada.toUpperCase()} → ${data.mensagem}`);
     if (!data.finalizado) processarRespostaAtaqueJogador(data);
+    if (estadoChipClassico.ativo) atualizarChipClassico(true);
 
     const finalizou = data.finalizado === true || data.finalizado === "true";
     if (finalizou) {
@@ -376,14 +382,16 @@ async function ataqueComputador() {
     // cuidado: seu desenho usa (coluna, linha)
     if (Number.isFinite(linha) && Number.isFinite(coluna)) {
         desenharAtaqueQuantico(coluna, linha, acertou);
-        atualizarCircuitoPartida(circuitoAtual, `${String.fromCharCode(65 + linha)}${coluna + 1}`);
+        const coordenada = `${String.fromCharCode(65 + linha)}${coluna + 1}`;
+        if (data.fonte_ataque !== "classico") atualizarCircuitoPartida(circuitoAtual, coordenada);
+        atualizarChipClassico(!!data.chip_classico_ativo, data.fonte_ataque === "classico" ? coordenada : null, data.fonte_ataque === "classico");
     }
 
     atualizarStatusBar(data.mensagem || "Ataque quântico executado.");
     atualizarVez(!!data.vez_do_jogador);
 
     if (acertou) placar.computador++;
-    if (Number.isFinite(linha) && Number.isFinite(coluna)) registrarJogadaPartida("ataque_quantico", `${String.fromCharCode(65 + linha)}${coluna + 1}`, acertou);
+    if (Number.isFinite(linha) && Number.isFinite(coluna)) registrarJogadaPartida(data.fonte_ataque === "classico" ? "ataque_classico" : "ataque_quantico", `${String.fromCharCode(65 + linha)}${coluna + 1}`, acertou);
 
     if (data.finalizado === true) {
         finalizarComRegistro(data);

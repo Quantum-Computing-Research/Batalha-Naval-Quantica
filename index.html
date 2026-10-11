@@ -207,6 +207,12 @@
           </select>
         </div>
         <div class="action-buttons">
+          <label class="difficulty-field" for="dificuldade">Modo
+            <select id="dificuldade">
+              <option value="normal">Quântico</option>
+              <option value="plus">Plus · difícil</option>
+            </select>
+          </label>
           <button id="startButton" onclick="consentimento()"><i data-lucide="play" aria-hidden="true"></i> Iniciar
             partida</button>
           <button id="endButton" onclick="encerrarJogo()" disabled title="Encerrar partida"
@@ -217,7 +223,10 @@
       </div>
       <div class="partida-layout">
         <section class="partida-painel" aria-label="Painel da partida">
-          <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
+          <div class="partida-chips">
+            <section id="circuitoPartida" class="circuito-partida" aria-label="Circuito da partida"></section>
+            <section id="chipClassico" class="chip-classico" hidden aria-label="Chip clássico de busca"></section>
+          </div>
           <div class="partida-operacao">
             <div class="match-status">
               <div id="vez-indicador" class="vez-status">Pronto para jogar</div>
