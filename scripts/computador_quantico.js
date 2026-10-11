@@ -32,10 +32,12 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     area.classList.toggle("chip-executando", executando);
     const bits = circuitoAtual?.qubits_total || 2 * Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
     area.style.setProperty("--qubits-total", bits);
+    document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
+    figuraChip.setAttribute("aria-label", "Computador clássico");
     const imagemChip = document.createElement("img");
     imagemChip.src = "assets/img/chip-classico.svg";
     imagemChip.alt = "Microprocessador clássico quadrado com terminais metálicos";
@@ -100,11 +102,14 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     diagrama.className = "circuito-diagrama";
     if (!circuito) return diagrama;
     const bits = circuito.qubits_por_eixo;
+    const alturaCircuito = circuito.qubits_total * 32;
+    diagrama.style.height = `${alturaCircuito}px`;
     const medicao = coordenada ? [coordenada[0].charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1].map(valor => valor.toString(2).padStart(bits, "0")) : null;
     const informacoes = document.createElement("div");
     informacoes.className = "circuito-informacoes";
     const grupos = document.createElement("div");
     grupos.className = "circuito-grupos";
+    grupos.style.height = `${alturaCircuito}px`;
     const sequencia = medicao?.join("");
     for (let indice = 0; indice < circuito.qubits_total; indice++) {
         const linha = document.createElement("div");
@@ -137,6 +142,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
 function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
     circuitoAtual = circuito || modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value));
     document.getElementById("circuitoPartida").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
+    document.querySelector(".partida-chips").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
     if (backend) hardwareCircuitoAtual = backend;
     const hardware = hardwareCircuitoAtual || document.querySelector('.card.selecionado')?.dataset.backend;
     const card = [...document.querySelectorAll('.card[data-backend]')].find(item => item.dataset.backend === hardware);
@@ -148,9 +154,8 @@ function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
         const imagem = card.querySelector('img').cloneNode(true);
         imagem.width = 140;
         imagem.height = 120;
-        const legenda = document.createElement('figcaption');
-        legenda.textContent = card.querySelector('h3').textContent;
-        figura.append(imagem, legenda);
+        figura.setAttribute("aria-label", card.querySelector('h3').textContent);
+        figura.appendChild(imagem);
         composicao.appendChild(figura);
     }
     composicao.appendChild(criarDiagramaCircuito(circuitoAtual, coordenada));
