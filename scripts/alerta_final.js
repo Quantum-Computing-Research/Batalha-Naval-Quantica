@@ -128,8 +128,9 @@ function linhasResumo(resumo) {
 }
 
 async function criarImagemPartida(resumo, tabuleiros, relatorio = null) {
-    const foto = relatorio?.querySelector(".certificado-hardware img");
-    if (foto && !foto.src.startsWith("data:")) {
+    const fotos = [...(relatorio?.querySelectorAll(".certificado-hardware img, .chip-hardware img") || [])];
+    for (const foto of fotos) {
+        if (foto.src.startsWith("data:")) continue;
         await foto.decode();
         const imagemLocal = document.createElement("canvas");
         const escala = Math.min(1, 480 / Math.max(foto.naturalWidth, foto.naturalHeight));

@@ -130,10 +130,17 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .circuito-com-hardware { gap: 10px; }
   .circuito-hardware { flex-basis: 70px; width: 70px; }
   .circuito-hardware img { height: 80px; }
+  .partida-painel .chip-diagrama { grid-template-columns: 64px minmax(0, 1fr); gap: 10px; }
+  .chip-diagrama .circuito-informacoes { grid-column: 1 / -1; }
+  .chip-hardware img { max-height: 76px; }
 }
 .chip-rede { display: grid; grid-template-columns: minmax(0, 1fr) 16px; align-items: stretch; min-width: 0; }
 .chip-rede-imagem { display: block; width: 100%; height: 100%; min-height: 0; object-fit: fill; }
 .chip-rede-saidas { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
+.partida-painel .chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
+.partida-layout[data-layout] .partida-painel .circuito-diagrama.chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
+.chip-hardware { margin: 0; min-width: 0; align-self: center; }
+.chip-hardware img { display: block; width: 100%; max-height: 112px; object-fit: contain; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
 .chip-executando { background: #f8f1de; box-shadow: inset 3px 0 #ac842a; padding-left: 12px; }
 .partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: inset 3px 0 var(--accent); padding: 12px; }

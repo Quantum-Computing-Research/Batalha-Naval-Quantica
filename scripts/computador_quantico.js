@@ -30,18 +30,17 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     area.replaceChildren();
     area.classList.toggle("chip-ativo", ativo);
     area.classList.toggle("chip-executando", executando);
-    const titulo = document.createElement("h3");
     const bits = circuitoAtual?.qubits_total || 2 * Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
-    titulo.textContent = `Chip clássico · ${bits} bits de saída`;
-    const status = document.createElement("p");
-    status.className = "chip-status";
-    status.setAttribute("role", "status");
-    status.textContent = executando ? ativo ? "Ataque clássico · alvo mantido" : "Ataque clássico · navio afundado" : ativo ? "Alvo mantido · busca adjacente" : "Em espera · acionado por acerto quântico";
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
-    const informacoes = document.createElement("div");
-    informacoes.className = "circuito-informacoes";
-    informacoes.append(titulo, status);
+    const figuraChip = document.createElement("figure");
+    figuraChip.className = "chip-hardware";
+    const imagemChip = document.createElement("img");
+    imagemChip.src = "assets/img/aws_img3.jpg";
+    imagemChip.alt = "Processador clássico em uma placa eletrônica";
+    imagemChip.width = 120;
+    imagemChip.height = 100;
+    figuraChip.appendChild(imagemChip);
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
     const coord = estadoChipClassico.coordenada;
@@ -75,18 +74,11 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
         const valor = document.createElement("span");
         valor.className = "chip-bit-saida";
         valor.setAttribute("aria-label", `Bit de saída b${indice}`);
-        valor.textContent = sequencia ? sequencia[indice] : "—";
+        valor.textContent = executando && sequencia ? sequencia[indice] : "—";
         saidas.appendChild(valor);
     }
     diagrama.append(rede, saidas);
-    const leitura = document.createElement("p");
-    leitura.textContent = coord ? `Saída clássica: ${sequencia.slice(0, eixo)} | ${sequencia.slice(eixo)} → ${coord}` : "NAND · circuito ilustrativo do controlador de busca";
-    leitura.className = "chip-leitura";
-    const descricao = document.createElement("p");
-    descricao.className = "chip-leitura";
-    descricao.textContent = "Lógica clássica · busca de vizinhos e extremidades. Rede de portas ilustrativa.";
-    informacoes.append(leitura, descricao);
-    composicao.append(diagrama, informacoes);
+    composicao.append(figuraChip, diagrama);
     area.appendChild(composicao);
 }
 
