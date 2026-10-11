@@ -38,13 +38,15 @@ function focarAreaPartida() {
     ajustarLayoutPartida();
     const area = document.querySelector('.partida-layout');
     document.getElementById('playerMove').focus({ preventScroll: true });
-    area.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    window.scrollTo({ top: window.scrollY + area.getBoundingClientRect().top - 12, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
 
 window.addEventListener('resize', agendarAjustePartida);
 window.visualViewport?.addEventListener('resize', agendarAjustePartida);
 document.addEventListener('DOMContentLoaded', () => {
-    new ResizeObserver(agendarAjustePartida).observe(document.querySelector('.partida-layout'));
+    const observador = new ResizeObserver(agendarAjustePartida);
+    observador.observe(document.querySelector('.partida-layout'));
+    observador.observe(document.querySelector('.partida-painel'));
     agendarAjustePartida();
 });
 

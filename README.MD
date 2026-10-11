@@ -21,9 +21,13 @@ Os icones usam Lucide 0.468.0 local, com licenca em assets/vendor.
 
 Hardware tem imagens ampliadas e ranking/fila ficam apenas junto ao seletor.
 O painel da partida agrupa circuito, turno, status, ataque e frota adversaria.
-Com janela de pelo menos 1280px e proporcao largura/altura >= 8/5, fica a
-direita dos tabuleiros. Em janelas mais quadradas, verticais ou estreitas,
-fica acima. A alternancia e CSS: redimensionar nao recria o estado do jogo.
+O layout considera largura e altura da janela, tamanho do tabuleiro e altura
+real do painel. Usa lateral somente quando os tabuleiros e o painel cabem sem
+uma coluna desproporcional; nos outros casos distribui o painel acima.
+As celulas variam de 22 a 52px e os tabuleiros se empilham quando necessario.
+Circuitos tem rolagem propria; o chip que executa o ataque e trazido a vista.
+Iniciar leva a janela ate a partida. Redimensionar nao recria os tabuleiros nem
+apaga acertos; o foco no campo de ataque nao desloca a pagina a cada jogada.
 
 A frota ilustra os tamanhos sem revelar posicoes. A API atualiza o estado
 Afundado somente quando todas as casas do navio forem atingidas, inclusive
