@@ -78,19 +78,19 @@ function atualizarUltimaJogadaJogador(coordenada = null) {
     marcador.setAttribute("aria-hidden", String(!coordenada));
 }
 
+function limparDestaqueExecucaoComputador() {
+    document.getElementById("circuitoPartida")?.classList.remove("quantico-executando");
+    document.getElementById("chipClassico")?.classList.remove("chip-executando");
+    estadoChipClassico.executando = false;
+}
+
 function atualizarVez(vezDoJogador) {
     const vezDiv = document.getElementById("vez-indicador");
     const painelComputador = document.querySelector(".partida-chips");
     const painelJogador = document.querySelector(".partida-operacao");
     const partidaAtiva = typeof vezDoJogador === "boolean";
 
-    if (vezDoJogador) {
-        document.getElementById("circuitoPartida")?.classList.remove("quantico-executando");
-        if (estadoChipClassico.executando) {
-            estadoChipClassico.executando = false;
-            document.getElementById("chipClassico")?.classList.remove("chip-executando");
-        }
-    }
+    if (vezDoJogador) limparDestaqueExecucaoComputador();
 
     painelComputador?.classList.toggle("vez-computador", partidaAtiva && !vezDoJogador);
     painelJogador?.classList.toggle("vez-jogador", partidaAtiva && vezDoJogador);
@@ -411,10 +411,19 @@ async function ataqueComputador() {
     const gameId = getGameId();
     if (!gameId) return;
 
+    const usarClassico = document.getElementById("dificuldade").value === "plus" && estadoChipClassico.ativo;
+    if (usarClassico) {
+        document.getElementById("chipClassico")?.classList.add("chip-executando");
+        estadoChipClassico.executando = true;
+    } else {
+        document.getElementById("circuitoPartida")?.classList.add("quantico-executando");
+    }
+
     let data;
     try {
         data = await apiFetch("/ataque-quantico");
     } catch (err) {
+        limparDestaqueExecucaoComputador();
         atualizarStatusBar(`❌ Erro no ataque quântico: ${err.message}`);
         alert(`Erro no ataque quântico: ${err.message}`);
         return;
