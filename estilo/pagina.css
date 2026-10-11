@@ -135,9 +135,12 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .chip-diagrama .circuito-informacoes { grid-column: 1 / -1; }
   .chip-hardware img { max-height: 76px; }
 }
-.chip-rede { display: grid; grid-template-columns: minmax(0, 1fr) 16px; align-items: stretch; min-width: 0; }
+.chip-rede { display: grid; grid-template-columns: 24px minmax(0, 1fr) 38px; align-items: stretch; min-width: 0; }
 .chip-rede-imagem { display: block; width: 100%; height: 100%; min-height: 0; object-fit: fill; }
-.chip-rede-saidas { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
+.chip-bits-entrada, .chip-rede-saidas { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
+.chip-bits-entrada { color: #69777b; text-align: left; }
+.chip-rede-saida { display: grid; grid-template-columns: 24px 14px; align-items: center; gap: 0; white-space: nowrap; }
+.chip-bit-rotulo { color: #80611f; font: 11px monospace; }
 .partida-painel .chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
 .partida-layout[data-layout] .partida-painel .circuito-diagrama.chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
 .chip-hardware { margin: 0; min-width: 0; align-self: center; }
@@ -425,6 +428,6 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout[data-layout] .circuito-porta { width: 18px; height: 18px; }
   .partida-layout[data-layout] .circuito-medicao svg { width: 14px; height: 14px; }
   .partida-layout[data-layout] .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px; }
-  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: minmax(0, 1fr) 12px; }
+  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 22px minmax(0, 1fr) 38px; }
   .partida-layout[data-layout] .chip-rede-imagem { min-width: 0; width: 100%; }
 }

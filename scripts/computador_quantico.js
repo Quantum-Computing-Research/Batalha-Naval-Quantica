@@ -75,7 +75,6 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     diagrama.style.height = `${altura}px`;
     const fios = [];
     const portas = [];
-    const rotulosBits = [];
     for (let camada = 0; camada < 3; camada++) {
         const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {
@@ -83,7 +82,6 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
             if (camada === 0) {
                 const bifurcacao = esquerda - 12;
                 fios.push(`<path d="M18 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
-                rotulosBits.push(`<text x="0" y="${centro + 5}" fill="#69777b" stroke="none" font-family="monospace" font-size="15">b${indice}</text>`);
             } else {
                 const saidaAnteriorX = esquerda - 46;
                 const fontes = [indice, (indice + 1) % bits];
@@ -97,26 +95,37 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
             if (camada === 2) {
                 fios.push(`<path d="M${esquerda + 30} ${centro}H250"/>`);
-                rotulosBits.push(`<text x="258" y="${centro + 5}" fill="#80611f" stroke="none" font-family="monospace" font-size="15">b${indice}</text>`);
             }
         }
     }
     const rede = document.createElement("img");
     rede.className = "chip-rede-imagem";
-    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}${rotulosBits.join("")}</svg>`)}`;
+    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}</svg>`)}`;
     rede.alt = `Circuito clássico ilustrativo com portas NAND interligadas e ${bits} saídas`;
-    rede.width = 282;
+    rede.width = 256;
     rede.height = altura;
+    const entradas = document.createElement("div");
+    entradas.className = "chip-bits-entrada";
     const saidas = document.createElement("div");
     saidas.className = "chip-rede-saidas";
     for (let indice = 0; indice < bits; indice++) {
+        const entrada = document.createElement("span");
+        entrada.className = "chip-bit-rotulo";
+        entrada.textContent = `b${indice}`;
+        entradas.appendChild(entrada);
+        const linhaSaida = document.createElement("div");
+        linhaSaida.className = "chip-rede-saida";
+        const rotuloSaida = document.createElement("span");
+        rotuloSaida.className = "chip-bit-rotulo";
+        rotuloSaida.textContent = `b${indice}`;
         const valor = document.createElement("span");
         valor.className = "chip-bit-saida";
         valor.setAttribute("aria-label", `Bit de saída b${indice}`);
         valor.textContent = executando && sequencia ? sequencia[indice] : "—";
-        saidas.appendChild(valor);
+        linhaSaida.append(rotuloSaida, valor);
+        saidas.appendChild(linhaSaida);
     }
-    diagrama.append(rede, saidas);
+    diagrama.append(entradas, rede, saidas);
     composicao.append(figuraChip, diagrama, leitura);
     area.appendChild(composicao);
 }
