@@ -42,28 +42,42 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     informacoes.className = "circuito-informacoes";
     informacoes.append(titulo, status);
     const diagrama = document.createElement("div");
-    diagrama.className = "chip-nands";
+    diagrama.className = "chip-rede";
     const coord = estadoChipClassico.coordenada;
     const eixo = bits / 2;
     const sequencia = coord ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("") : null;
+    const altura = bits * 32;
+    diagrama.style.height = `${altura}px`;
+    const fios = [];
+    const portas = [];
+    for (let camada = 0; camada < 3; camada++) {
+        const esquerda = 30 + camada * 76;
+        for (let indice = 0; indice < bits; indice++) {
+            const centro = indice * 32 + 16;
+            const origem = ((indice + camada + 1) % bits) * 32 + 16;
+            const entrada = camada === 0 ? 0 : esquerda - 40;
+            const dobra = esquerda - 16 - (indice % 3) * 4;
+            fios.push(`<path d="M${entrada} ${centro}H${esquerda}M${entrada} ${origem}H${dobra}V${centro + 5}H${esquerda}"/>`);
+            portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
+            if (camada === 2) fios.push(`<path d="M${esquerda + 30} ${centro}H240"/>`);
+        }
+    }
+    const rede = document.createElement("img");
+    rede.className = "chip-rede-imagem";
+    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}</svg>`)}`;
+    rede.alt = `Circuito clássico ilustrativo com portas NAND interligadas e ${bits} saídas`;
+    rede.width = 240;
+    rede.height = altura;
+    const saidas = document.createElement("div");
+    saidas.className = "chip-rede-saidas";
     for (let indice = 0; indice < bits; indice++) {
-        const linha = document.createElement("div");
-        linha.className = "chip-linha";
-        const label = document.createElement("span");
-        label.textContent = `b${indice}`;
-        const portas = document.createElement("img");
-        portas.className = "chip-portas";
-        portas.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 72" fill="none" stroke="#516b78" stroke-width="2"><path d="M0 14h24M0 26h24M0 46h24M0 58h24M61 20h21v10h30M61 52h21V42h30M149 36h31"/><path d="M24 7h18a13 13 0 0 1 0 26H24zM24 39h18a13 13 0 0 1 0 26H24zM112 23h18a13 13 0 0 1 0 26h-18z" fill="#d5eafa"/><circle cx="58" cy="20" r="3" fill="#fff"/><circle cx="58" cy="52" r="3" fill="#fff"/><circle cx="146" cy="36" r="3" fill="#fff"/></svg>')}`;
-        portas.alt = "Rede ilustrativa de três portas NAND com fios e inversão de saída";
-        portas.width = 180;
-        portas.height = 72;
-        portas.title = "Portas NAND · diagrama ilustrativo do controlador clássico";
         const valor = document.createElement("span");
         valor.className = "chip-bit-saida";
+        valor.setAttribute("aria-label", `Bit de saída b${indice}`);
         valor.textContent = sequencia ? sequencia[indice] : "—";
-        linha.append(label, portas, valor);
-        diagrama.appendChild(linha);
+        saidas.appendChild(valor);
     }
+    diagrama.append(rede, saidas);
     const leitura = document.createElement("p");
     leitura.textContent = coord ? `Saída clássica: ${sequencia.slice(0, eixo)} | ${sequencia.slice(eixo)} → ${coord}` : "NAND · circuito ilustrativo do controlador de busca";
     leitura.className = "chip-leitura";
