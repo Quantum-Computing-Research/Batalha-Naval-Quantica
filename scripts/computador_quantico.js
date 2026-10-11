@@ -83,7 +83,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
             if (camada === 0) {
                 const bifurcacao = esquerda - 12;
                 fios.push(`<path d="M18 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
-                rotulosBits.push(`<text x="0" y="${centro + 4}" fill="#69777b" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
+                rotulosBits.push(`<text x="0" y="${centro + 5}" fill="#69777b" stroke="none" font-family="monospace" font-size="15">b${indice}</text>`);
             } else {
                 const saidaAnteriorX = esquerda - 46;
                 const fontes = [indice, (indice + 1) % bits];
@@ -97,7 +97,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
             if (camada === 2) {
                 fios.push(`<path d="M${esquerda + 30} ${centro}H250"/>`);
-                rotulosBits.push(`<text x="258" y="${centro + 4}" fill="#80611f" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
+                rotulosBits.push(`<text x="258" y="${centro + 5}" fill="#80611f" stroke="none" font-family="monospace" font-size="15">b${indice}</text>`);
             }
         }
     }
