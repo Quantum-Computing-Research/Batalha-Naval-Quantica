@@ -15,18 +15,18 @@ function atualizarEstimativaPreco() {
     const campo = document.getElementById("precoPartida");
     if (!campo) return;
     const tabuleiro = Number(document.getElementById("tamanhoTabuleiro").value);
-    const shots = tabuleiro * tabuleiro;
+    const shotsMaximos = tabuleiro * tabuleiro;
+    const shotsMinimos = Number(document.getElementById("numNavios").value);
     const hardware = document.querySelector(".card.selecionado")?.dataset.backend;
     const tarifa = tarifasBraket[hardware];
+    const usd = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 6 });
     if (!tarifa) {
-        campo.value = `Selecione um QPU para estimar o preço.\n${shots} shots (1 por célula) + US$ 0,30 por tarefa.\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
+        campo.value = `Selecione um QPU para ver a tarifa por shot.\nFaixa: ${shotsMinimos} shots (${shotsMinimos} navios) a ${shotsMaximos} shots (todas as casas).\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
         return;
     }
-    const tarefa = 0.30;
-    const custoShots = shots * tarifa.porShot;
-    const total = tarefa + custoShots;
-    const usd = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 6 });
-    campo.value = `${tarifa.nome} · ${shots} shots × ${usd.format(tarifa.porShot)} + ${usd.format(tarefa)} / tarefa\nEstimativa QPU: ${usd.format(total)}\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
+    const custoMinimo = shotsMinimos * tarifa.porShot;
+    const custoMaximo = shotsMaximos * tarifa.porShot;
+    campo.value = `${tarifa.nome} · ${usd.format(tarifa.porShot)} por shot\nShots: ${shotsMinimos} (1 por navio) a ${shotsMaximos} (todas as casas)\nEstimativa QPU: ${usd.format(custoMinimo)} a ${usd.format(custoMaximo)}\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
 }
 
 function atualizarNavegacaoCarrossel() {
@@ -73,4 +73,5 @@ document.querySelectorAll('.card').forEach(card => {
 });
 
 document.getElementById("tamanhoTabuleiro").addEventListener("change", atualizarEstimativaPreco);
+document.getElementById("numNavios").addEventListener("change", atualizarEstimativaPreco);
 atualizarEstimativaPreco();
