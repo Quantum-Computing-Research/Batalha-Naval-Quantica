@@ -157,7 +157,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .partida-painel .circuito-informacoes h3 { font-size: 14px; }
 .circuito-diagrama { display: grid; grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1fr); gap: 40px; align-items: center; font-family: 'Avenir Next', 'Trebuchet MS', sans-serif; }
 .circuito-grupos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; max-width: 330px; }
-.circuito-qubit { height: 28px; grid-template-columns: 60px minmax(65px, 1fr) 22px; font-size: 11px; gap: 5px; }
+.circuito-qubit { height: 28px; grid-template-columns: 42px minmax(65px, 1fr) 22px; font-size: 11px; gap: 5px; }
 .circuito-porta { width: 22px; height: 22px; border-color: var(--accent); color: var(--accent); font-size: 12px; }
 .circuito-porta svg { width: 17px; height: 17px; }
 .circuito-medicao { border-color: #a18a52; color: #755d27; }
@@ -420,7 +420,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 }
 
 @media (max-width: 640px) {
-  .partida-layout[data-layout] .circuito-qubit { grid-template-columns: 34px minmax(18px, 1fr) 14px; gap: 2px; }
+  .partida-layout[data-layout] .circuito-qubit { grid-template-columns: 32px minmax(18px, 1fr) 14px; gap: 2px; }
   .partida-layout[data-layout] .circuito-fio { min-width: 0; }
   .partida-layout[data-layout] .circuito-porta { width: 18px; height: 18px; }
   .partida-layout[data-layout] .circuito-medicao svg { width: 14px; height: 14px; }
