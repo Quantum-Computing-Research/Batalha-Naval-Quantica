@@ -12,3 +12,23 @@ function atualizarRanking(ranking) {
     });
 }
 
+const rankingPopup = document.getElementById("rankingPopup");
+const rankingButton = document.getElementById("rankingButton");
+
+rankingButton.addEventListener("click", () => {
+    if (rankingPopup.open) return;
+    rankingPopup.showModal();
+    rankingButton.setAttribute("aria-expanded", "true");
+});
+
+document.getElementById("rankingCloseButton").addEventListener("click", () => rankingPopup.close());
+rankingPopup.addEventListener("close", () => {
+    rankingButton.setAttribute("aria-expanded", "false");
+    rankingButton.focus({ preventScroll: true });
+});
+rankingPopup.addEventListener("click", event => {
+    if (event.target !== rankingPopup) return;
+    const limites = rankingPopup.getBoundingClientRect();
+    if (event.clientX < limites.left || event.clientX > limites.right || event.clientY < limites.top || event.clientY > limites.bottom) rankingPopup.close();
+});
+

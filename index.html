@@ -52,6 +52,8 @@
     <div class="header-actions">
       <button id="analyticsButton" class="btn btn-ghost"><i data-lucide="chart-no-axes-combined" aria-hidden="true"></i>
         Análise</button>
+      <button id="rankingButton" type="button" aria-haspopup="dialog" aria-controls="rankingPopup"
+        aria-expanded="false"><i data-lucide="trophy" aria-hidden="true"></i> Ranking</button>
       <!-- REFERÊNCIAS -->
       <div class="hover-container">
         <div class="hover-trigger" tabindex="0" aria-label="Referências científicas">
@@ -84,10 +86,28 @@
     </div>
   </header>
 
+  <dialog id="rankingPopup" class="ranking-popup" aria-labelledby="ranking-popup-titulo">
+    <div class="ranking-popup-header">
+      <h2 id="ranking-popup-titulo">Ranking</h2>
+      <button id="rankingCloseButton" type="button" aria-label="Fechar ranking" title="Fechar ranking"><i
+          data-lucide="x" aria-hidden="true"></i></button>
+    </div>
+    <div class="ranking-espera-wrapper">
+      <div id="ranking" class="painel-box">
+        <h3>Jogadores</h3>
+        <ol id="rankingList"></ol>
+      </div>
+      <div id="filaEspera" class="painel-box">
+        <h3><i data-lucide="users" aria-hidden="true"></i> Fila de espera</h3>
+        <ul id="esperaList"></ul>
+      </div>
+    </div>
+  </dialog>
+
   <!-- CARROSSEL -->
   <div class="container">
     <div class="main-content">
-      <section class="hardware-section" aria-label="Computadores, ranking e fila">
+      <section class="hardware-section" aria-label="Computadores quânticos">
         <div class="backend-list">
           <div class="section-heading">
             <h2>Computador</h2><span>AWS Braket</span>
@@ -136,16 +156,6 @@
                 data-lucide="chevron-right" aria-hidden="true"></i></button>
           </div>
         </div>
-        <aside class="ranking-espera-wrapper">
-          <div id="ranking" class="painel-box">
-            <h3><i data-lucide="trophy" aria-hidden="true"></i> Ranking</h3>
-            <ol id="rankingList"></ol>
-          </div>
-          <div id="filaEspera" class="painel-box">
-            <h3><i data-lucide="users" aria-hidden="true"></i> Fila de espera</h3>
-            <ul id="esperaList"></ul>
-          </div>
-        </aside>
       </section>
 
 
