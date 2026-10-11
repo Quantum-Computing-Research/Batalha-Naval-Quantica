@@ -136,10 +136,10 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .chip-diagrama .circuito-informacoes { grid-column: 1 / -1; }
   .chip-hardware img { max-height: 76px; }
 }
-.chip-rede { display: grid; grid-template-columns: 8px minmax(0, 1fr); align-items: stretch; min-width: 0; }
-.chip-rede-scroll { display: flex; justify-content: flex-start; width: 100%; height: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; }
-.chip-rede-imagem { display: block; flex: 0 0 256px; width: 256px; height: 100%; min-width: 256px; min-height: 0; margin: 0; object-position: left top; }
-.chip-bits-entrada { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
+.chip-rede { display: grid; grid-template-columns: 0 minmax(0, 1fr); align-items: stretch; min-width: 0; gap: 0; margin: 0; padding: 0; }
+.chip-rede-scroll { display: flex; justify-content: flex-start; width: 100%; height: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; margin: 0; padding: 0; }
+.chip-rede-imagem { display: block; flex: 0 0 256px; width: 256px; height: 100%; min-width: 256px; min-height: 0; margin: 0; padding: 0; object-position: left top; }
+.chip-bits-entrada { display: grid; grid-auto-rows: 32px; align-items: center; min-width: 0; gap: 0; margin: 0; padding: 0; font: 11px monospace; }
 .chip-bits-entrada { color: #69777b; text-align: left; }
 .chip-bit-rotulo { color: #80611f; font: 11px monospace; }
 .partida-painel .chip-diagrama { grid-template-columns: minmax(68px, 0.55fr) minmax(0, 1.45fr); gap: 10px; }
@@ -434,5 +434,5 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .partida-layout:has(#chipClassico:not([hidden])) .partida-painel { grid-template-columns: minmax(0, 1fr); }
   .partida-layout:has(#chipClassico:not([hidden])) .partida-operacao { grid-column: 1; grid-row: 1; max-width: none; justify-self: stretch; }
   .partida-layout[data-layout] .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px; }
-  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 8px minmax(0, 1fr); }
+  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 0 minmax(0, 1fr); gap: 0; }
 }

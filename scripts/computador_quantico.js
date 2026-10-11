@@ -70,7 +70,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const leitura = criarLeituraJogada(coord, eixo, executando);
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
-    diagrama.style.gridTemplateColumns = "8px minmax(0, 1fr)";
+    diagrama.style.gridTemplateColumns = "0 minmax(0, 1fr)";
     const altura = alturaCircuito;
     diagrama.style.height = `${altura}px`;
     const fios = [];
