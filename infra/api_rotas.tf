@@ -35,6 +35,12 @@ resource "aws_apigatewayv2_route" "estado" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
 }
 
+resource "aws_apigatewayv2_route" "analises" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "GET /analises"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
+}
+
 resource "aws_apigatewayv2_route" "backends_status" {
   api_id    = aws_apigatewayv2_api.api.id
   route_key = "GET /backends/status"

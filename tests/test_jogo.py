@@ -33,12 +33,13 @@ class JogoLambdaTest(unittest.TestCase):
             mocked.start()
             self.addCleanup(mocked.stop)
 
-    def request(self, path, body=None, game_id=None, method="POST", expected=200):
+    def request(self, path, body=None, game_id=None, method="POST", expected=200, query=None):
         response = self.handler.handler({
             "rawPath": path,
             "requestContext": {"http": {"method": method}},
             "body": json.dumps(body or {}),
             "headers": {"x-game-id": game_id} if game_id else {},
+            "queryStringParameters": query or {},
         }, None)
         data = json.loads(response["body"])
         self.assertEqual(response["statusCode"], expected, data)
@@ -396,6 +397,73 @@ class JogoLambdaTest(unittest.TestCase):
             {"nome": "Ana", "pontos": 80},
         ])
         self.assertEqual(client.list_objects_v2.call_count, 2)
+
+    def test_analytics_aggregates_selected_hardware_and_excludes_classical_attacks(self):
+        partidas = [
+            {
+                "partida_id": "match-a",
+                "backend": "ionq_forte",
+                "tamanho_tabuleiro": 4,
+                "ended_at": "2026-01-01T00:00:02Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 0, "coluna": 0, "acertou": False, "t": "2026-01-01T00:00:00Z"},
+                    {"tipo": "ataque_classico", "linha": 0, "coluna": 1, "acertou": True, "t": "2026-01-01T00:00:01Z"},
+                ],
+            },
+            {
+                "partida_id": "match-b",
+                "backend": "ionq_forte",
+                "tamanho_tabuleiro": 4,
+                "ended_at": "2026-01-02T00:00:01Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 1, "coluna": 1, "acertou": True, "t": "2026-01-02T00:00:00Z"},
+                ],
+            },
+            {
+                "partida_id": "match-c",
+                "backend": "rigetti_cepheus",
+                "tamanho_tabuleiro": 8,
+                "ended_at": "2026-01-03T00:00:01Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 0, "coluna": 0, "acertou": True, "t": "2026-01-03T00:00:00Z"},
+                ],
+            },
+        ]
+        with patch.object(self.handler, "_listar_partidas_s3", return_value=partidas):
+            result = self.request("/analises", method="GET", query={"hardware": "ionq_forte", "tamanho_tabuleiro": "4"})
+
+        self.assertEqual(result["amostras"], 2)
+        self.assertEqual(result["ataques_classicos_excluidos"], 1)
+        self.assertEqual(result["partidas_analisadas"], 2)
+        self.assertEqual(result["analise"]["frequencias"], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+        self.assertEqual(result["analise"]["min_entropia_empirica_bits"], 1)
+        self.assertFalse(result["xeb"]["disponivel"])
+        self.assertFalse(result["tqc"]["disponivel"])
+        self.assertEqual([partida["id"] for partida in result["partidas"]], ["match-b", "match-a"])
+
+    def test_analytics_requires_valid_board_size(self):
+        with patch.object(self.handler, "_listar_partidas_s3", return_value=[]):
+            self.request("/analises", method="GET", query={"hardware": "ionq_forte"}, expected=400)
+            self.request("/analises", method="GET", query={"hardware": "ionq_forte", "tamanho_tabuleiro": "10"}, expected=400)
+
+    def test_match_archive_listing_paginates_s3(self):
+        documentos = {
+            "partidas/a.json": {"partida_id": "a", "backend": "ionq_forte"},
+            "partidas/b.json": {"partida_id": "b", "backend": "rigetti_cepheus"},
+        }
+        client = MagicMock()
+        client.list_objects_v2.side_effect = [
+            {"Contents": [{"Key": "partidas/a.json"}], "IsTruncated": True, "NextContinuationToken": "next"},
+            {"Contents": [{"Key": "partidas/b.json"}], "IsTruncated": False},
+        ]
+        client.get_object.side_effect = lambda Bucket, Key: {"Body": io.BytesIO(json.dumps(documentos[Key]).encode())}
+
+        with patch.object(self.handler, "s3", client):
+            partidas = self.handler._listar_partidas_s3()
+
+        self.assertEqual([partida["partida_id"] for partida in partidas], ["a", "b"])
+        self.assertEqual(client.list_objects_v2.call_count, 2)
+        self.assertEqual(client.list_objects_v2.call_args_list[1].kwargs["ContinuationToken"], "next")
 
 
 if __name__ == "__main__":

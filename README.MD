@@ -95,3 +95,23 @@ totais, melhor partida, vitorias, derrotas e referencias das partidas. O ranking
 mostra os dez maiores totais, lidos desses documentos no S3. A finalizacao e
 idempotente por identificador da partida. Pontos de partidas antigas nao sao
 recalculados e preservam o criterio anterior de um ponto por acerto.
+
+## Analise de aleatoriedade por hardware
+
+`GET /analises` lista os hardwares com partidas arquivadas. Com `hardware` e
+`tamanho_tabuleiro` (4, 8 ou 16), agrega as coordenadas de ataque quantico das
+partidas em `partidas/{partida_id}.json`; ataques classicos do modo Plus ficam
+fora da amostra. A resposta inclui distribuicao de Hamming, frequencia e
+entropia por bit, frequencias por casa, qui-quadrado, repeticoes, min-entropia
+e entropia de colisao empiricas, alem das partidas que formaram a amostra.
+
+O estudo de Liu et al., Nature 640 (2025), doi:10.1038/s41586-025-08737-1,
+usa XEB por circuito (que requer a probabilidade ideal `p_C(x)`), tempo medio
+de resposta do QPU (`tQC`) e limites de min-entropia suave sob um modelo
+explicito de adversario e extractor. Os registros atuais nao guardam circuitos
+aleatorios por amostra nem `p_C(x)`; o jogo usa uma medicao Hadamard de saida
+uniforme, para a qual XEB nao discrimina o comportamento observado. Tambem nao
+registramos a duracao de execucao individual do QPU nem executamos um protocolo
+de extracao/certificacao. Por isso a API sinaliza XEB, tQC e min-entropia
+certificada como indisponiveis; os demais indices sao descritivos e nao
+certificam aleatoriedade quantica.

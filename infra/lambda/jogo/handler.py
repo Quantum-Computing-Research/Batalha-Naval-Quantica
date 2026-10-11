@@ -885,6 +885,147 @@ def handle_estado(event):
         "jogador": state.get("jogador", ""),
     })
 
+def handle_analises(event):
+    qs = event.get("queryStringParameters") or {}
+    hardware = (qs.get("hardware") or "").strip()
+    tamanho_raw = qs.get("tamanho_tabuleiro")
+
+    if not CACHE_BUCKET:
+        return _resp(200, {"hardwares": [], "partidas": [], "analise": {"disponivel": False, "motivo": "Armazenamento de partidas indisponível."}})
+
+    try:
+        partidas = _listar_partidas_s3()
+    except Exception as erro:
+        logger.exception("Falha ao listar partidas para análise")
+        return _resp(500, {"error": "Não foi possível carregar as partidas arquivadas."})
+
+    contagem = {}
+    for partida in partidas:
+        hw = partida.get("backend")
+        if hw:
+            contagem[hw] = contagem.get(hw, 0) + 1
+    hardwares = [
+        {"id": hw, "nome": hw, "partidas": contagem.get(hw, 0)}
+        for hw in sorted(set(HARDWARE_FILES) | set(contagem))
+    ]
+
+    if not hardware:
+        return _resp(200, {"hardwares": hardwares})
+    if tamanho_raw is None:
+        return _resp(400, {"error": "Informe o tamanho_tabuleiro para comparar amostras equivalentes."})
+    try:
+        tamanho = int(tamanho_raw)
+    except (ValueError, TypeError):
+        return _resp(400, {"error": "tamanho_tabuleiro deve ser 4, 8 ou 16."})
+    if tamanho not in (4, 8, 16):
+        return _resp(400, {"error": "tamanho_tabuleiro deve ser 4, 8 ou 16."})
+
+    selecionadas = [
+        partida for partida in partidas
+        if partida.get("backend") == hardware and int(partida.get("tamanho_tabuleiro") or 0) == tamanho
+    ]
+    bits_por_eixo = int(math.log2(tamanho))
+    qubits = bits_por_eixo * 2
+    bitstrings = []
+    partidas_resumo = []
+    correlacoes = []
+    classicas_excluidas = 0
+
+    for partida in selecionadas:
+        historico = partida.get("historico") or []
+        ataques_quanticos = []
+        ataques_classicos = 0
+        for ataque in historico:
+            tipo = ataque.get("tipo")
+            if tipo == "ataque_classico":
+                ataques_classicos += 1
+                continue
+            if tipo != "ataque_quantico":
+                continue
+            try:
+                linha = int(ataque["linha"])
+                coluna = int(ataque["coluna"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not (0 <= linha < tamanho and 0 <= coluna < tamanho):
+                continue
+            ataques_quanticos.append({
+                "bits": f"{linha:0{bits_por_eixo}b}{coluna:0{bits_por_eixo}b}",
+                "t": ataque.get("t") or "",
+                "acertou": bool(ataque.get("acertou")),
+            })
+        ataques_quanticos.sort(key=lambda ataque: ataque["t"])
+        amostras_partida = [ataque["bits"] for ataque in ataques_quanticos]
+        bitstrings.extend(amostras_partida)
+        classicas_excluidas += ataques_classicos
+
+        resumo = partida.get("resumo") or {}
+        partidas_resumo.append({
+            "id": partida.get("partida_id") or resumo.get("partida_id"),
+            "data": partida.get("ended_at") or resumo.get("fim") or "",
+            "jogador": (partida.get("jogador") or {}).get("nome") or resumo.get("jogador") or "Jogador",
+            "modo": partida.get("modo") or resumo.get("modo") or "cache",
+            "vencedor": partida.get("vencedor") or resumo.get("vencedor"),
+            "pontuacao": int(partida.get("pontuacao", resumo.get("pontuacao", 0)) or 0),
+            "ataques_quanticos": len(ataques_quanticos),
+            "acertos": sum(ataque["acertou"] for ataque in ataques_quanticos),
+            "ataques_classicos": ataques_classicos,
+            "incluida": bool(ataques_quanticos),
+        })
+        if amostras_partida:
+            correlacao = _analise_medicoes(amostras_partida, tamanho).get("correlacao_lag_1")
+            if correlacao is not None and math.isfinite(correlacao):
+                correlacoes.append((correlacao, max(1, len(amostras_partida) - 1)))
+
+    if bitstrings:
+        analise = _analise_medicoes(bitstrings, tamanho)
+        frequencias_observadas = analise["frequencias"]
+        probabilidades = [frequencia / len(bitstrings) for frequencia in frequencias_observadas]
+        frequencia_bits = [sum(bits[indice] == "1" for bits in bitstrings) / len(bitstrings) for indice in range(qubits)]
+        analise.update({
+            "base": "Ataques quânticos reais registrados nas partidas concluídas; ataques clássicos excluídos.",
+            "frequencia_bit_1_por_qubit": frequencia_bits,
+            "entropia_por_qubit": [
+                -p * math.log2(p) - (1 - p) * math.log2(1 - p) if 0 < p < 1 else 0
+                for p in frequencia_bits
+            ],
+            "min_entropia_empirica_bits": -math.log2(max(probabilidades)) if max(probabilidades) else None,
+            "entropia_colisao_empirica_bits": -math.log2(sum(probabilidade ** 2 for probabilidade in probabilidades)) if any(probabilidades) else None,
+            "hamming": [sum(bits.count("1") == peso for bits in bitstrings) for peso in range(qubits + 1)],
+            "correlacao_lag_1": (
+                sum(valor * peso for valor, peso in correlacoes) / sum(peso for _, peso in correlacoes)
+                if correlacoes else None
+            ),
+            "nota": "Índices descritivos das jogadas registradas; não certificam aleatoriedade quântica. A correlação é calculada dentro de cada partida.",
+        })
+    else:
+        analise = {"disponivel": False, "motivo": "Nenhuma jogada quântica arquivada para este hardware e tamanho de tabuleiro."}
+
+    partidas_resumo.sort(key=lambda partida: partida["data"], reverse=True)
+    return _resp(200, {
+        "hardware": hardware,
+        "tamanho_tabuleiro": tamanho,
+        "qubits_total": qubits,
+        "amostras": len(bitstrings),
+        "partidas_total": len(partidas_resumo),
+        "partidas_analisadas": sum(partida["incluida"] for partida in partidas_resumo),
+        "ataques_classicos_excluidos": classicas_excluidas,
+        "xeb": {
+            "disponivel": False,
+            "motivo": "O jogo usa um circuito Hadamard com saída uniforme e não arquiva probabilidades ideais p_C(x) por circuito; XEB do artigo não é informativo nem calculável para estes dados.",
+        },
+        "tqc": {
+            "disponivel": False,
+            "motivo": "Os arquivos guardam horário da jogada, não duração de execução/resposta do QPU.",
+        },
+        "entropia_certificada": {
+            "disponivel": False,
+            "motivo": "Min-entropia suave certificada exige XEB verificável, limiar, modelo de adversário e extractor; as entropias empíricas abaixo são descritivas.",
+        },
+        "partidas": partidas_resumo,
+        "analise": analise,
+    })
+
 import re
 import uuid
 from datetime import datetime, timezone
@@ -917,6 +1058,32 @@ def _s3_get_json(key: str):
     obj = s3.get_object(Bucket=CACHE_BUCKET, Key=key)
     raw = obj["Body"].read().decode("utf-8", errors="replace")
     return json.loads(raw)
+
+def _listar_partidas_s3() -> list:
+    partidas = []
+    token = None
+    while True:
+        args = {"Bucket": CACHE_BUCKET, "Prefix": MATCH_PREFIX}
+        if token:
+            args["ContinuationToken"] = token
+        pagina = s3.list_objects_v2(**args)
+        for item in pagina.get("Contents", []):
+            chave = item.get("Key", "")
+            if not chave.endswith(".json"):
+                continue
+            try:
+                partida = _s3_get_json(chave)
+            except Exception:
+                logger.exception("Falha ao carregar partida arquivada: %s", chave)
+                continue
+            if isinstance(partida, dict) and partida.get("backend"):
+                partidas.append(partida)
+        if pagina.get("IsTruncated") is not True:
+            break
+        token = pagina.get("NextContinuationToken")
+        if not token:
+            break
+    return partidas
 
 def _ranking_global(limite: int = 10) -> list:
     if not CACHE_BUCKET:
@@ -1031,6 +1198,7 @@ def handler(event, context):
         ("POST", "/encerrar_jogo"): handle_encerrar,
         ("POST", "/fila/entrar"): handle_entrar_fila,
         ("GET",  "/estado"): handle_estado,
+        ("GET",  "/analises"): handle_analises,
         ("GET", "/backends/status"): handle_backends_status,
     }
 
