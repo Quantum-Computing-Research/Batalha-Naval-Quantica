@@ -100,11 +100,10 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-classico[hidden] { display: none; }
 .chip-classico h3 { font-size: 13px; margin: 0 0 8px; }
 .chip-status, .chip-leitura { font-size: 11px; line-height: 1.5; margin: 8px 0; }
-.chip-nands { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 18px; }
-.chip-linha { display: grid; grid-template-columns: 25px minmax(50px, 1fr) 14px; align-items: center; height: 26px; gap: 5px; font: 11px monospace; }
-.chip-portas { display: flex; justify-content: space-around; align-items: center; position: relative; }
-.chip-portas::before { content: ''; position: absolute; width: 100%; border-top: 1px solid #9dabb0; }
-.chip-nand { position: relative; background: #f3f7f7; font-size: 21px; line-height: 22px; }
+.chip-nands { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; min-width: 0; }
+.chip-linha { display: grid; grid-template-columns: 22px minmax(65px, 1fr) 14px; align-items: center; min-height: 36px; gap: 5px; font: 11px monospace; }
+.chip-portas { display: block; width: 100%; height: auto; max-height: 52px; }
+.chip-bit-saida { color: #80611f; font-weight: bold; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
 .chip-executando { background: #f8f1de; box-shadow: inset 3px 0 #ac842a; padding-left: 12px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
