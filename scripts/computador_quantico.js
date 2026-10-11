@@ -32,6 +32,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     area.classList.toggle("chip-executando", executando);
     const bits = circuitoAtual?.qubits_total || 2 * Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
     area.style.setProperty("--qubits-total", bits);
+    const alturaCircuito = bits * 32;
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
@@ -49,7 +50,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const coord = estadoChipClassico.coordenada;
     const eixo = bits / 2;
     const sequencia = coord ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("") : null;
-    const altura = bits * 32;
+    const altura = alturaCircuito;
     diagrama.style.height = `${altura}px`;
     const fios = [];
     const portas = [];
@@ -155,7 +156,7 @@ function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
         imagem.width = 140;
         imagem.height = 120;
         figura.setAttribute("aria-label", card.querySelector('h3').textContent);
-        figura.appendChild(imagem);
+        figura.append(imagem);
         composicao.appendChild(figura);
     }
     composicao.appendChild(criarDiagramaCircuito(circuitoAtual, coordenada));

@@ -358,6 +358,31 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .partida-painel .chip-hardware img { width: 100%; height: 100%; max-height: none; min-height: 0; object-fit: contain; }
 .partida-painel .chip-rede { height: 100% !important; min-height: calc(var(--qubits-total, 4) * 32px); }
 .partida-painel .chip-rede-saidas { grid-auto-rows: 32px; }
+
+.partida-painel .partida-chips:has(#chipClassico:not([hidden])) { align-items: center; grid-auto-rows: var(--chip-panel-height); }
+.partida-painel #circuitoPartida,
+.partida-painel #chipClassico { box-sizing: border-box; height: var(--chip-panel-height); min-height: var(--chip-panel-height); max-height: var(--chip-panel-height); margin: 0; padding: 0; border: 0; align-self: center; }
+.partida-painel .circuito-com-hardware { height: 100%; min-height: 0; align-items: stretch; }
+.partida-painel .circuito-hardware { display: block; flex: 0 0 48%; width: 48%; height: 100%; min-height: 0; align-self: stretch; }
+.partida-painel .circuito-hardware img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.partida-painel .circuito-com-hardware > .circuito-diagrama { grid-template-columns: minmax(0, 1fr); flex: 1 1 0; height: calc(var(--qubits-total) * 32px); min-height: 0; align-self: center; align-items: center; }
+.partida-painel .circuito-partida .circuito-qubit { height: 32px; min-height: 32px; }
+.partida-painel .circuito-partida .circuito-grupos { height: calc(var(--qubits-total) * 32px); gap: 0; max-width: none; }
+.partida-painel .circuito-hardware figcaption { display: none; }
+.partida-painel .chip-classico { margin: 0; padding: 0; border: 0; }
+.partida-painel .chip-diagrama { height: 100% !important; min-height: 0; align-items: center; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.partida-painel .chip-hardware { height: 100%; min-height: 0; align-self: stretch; }
+.partida-painel .chip-hardware img { display: block; width: 100%; height: 100%; max-height: none; min-height: 0; object-fit: contain; }
+.partida-painel .chip-rede { height: calc(var(--qubits-total) * 32px) !important; min-height: 0; }
+
+@media (max-width: 640px) {
+  .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-auto-rows: auto; }
+  .partida-layout[data-layout] .partida-chips { max-height: none; overflow: visible; }
+  .partida-painel #circuitoPartida,
+  .partida-painel #chipClassico { height: var(--chip-panel-height); min-height: var(--chip-panel-height); max-height: var(--chip-panel-height); }
+  .partida-painel .circuito-hardware { flex-basis: 42%; width: 42%; }
+}
+
 @media (max-width: 640px) {
   .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .partida-painel .circuito-hardware { flex-basis: 40%; width: 40%; }

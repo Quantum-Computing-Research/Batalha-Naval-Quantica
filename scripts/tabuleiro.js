@@ -14,6 +14,9 @@ function ajustarLayoutPartida() {
     const tamanho = Number(document.getElementById('tamanhoTabuleiro').value) || 8;
     const largura = area.clientWidth;
     const altura = window.visualViewport?.height || window.innerHeight;
+    const alturaCircuitoMinima = 2 * Math.log2(tamanho) * 32;
+    const alturaCircuito = Math.max(alturaCircuitoMinima, Math.min(320, Math.max(160, altura * 0.34)));
+    area.style.setProperty('--chip-panel-height', `${alturaCircuito}px`);
     area.dataset.layout = 'superior';
     area.dataset.frota = 'dupla';
     const larguraTabuleiros = area.querySelector('.boards').clientWidth;
