@@ -42,8 +42,9 @@
             <label class="control-field board-filter" for="boardSelect">
                 <span>Tabuleiro</span>
                 <select id="boardSelect">
+                    <option value="todos" selected>Todos os tabuleiros</option>
                     <option value="4">4 × 4</option>
-                    <option value="8" selected>8 × 8</option>
+                    <option value="8">8 × 8</option>
                     <option value="16">16 × 16</option>
                 </select>
             </label>
@@ -53,8 +54,10 @@
         <section class="analysis-summary" aria-label="Resumo da amostra">
             <div class="summary-item"><span>Ataques quânticos</span><strong id="sampleCount">—</strong></div>
             <div class="summary-item"><span>Partidas incluídas</span><strong id="matchCount">—</strong></div>
-            <div class="summary-item"><span>Entropia empírica</span><strong id="entropyValue">—</strong></div>
-            <div class="summary-item"><span>Min-entropia empírica</span><strong id="minEntropyValue">—</strong></div>
+            <div class="summary-item"><span id="entropyLabel">Entropia empírica</span><strong
+                    id="entropyValue">—</strong></div>
+            <div class="summary-item"><span id="minEntropyLabel">Min-entropia empírica</span><strong
+                    id="minEntropyValue">—</strong></div>
         </section>
 
         <section class="protocol-section" aria-labelledby="protocol-title">
@@ -88,23 +91,23 @@
             </div>
             <div class="charts-grid">
                 <article class="chart-panel chart-panel-wide">
-                    <h3>Distribuição de Hamming</h3>
-                    <p>Número de bits 1 por coordenada quântica</p>
+                    <h3 id="hammingTitle">Distribuição de Hamming</h3>
+                    <p id="hammingDescription">Número de bits 1 por coordenada quântica</p>
                     <div class="chart-frame"><canvas id="chartHamming"></canvas></div>
                 </article>
                 <article class="chart-panel">
-                    <h3>Frequência de bit 1</h3>
-                    <p>Marginal observada em cada qubit</p>
+                    <h3 id="bitsTitle">Frequência de bit 1</h3>
+                    <p id="bitsDescription">Marginal observada em cada qubit</p>
                     <div class="chart-frame"><canvas id="chartBits"></canvas></div>
                 </article>
                 <article class="chart-panel">
-                    <h3>Entropia por qubit</h3>
-                    <p>Shannon empírica, em bits</p>
+                    <h3 id="entropyTitle">Entropia por qubit</h3>
+                    <p id="entropyDescription">Shannon empírica, em bits</p>
                     <div class="chart-frame"><canvas id="chartEntropy"></canvas></div>
                 </article>
                 <article class="chart-panel chart-panel-wide">
-                    <h3>Frequência por casa</h3>
-                    <p>Observado e esperado sob distribuição uniforme</p>
+                    <h3 id="cellsTitle">Frequência por casa</h3>
+                    <p id="cellsDescription">Observado e esperado sob distribuição uniforme</p>
                     <div class="chart-frame"><canvas id="chartCells"></canvas></div>
                 </article>
             </div>

@@ -59,6 +59,7 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.7; }
 .chart-panel h3 { margin: 0; font-size: 13px; font-weight: 600; }
 .chart-panel > p { margin: 5px 0 12px; color: var(--muted); font-size: 11px; }
 .chart-frame { position: relative; width: 100%; height: 220px; }
+.chart-frame canvas { max-width: 100%; }
 .chart-panel-wide .chart-frame { height: 250px; }
 .matches-list { border-top: 1px solid var(--line); }
 .match-item { border-bottom: 1px solid var(--line); }
