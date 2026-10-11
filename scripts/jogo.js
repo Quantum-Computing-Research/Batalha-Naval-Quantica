@@ -249,6 +249,7 @@ async function iniciarJogo(nome) {
 
     // foco no input de jogada
     limparInputJogada();
+    focarAreaPartida();
 }
 
 /**
@@ -273,6 +274,7 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     }
 
     clearGameId();
+    document.getElementById("circuitoPartida").classList.remove("quantico-executando");
     estadoChipClassico = { ativo: false, coordenada: null, executando: false };
     atualizarChipClassico();
     atualizarFrotaAdversaria([]);

@@ -240,3 +240,39 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   #playerMove { width: 100%; }
   .modal-content .botoes { flex-wrap: wrap; }
 }
+
+.partida-layout[data-layout] { display: grid; align-items: start; gap: 24px; padding-top: 20px; scroll-margin-top: 12px; }
+.partida-layout[data-layout='superior'] { grid-template-columns: minmax(0, 1fr); }
+.partida-layout[data-layout='superior'] > .boards { grid-column: 1; grid-row: 2; }
+.partida-layout[data-layout='superior'] .partida-painel { grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 1.7fr) minmax(210px, 0.9fr) minmax(160px, 0.7fr); margin: 0; padding: 0 0 18px; border-left: none; border-bottom: 1px solid var(--line); gap: 18px; }
+.partida-layout[data-layout] .partida-chips { grid-column: auto; }
+.partida-layout[data-layout='superior'] .partida-operacao { border-inline: 1px solid var(--line); border-block: none; padding: 0 16px; }
+.partida-layout[data-layout='lateral'] { grid-template-columns: minmax(0, 1fr) 390px; gap: 28px; }
+.partida-layout[data-layout='lateral'] > .boards { grid-column: 1; grid-row: 1; }
+.partida-layout[data-layout='lateral'] .partida-painel { grid-column: 2; grid-row: 1; grid-template-columns: minmax(0, 1fr); margin: 0; padding: 0 0 0 20px; border-bottom: none; border-left: 1px solid var(--line); gap: 16px; }
+.partida-layout[data-layout] > .boards { grid-template-columns: repeat(var(--partida-colunas), minmax(0, var(--partida-tabuleiro))); justify-content: center; align-items: start; }
+.partida-layout[data-layout] .boards .celula { width: var(--partida-celula); height: var(--partida-celula); flex-basis: var(--partida-celula); }
+.partida-layout[data-layout] .partida-painel .circuito-diagrama { grid-template-columns: minmax(130px, 0.85fr) minmax(0, 1fr); gap: 12px; }
+.partida-layout[data-layout] .chip-linha { min-height: 28px; }
+.partida-layout[data-layout] .chip-portas { max-height: 34px; }
+.partida-layout[data-layout] #frota-lista { max-height: 180px; }
+
+@media (min-width: 1101px) {
+  .partida-layout[data-layout='superior'] .partida-chips:has(.chip-classico:not([hidden])) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .partida-layout[data-layout='superior'] .partida-chips:has(.chip-classico:not([hidden])) .circuito-diagrama { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .partida-layout[data-layout='superior'] .partida-chips:has(.chip-classico:not([hidden])) .chip-classico { margin: 0; padding-top: 0; border-top: none; }
+}
+@media (max-width: 1100px) {
+  .partida-layout[data-layout='superior'] .partida-painel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .partida-layout[data-layout='superior'] .partida-chips { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .partida-layout[data-layout='superior'] .partida-chips:has(.chip-classico[hidden]) { grid-template-columns: minmax(0, 1fr); }
+  .partida-layout[data-layout='superior'] .chip-classico { margin: 0; padding: 0; border: none; }
+  .partida-layout[data-layout='superior'] .partida-operacao { border-left: none; padding-left: 0; }
+}
+@media (max-width: 640px) {
+  .partida-layout[data-layout='superior'] .partida-painel { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .partida-layout[data-layout='superior'] .partida-operacao { grid-row: 1; border: none; padding: 0; }
+  .partida-layout[data-layout='superior'] .partida-chips { grid-column: auto; }
+  .partida-layout[data-layout] .partida-painel .circuito-diagrama { grid-template-columns: minmax(0, 1fr); }
+  .partida-layout[data-layout] #frota-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); max-height: 130px; }
+}

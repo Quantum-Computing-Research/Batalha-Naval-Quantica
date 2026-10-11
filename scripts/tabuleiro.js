@@ -1,6 +1,56 @@
+let ajustePartidaPendente = null;
+
+function agendarAjustePartida() {
+    if (ajustePartidaPendente !== null) return;
+    ajustePartidaPendente = requestAnimationFrame(() => {
+        ajustePartidaPendente = null;
+        ajustarLayoutPartida();
+    });
+}
+
+function ajustarLayoutPartida() {
+    const area = document.querySelector('.partida-layout');
+    if (!area) return;
+    const tamanho = Number(document.getElementById('tamanhoTabuleiro').value) || 8;
+    const largura = area.clientWidth;
+    const altura = window.visualViewport?.height || window.innerHeight;
+    const larguraLateral = 390;
+    const colunas = largura >= 2 * (tamanho + 1) * 22 + 24 ? 2 : 1;
+    const cabeLateral = colunas === 2 && largura >= 2 * (tamanho + 1) * 28 + larguraLateral + 52 && largura / altura >= 1.45;
+    area.dataset.layout = cabeLateral ? 'lateral' : 'superior';
+    if (cabeLateral && area.querySelector('.partida-painel').getBoundingClientRect().height > altura - 48) {
+        area.dataset.layout = 'superior';
+    }
+    const lateral = area.dataset.layout === 'lateral';
+    const larguraTabuleiros = largura - (lateral ? larguraLateral + 28 : 0);
+    const painelAltura = lateral ? 0 : area.querySelector('.partida-painel').getBoundingClientRect().height;
+    const alturaTabuleiro = Math.max(180, altura - painelAltura - 100);
+    const porLargura = (larguraTabuleiros - (colunas - 1) * 24) / colunas / (tamanho + 1);
+    const porAltura = alturaTabuleiro / (tamanho + 1);
+    const celula = Math.max(22, Math.min(52, Math.floor(porLargura), Math.floor(porAltura)));
+    area.style.setProperty('--partida-celula', `${celula}px`);
+    area.style.setProperty('--partida-colunas', colunas);
+    area.style.setProperty('--partida-tabuleiro', `${(tamanho + 1) * celula}px`);
+}
+
+function focarAreaPartida() {
+    ajustarLayoutPartida();
+    const area = document.querySelector('.partida-layout');
+    document.getElementById('playerMove').focus({ preventScroll: true });
+    area.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+}
+
+window.addEventListener('resize', agendarAjustePartida);
+window.visualViewport?.addEventListener('resize', agendarAjustePartida);
+document.addEventListener('DOMContentLoaded', () => {
+    new ResizeObserver(agendarAjustePartida).observe(document.querySelector('.partida-layout'));
+    agendarAjustePartida();
+});
+
 function renderizarTabuleiro(containerElement, tamanho, idTabuleiro) {
     containerElement.innerHTML = ''; // Limpa o container
     containerElement.id = idTabuleiro; // ← atribui dinamicamente o ID
+    agendarAjustePartida();
 
     const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
