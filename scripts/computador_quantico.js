@@ -75,6 +75,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     diagrama.style.height = `${altura}px`;
     const fios = [];
     const portas = [];
+    const rotulosBits = [];
     for (let camada = 0; camada < 3; camada++) {
         const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {
@@ -84,14 +85,18 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
             const dobra = esquerda - 16 - (indice % 3) * 4;
             fios.push(`<path d="M${entrada} ${centro}H${esquerda}M${entrada} ${origem}H${dobra}V${centro + 5}H${esquerda}"/>`);
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
-            if (camada === 2) fios.push(`<path d="M${esquerda + 30} ${centro}H240"/>`);
+            if (camada === 0) rotulosBits.push(`<text x="0" y="${centro + 4}" fill="#69777b" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
+            if (camada === 2) {
+                fios.push(`<path d="M${esquerda + 30} ${centro}H250"/>`);
+                rotulosBits.push(`<text x="258" y="${centro + 4}" fill="#80611f" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
+            }
         }
     }
     const rede = document.createElement("img");
     rede.className = "chip-rede-imagem";
-    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}</svg>`)}`;
+    rede.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282 ${altura}" fill="none" stroke="#516b78" stroke-width="1.3">${fios.join("")}${portas.join("")}${rotulosBits.join("")}</svg>`)}`;
     rede.alt = `Circuito clássico ilustrativo com portas NAND interligadas e ${bits} saídas`;
-    rede.width = 240;
+    rede.width = 282;
     rede.height = altura;
     const saidas = document.createElement("div");
     saidas.className = "chip-rede-saidas";
@@ -125,7 +130,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     composicao.style.gridTemplateColumns = "minmax(0, 1fr) clamp(64px, 8vw, 104px)";
     const diagrama = document.createElement("div");
     diagrama.className = "circuito-diagrama";
-    if (!circuito) return diagrama;
+    if (!circuito) return composicao;
     const bits = circuito.qubits_por_eixo;
     const leitura = criarLeituraJogada(coordenada, bits, !!coordenada);
     const alturaCircuito = circuito.qubits_total * 32;
@@ -133,7 +138,11 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     const grupos = document.createElement("div");
     grupos.className = "circuito-grupos";
     grupos.style.height = `${alturaCircuito}px`;
-    const sequencia = coordenada ? [coordenada.charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1].map(valor => valor.toString(2).padStart(bits, "0")).join("") : null;
+    const medicao = coordenada
+        ? [coordenada.charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1]
+            .map(valor => valor.toString(2).padStart(bits, "0"))
+        : null;
+    const sequencia = medicao?.join("");
     for (let indice = 0; indice < circuito.qubits_total; indice++) {
         const linha = document.createElement("div");
         linha.className = "circuito-qubit";
@@ -165,7 +174,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
 
 function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
     circuitoAtual = circuito || modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value));
-    document.getElementById("circuitoPartida").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
+    document.querySelector("#circuitoPartida").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
     if (backend) hardwareCircuitoAtual = backend;
     const hardware = hardwareCircuitoAtual || document.querySelector('.card.selecionado')?.dataset.backend;

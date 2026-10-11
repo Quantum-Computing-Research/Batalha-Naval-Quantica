@@ -402,7 +402,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .circuito-jogada.sem-jogada { visibility: hidden; }
 .circuito-jogada-binario { color: #7b8588; font: 11px/1.35 'SFMono-Regular', Consolas, monospace; white-space: nowrap; }
 .circuito-jogada-coordenada { color: var(--accent); font: normal 28px/1 Georgia, 'Times New Roman', serif; white-space: nowrap; }
-.circuito-saida-e-rede { display: grid; grid-template-columns: minmax(0, 1fr) clamp(70px, 8vw, 104px); gap: 12px; align-items: center; min-width: 0; height: 100%; flex: 1 1 0; }
+.circuito-saida-e-rede { display: grid; grid-template-columns: minmax(0, 1fr) clamp(70px, 8vw, 104px); gap: 0; align-items: center; min-width: 0; height: 100%; flex: 1 1 0; }
 .circuito-saida-e-rede > .circuito-diagrama { min-width: 0; width: 100%; }
 .partida-painel .chip-diagrama { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr) clamp(70px, 8vw, 104px); align-items: center; gap: 10px; }
 .partida-painel .chip-diagrama > .chip-rede { min-width: 0; }
@@ -415,7 +415,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .circuito-jogada { width: 64px; min-height: 64px; gap: 6px; }
   .circuito-jogada-binario { font-size: 9px; }
   .circuito-jogada-coordenada { font-size: 21px; }
-  .circuito-saida-e-rede { grid-template-columns: minmax(0, 1fr) 64px; gap: 6px; }
+  .circuito-saida-e-rede { grid-template-columns: minmax(0, 1fr) 64px; gap: 0; }
   .partida-painel .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px; gap: 6px; }
 }
 
