@@ -121,6 +121,16 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-linha { display: grid; grid-template-columns: 22px minmax(65px, 1fr) 14px; align-items: center; min-height: 36px; gap: 5px; font: 11px monospace; }
 .chip-portas { display: block; width: 100%; height: auto; max-height: 52px; }
 .chip-bit-saida { color: #80611f; font-weight: bold; }
+.circuito-com-hardware { display: flex; align-items: center; gap: 16px; min-width: 0; }
+.circuito-com-hardware > .circuito-diagrama { flex: 1; min-width: 0; }
+.circuito-hardware { margin: 0; flex: 0 0 120px; width: 120px; }
+.circuito-hardware img { display: block; width: 100%; height: 110px; object-fit: contain; }
+.circuito-hardware figcaption { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; }
+@media (max-width: 640px) {
+  .circuito-com-hardware { gap: 10px; }
+  .circuito-hardware { flex-basis: 70px; width: 70px; }
+  .circuito-hardware img { height: 80px; }
+}
 .chip-rede { display: grid; grid-template-columns: minmax(0, 1fr) 16px; align-items: stretch; min-width: 0; }
 .chip-rede-imagem { display: block; width: 100%; height: 100%; min-height: 0; object-fit: fill; }
 .chip-rede-saidas { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }

@@ -26,6 +26,7 @@ function renderizarFrota(frota, listaId, resumoId) {
         const item = document.createElement("li");
         item.dataset.navioId = navio.id;
         item.className = navio.afundado ? "frota-navio afundado" : "frota-navio";
+        item.setAttribute("aria-label", navio.afundado ? "Navio afundado" : "Navio em combate");
         const silhueta = document.createElement("div");
         silhueta.className = "frota-silhueta";
         const imagem = document.createElement("img");
@@ -35,10 +36,7 @@ function renderizarFrota(frota, listaId, resumoId) {
         imagem.height = 32;
         imagem.style.width = `${Math.min(120, 46 + navio.tamanho * 13)}px`;
         silhueta.appendChild(imagem);
-        const status = document.createElement("span");
-        status.className = "frota-navio-status";
-        status.textContent = navio.afundado ? "Afundado" : "Em combate";
-        item.append(silhueta, status);
+        item.appendChild(silhueta);
         lista.appendChild(item);
     });
 }

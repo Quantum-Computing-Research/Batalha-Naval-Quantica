@@ -29,7 +29,7 @@ window.onload = async () => {
             return;
         }
         document.getElementById("tamanhoTabuleiro").value = data.tamanho_tabuleiro;
-        atualizarCircuitoPartida(data.circuito);
+        atualizarCircuitoPartida(data.circuito, null, data.backend);
         document.getElementById("dificuldade").value = data.dificuldade || "normal";
         atualizarChipClassico(!!data.chip_classico_ativo);
         atualizarFrotaAdversaria(data.frota_adversaria);

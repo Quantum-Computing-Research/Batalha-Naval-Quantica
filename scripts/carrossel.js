@@ -22,5 +22,9 @@ document.querySelectorAll('.card').forEach(card => {
         // Aqui você pode atualizar as classes .selecionado normalmente
         document.querySelectorAll('.card').forEach(c => c.classList.remove('selecionado'));
         card.classList.add('selecionado');
+        if (!getGameId()) {
+            hardwareCircuitoAtual = card.dataset.backend;
+            atualizarCircuitoPartida(circuitoAtual);
+        }
     });
 });

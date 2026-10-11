@@ -228,7 +228,7 @@ async function iniciarJogo(nome) {
 
     // começou: salva game_id
     setGameId(data.game_id);
-    atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo));
+    atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo), null, backend);
     iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, dificuldade, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
     estadoChipClassico = { ativo: false, coordenada: null, executando: false };
     atualizarChipClassico();

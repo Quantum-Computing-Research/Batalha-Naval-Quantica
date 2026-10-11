@@ -10,6 +10,7 @@ function selecionarBackend(backend) {
 }
 
 let circuitoAtual = null;
+let hardwareCircuitoAtual = null;
 let estadoChipClassico = { ativo: false, coordenada: null, executando: false };
 
 function atualizarBotaoPlus() {
@@ -164,9 +165,26 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     return diagrama;
 }
 
-function atualizarCircuitoPartida(circuito, coordenada = null) {
+function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
     circuitoAtual = circuito || modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value));
-    document.getElementById("circuitoPartida").replaceChildren(criarDiagramaCircuito(circuitoAtual, coordenada));
+    if (backend) hardwareCircuitoAtual = backend;
+    const hardware = hardwareCircuitoAtual || document.querySelector('.card.selecionado')?.dataset.backend;
+    const card = [...document.querySelectorAll('.card[data-backend]')].find(item => item.dataset.backend === hardware);
+    const composicao = document.createElement('div');
+    composicao.className = 'circuito-com-hardware';
+    if (card) {
+        const figura = document.createElement('figure');
+        figura.className = 'circuito-hardware';
+        const imagem = card.querySelector('img').cloneNode(true);
+        imagem.width = 140;
+        imagem.height = 120;
+        const legenda = document.createElement('figcaption');
+        legenda.textContent = card.querySelector('h3').textContent;
+        figura.append(imagem, legenda);
+        composicao.appendChild(figura);
+    }
+    composicao.appendChild(criarDiagramaCircuito(circuitoAtual, coordenada));
+    document.getElementById("circuitoPartida").replaceChildren(composicao);
 }
 
 function criarAnalisePartida(analise) {

@@ -72,7 +72,7 @@ function finalizarComRegistro(data, atraso = 3000) {
     document.getElementById("numNavios").value = resumo.num_navios;
     document.getElementById("dificuldade").value = resumo.dificuldade || "normal";
     atualizarChipClassico(false);
-    atualizarCircuitoPartida(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo));
+    atualizarCircuitoPartida(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo), null, resumo.backend);
     atualizarFrotaAdversaria(resumo.frota_adversaria);
     atualizarFrotaJogador(resumo.frota_jogador);
     for (const [id, seletor, board] of [
