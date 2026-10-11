@@ -107,7 +107,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 #startButton:hover, .attack-controls button:hover { background: #085b5e; }
 .partida-painel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 0.28fr); gap: 20px; align-items: stretch; padding: 22px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
 .partida-layout { min-width: 0; }
-.partida-chips { min-width: 0; }
+.partida-chips { min-width: 0; display: grid; align-content: center; padding-block: 6px; }
 .partida-chips.vez-computador { outline: 2px solid #3286ab; outline-offset: 6px; border-radius: 4px; background: #edf6f7; }
 .partida-operacao.vez-jogador { outline: 2px solid var(--accent); outline-offset: 6px; border-radius: 4px; background: #e3efee; }
 .difficulty-field { display: grid; gap: 5px; font-size: 11px; color: var(--muted); }

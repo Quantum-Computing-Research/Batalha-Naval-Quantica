@@ -65,8 +65,14 @@ function atualizarStatusBar(texto) {
 function atualizarUltimaJogadaJogador(coordenada = null) {
     const marcador = document.getElementById("ultimaJogadaJogador");
     if (!marcador) return;
-    const bitsPorEixo = Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
-    const leitura = criarLeituraJogada(coordenada, bitsPorEixo, Boolean(coordenada));
+    const leitura = document.createElement("div");
+    leitura.className = coordenada ? "circuito-jogada" : "circuito-jogada sem-jogada";
+    leitura.setAttribute("aria-live", "polite");
+    if (!coordenada) leitura.setAttribute("aria-hidden", "true");
+    const coordenadaFormatada = document.createElement("span");
+    coordenadaFormatada.className = "circuito-jogada-coordenada";
+    coordenadaFormatada.textContent = coordenada || "";
+    leitura.appendChild(coordenadaFormatada);
     marcador.replaceChildren(...leitura.childNodes);
     marcador.className = `${leitura.className} jogada-jogador`;
     marcador.setAttribute("aria-hidden", String(!coordenada));
