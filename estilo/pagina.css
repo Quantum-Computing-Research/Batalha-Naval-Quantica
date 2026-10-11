@@ -100,7 +100,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .action-buttons { display: flex; gap: 8px; order: 3; margin-left: auto; }
 #startButton, .attack-controls button { background: var(--accent); color: #fff; border-color: var(--accent); }
 #startButton:hover, .attack-controls button:hover { background: #085b5e; }
-.partida-painel { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(230px, 0.9fr) minmax(210px, 0.9fr); gap: 24px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
+.partida-painel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(180px, 0.28fr); gap: 20px; align-items: start; padding: 22px 0; border-bottom: 1px solid var(--line); margin-bottom: 24px; }
 .partida-layout { min-width: 0; }
 .partida-chips { min-width: 0; }
 .difficulty-field { display: grid; gap: 5px; font-size: 11px; color: var(--muted); }
@@ -137,8 +137,8 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .chip-hardware img { max-height: 76px; }
 }
 .chip-rede { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: stretch; min-width: 0; }
-.chip-rede-scroll { width: 100%; height: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; }
-.chip-rede-imagem { display: block; width: 256px; height: 100%; min-width: 256px; min-height: 0; }
+.chip-rede-scroll { display: flex; justify-content: flex-start; width: 100%; height: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; }
+.chip-rede-imagem { display: block; flex: 0 0 256px; width: 256px; height: 100%; min-width: 256px; min-height: 0; margin: 0; object-position: left top; }
 .chip-bits-entrada { display: grid; grid-auto-rows: 32px; align-items: center; font: 11px monospace; }
 .chip-bits-entrada { color: #69777b; text-align: left; }
 .chip-bit-rotulo { color: #80611f; font: 11px monospace; }
@@ -222,8 +222,9 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 
 @media (max-width: 1100px) {
   .hardware-section { grid-template-columns: minmax(0, 1fr); }
-  .partida-painel { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .partida-painel { grid-template-columns: minmax(0, 1fr) 190px; gap: 16px; }
   .partida-painel .partida-chips { grid-column: 1 / -1; }
+  .partida-operacao { grid-column: 2; max-width: 190px; justify-self: end; }
   .partida-painel .circuito-diagrama { grid-template-columns: minmax(180px, 0.8fr) minmax(0, 1fr); }
   .partida-operacao { border-left: none; padding-left: 0; }
 }
@@ -238,6 +239,9 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .partida-painel .circuito-diagrama { grid-template-columns: minmax(140px, 1fr) minmax(0, 1fr); gap: 14px; }
   .partida-painel .circuito-grupos { max-width: 160px; }
   .partida-painel .circuito-numeros { flex-wrap: wrap; gap: 12px; }
+  .partida-layout:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+  .partida-layout:has(#chipClassico:not([hidden])) > .partida-painel { grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 1fr) 190px; margin: 0; padding: 0 0 18px; border: 0; border-bottom: 1px solid var(--line); }
+  .partida-layout:has(#chipClassico:not([hidden])) > .partida-tabuleiros { grid-column: 1; grid-row: 2; }
 }
 
 @media (max-width: 640px) {
@@ -427,7 +431,8 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .partida-layout[data-layout] .circuito-fio { min-width: 0; }
   .partida-layout[data-layout] .circuito-porta { width: 18px; height: 18px; }
   .partida-layout[data-layout] .circuito-medicao svg { width: 14px; height: 14px; }
+  .partida-layout:has(#chipClassico:not([hidden])) .partida-painel { grid-template-columns: minmax(0, 1fr); }
+  .partida-layout:has(#chipClassico:not([hidden])) .partida-operacao { grid-column: 1; grid-row: 1; max-width: none; justify-self: stretch; }
   .partida-layout[data-layout] .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr) 64px; }
   .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: 24px minmax(0, 1fr); }
-  .partida-layout[data-layout] .chip-rede-imagem { min-width: 0; width: 100%; }
 }
