@@ -155,7 +155,8 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 .partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: none; padding: 0; outline: 2px solid var(--accent); outline-offset: 3px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
-#statusBar { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0; }
+#statusBar { display: grid; grid-template-rows: repeat(2, 16px); height: 32px; min-height: 32px; overflow: hidden; font-size: 12px; line-height: 16px; color: var(--muted); margin: 0; }
+.status-linha-jogada, .status-linha-resultado { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .vez-status { font-size: 11px; line-height: 1.4; white-space: nowrap; color: var(--accent); margin: 0; padding: 6px 10px; border-radius: 4px; background: #e3efee; }
 .circuito-partida { margin: 0; padding: 0; border: none; min-width: 0; }
 .partida-painel .circuito-diagrama { grid-template-columns: minmax(140px, 0.85fr) minmax(0, 1fr); gap: 20px; }

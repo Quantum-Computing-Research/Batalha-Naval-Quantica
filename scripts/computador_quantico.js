@@ -65,9 +65,9 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     imagemChip.width = 120;
     imagemChip.height = 100;
     figuraChip.appendChild(imagemChip);
-    const coord = executando ? estadoChipClassico.coordenada : null;
+    const coord = estadoChipClassico.coordenada;
     const eixo = bits / 2;
-    const leitura = criarLeituraJogada(coord, eixo, executando);
+    const leitura = criarLeituraJogada(coord, eixo, Boolean(coord));
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
     diagrama.style.gridTemplateColumns = "0 minmax(0, 1fr)";

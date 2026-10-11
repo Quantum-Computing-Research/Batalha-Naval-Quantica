@@ -56,9 +56,19 @@ function clearGameId() {
 function atualizarStatusBar(texto) {
     const barra = document.getElementById("statusBar");
     if (!barra) return;
-
-    barra.innerText = `${texto}
-🎯 Placar → Jogador: ${placar.jogador}  |  Computador: ${placar.computador}`;
+    const linhaJogada = document.createElement("span");
+    const linhaResultado = document.createElement("span");
+    const ataque = String(texto).match(/^(.*?)(?:\s*→\s*)(.*)$/);
+    if (ataque) {
+        linhaJogada.textContent = ataque[1];
+        linhaResultado.textContent = `${ataque[2]} · 🎯 Placar → Jogador: ${placar.jogador} | Computador: ${placar.computador}`;
+    } else {
+        linhaJogada.textContent = texto;
+        linhaResultado.textContent = `🎯 Placar → Jogador: ${placar.jogador} | Computador: ${placar.computador}`;
+    }
+    linhaJogada.className = "status-linha-jogada";
+    linhaResultado.className = "status-linha-resultado";
+    barra.replaceChildren(linhaJogada, linhaResultado);
 }
 
 function atualizarVez(vezDoJogador) {
@@ -76,7 +86,7 @@ function atualizarVez(vezDoJogador) {
 
 function limparStatusBarEVezJogador() {
     const barra = document.getElementById("statusBar");
-    if (barra) barra.innerText = "";
+    if (barra) barra.replaceChildren();
 
     const vezDiv = document.getElementById("vez-indicador");
     if (vezDiv) {

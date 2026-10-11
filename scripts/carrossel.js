@@ -40,6 +40,16 @@ function atualizarNavegacaoCarrossel() {
     nextButton.disabled = !temOverflow || carousel.scrollLeft + carousel.clientWidth >= carousel.scrollWidth - 1;
 }
 
+function limitarQuantidadeNavios() {
+    const tabuleiro = Number(document.getElementById("tamanhoTabuleiro").value);
+    const seletor = document.getElementById("numNavios");
+    const limite = Math.min(tabuleiro, seletor.options.length);
+    for (const opcao of seletor.options) {
+        opcao.disabled = Number(opcao.value) > limite;
+    }
+    if (Number(seletor.value) > limite) seletor.value = String(limite);
+}
+
 prevButton.addEventListener('click', () => {
     // Subtrai um valor do scroll horizontal (ajuste se necessário)
     carousel.scrollBy({ left: -300, behavior: 'smooth' });
@@ -75,7 +85,11 @@ document.querySelectorAll('.card').forEach(card => {
     });
 });
 
-document.getElementById("tamanhoTabuleiro").addEventListener("change", atualizarEstimativaPreco);
+document.getElementById("tamanhoTabuleiro").addEventListener("change", () => {
+    limitarQuantidadeNavios();
+    atualizarEstimativaPreco();
+});
 document.getElementById("numNavios").addEventListener("change", atualizarEstimativaPreco);
 document.getElementById("dificuldade").addEventListener("click", atualizarEstimativaPreco);
+limitarQuantidadeNavios();
 atualizarEstimativaPreco();
