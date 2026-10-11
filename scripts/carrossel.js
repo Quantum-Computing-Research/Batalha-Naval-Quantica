@@ -21,12 +21,12 @@ function atualizarEstimativaPreco() {
     const tarifa = tarifasBraket[hardware];
     const usd = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 6 });
     if (!tarifa) {
-        campo.value = `Selecione um QPU para ver a tarifa por shot.\nFaixa: ${shotsMinimos} shots (${shotsMinimos} navios) a ${shotsMaximos} shots (todas as casas).\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
+        campo.value = `Selecione um QPU · ${shotsMinimos} a ${shotsMaximos} shots`;
         return;
     }
     const custoMinimo = shotsMinimos * tarifa.porShot;
     const custoMaximo = shotsMaximos * tarifa.porShot;
-    campo.value = `${tarifa.nome} · ${usd.format(tarifa.porShot)} por shot\nShots: ${shotsMinimos} (1 por navio) a ${shotsMaximos} (todas as casas)\nEstimativa QPU: ${usd.format(custoMinimo)} a ${usd.format(custoMaximo)}\nV0 sintética: custo efetivo de QPU = US$ 0,00.`;
+    campo.value = `${tarifa.nome} · ${usd.format(tarifa.porShot)}/shot · ${shotsMinimos} a ${shotsMaximos} shots · ${usd.format(custoMinimo)} a ${usd.format(custoMaximo)}`;
 }
 
 function atualizarNavegacaoCarrossel() {
