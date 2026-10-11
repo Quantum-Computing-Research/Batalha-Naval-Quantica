@@ -12,7 +12,6 @@
             <stop offset="1" stop-color="#f7f7f4" />
         </linearGradient>
     </defs>
-    <rect width="512" height="512" fill="#fff" />
     <g fill="url(#pins)" stroke="#77797b" stroke-width="1">
         <path
             d="M104 16h10v54h-10zM124 16h10v54h-10zM144 16h10v54h-10zM164 16h10v54h-10zM184 16h10v54h-10zM204 16h10v54h-10zM224 16h10v54h-10zM244 16h10v54h-10zM264 16h10v54h-10zM284 16h10v54h-10zM304 16h10v54h-10zM324 16h10v54h-10zM344 16h10v54h-10zM364 16h10v54h-10zM384 16h10v54h-10zM404 16h10v54h-10z" />
