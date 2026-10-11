@@ -1,62 +1,123 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Quantum Battleship • Análise</title>
-    <link rel="stylesheet" href="./estilo/analytics.css" />
-    <!-- Chart.js (CDN) -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Análise de hardware · Batalha Naval Quântica</title>
+    <link rel="stylesheet" href="./estilo/analytics.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="./assets/vendor/lucide.min.js" defer></script>
+    <script src="./scripts/url_backend.js" defer></script>
+    <script src="./scripts/analytics.js" defer></script>
 </head>
 
 <body>
-    <header class="topbar">
-        <div class="topbar-left">
-            <button id="backBtn" class="btn">← Voltar ao jogo</button>
-            <h1>📊 Análise de Randomicidade</h1>
+    <header class="app-header">
+        <div class="app-identity">
+            <button id="backBtn" class="icon-button" type="button" title="Voltar ao jogo" aria-label="Voltar ao jogo">
+                <i data-lucide="arrow-left" aria-hidden="true"></i>
+            </button>
+            <div>
+                <p class="app-eyebrow">Batalha Naval Quântica / Dados</p>
+                <h1>Análise dos computadores</h1>
+            </div>
         </div>
-
-        <div class="topbar-right">
-            <label class="lbl">Hardware</label>
-            <select id="hardwareSelect"></select>
-
-            <label class="lbl">Shots</label>
-            <input id="shotsInput" type="number" min="50" step="50" value="200" />
-            <button id="reloadBtn" class="btn btn-primary">Recarregar</button>
+        <div class="refresh-status">
+            <span id="statusIndicator" class="status-indicator" aria-hidden="true"></span>
+            <span id="statusMessage" role="status">Carregando partidas</span>
+            <button id="reloadBtn" class="icon-button" type="button" title="Atualizar análise"
+                aria-label="Atualizar análise">
+                <i data-lucide="refresh-cw" aria-hidden="true"></i>
+            </button>
         </div>
     </header>
 
-    <main class="wrap">
-        <section class="grid">
-            <div class="card">
-                <h2>Distribuição de 1s (Hamming weight)</h2>
-                <canvas id="chartHamming"></canvas>
-            </div>
+    <main class="container">
+        <section class="analysis-controls" aria-label="Filtros da análise">
+            <label class="control-field" for="hardwareSelect">
+                <span>Computador</span>
+                <select id="hardwareSelect"></select>
+            </label>
+            <label class="control-field board-filter" for="boardSelect">
+                <span>Tabuleiro</span>
+                <select id="boardSelect">
+                    <option value="4">4 × 4</option>
+                    <option value="8" selected>8 × 8</option>
+                    <option value="16">16 × 16</option>
+                </select>
+            </label>
+            <p id="selectionMeta" class="selection-meta"></p>
+        </section>
 
-            <div class="card">
-                <h2>Frequência de bit = 1 (por qubit)</h2>
-                <canvas id="chartBitFreq"></canvas>
-            </div>
+        <section class="analysis-summary" aria-label="Resumo da amostra">
+            <div class="summary-item"><span>Ataques quânticos</span><strong id="sampleCount">—</strong></div>
+            <div class="summary-item"><span>Partidas incluídas</span><strong id="matchCount">—</strong></div>
+            <div class="summary-item"><span>Entropia empírica</span><strong id="entropyValue">—</strong></div>
+            <div class="summary-item"><span>Min-entropia empírica</span><strong id="minEntropyValue">—</strong></div>
+        </section>
 
-            <div class="card">
-                <h2>Autocorrelação (lag 1 a 20)</h2>
-                <canvas id="chartAutoCorr"></canvas>
+        <section class="protocol-section" aria-labelledby="protocol-title">
+            <div class="section-heading">
+                <h2 id="protocol-title">Métricas do protocolo de aleatoriedade</h2>
+                <span>Referência: XEB e entropia certificada</span>
             </div>
-
-            <div class="card">
-                <h2>Entropia por qubit</h2>
-                <canvas id="chartEntropy"></canvas>
+            <div class="protocol-grid">
+                <article class="protocol-metric">
+                    <span class="metric-label">XEB do artigo</span>
+                    <strong id="xebValue">Não calculável</strong>
+                    <p id="xebReason"></p>
+                </article>
+                <article class="protocol-metric">
+                    <span class="metric-label">Tempo médio de amostra (tQC)</span>
+                    <strong id="tqcValue">Não disponível</strong>
+                    <p id="tqcReason"></p>
+                </article>
+                <article class="protocol-metric">
+                    <span class="metric-label">Min-entropia certificada</span>
+                    <strong id="certifiedEntropyValue">Não certificada</strong>
+                    <p id="certifiedEntropyReason"></p>
+                </article>
             </div>
         </section>
 
-        <section class="card">
-            <h2>Resumo</h2>
-            <pre id="summary" class="mono"></pre>
+        <section class="charts-section" aria-label="Distribuições observadas nas partidas">
+            <div class="section-heading">
+                <h2>Resultados observados</h2>
+                <span id="analysisNote">Ataques quânticos arquivados; busca clássica excluída</span>
+            </div>
+            <div class="charts-grid">
+                <article class="chart-panel chart-panel-wide">
+                    <h3>Distribuição de Hamming</h3>
+                    <p>Número de bits 1 por coordenada quântica</p>
+                    <div class="chart-frame"><canvas id="chartHamming"></canvas></div>
+                </article>
+                <article class="chart-panel">
+                    <h3>Frequência de bit 1</h3>
+                    <p>Marginal observada em cada qubit</p>
+                    <div class="chart-frame"><canvas id="chartBits"></canvas></div>
+                </article>
+                <article class="chart-panel">
+                    <h3>Entropia por qubit</h3>
+                    <p>Shannon empírica, em bits</p>
+                    <div class="chart-frame"><canvas id="chartEntropy"></canvas></div>
+                </article>
+                <article class="chart-panel chart-panel-wide">
+                    <h3>Frequência por casa</h3>
+                    <p>Observado e esperado sob distribuição uniforme</p>
+                    <div class="chart-frame"><canvas id="chartCells"></canvas></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="matches-section" aria-labelledby="matches-title">
+            <div class="section-heading">
+                <h2 id="matches-title">Partidas que compõem a amostra</h2>
+                <span id="excludedCount">—</span>
+            </div>
+            <div id="matchesList" class="matches-list"></div>
         </section>
     </main>
-    <script src="./scripts/url_backend.js"></script>
-    <script src="./scripts/analytics.js"></script>
 </body>
 
 </html>

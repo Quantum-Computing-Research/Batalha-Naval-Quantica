@@ -1,284 +1,223 @@
-// ./scripts/analytics.js
-// Fonte de verdade: API Gateway (Lambda)
-// Rotas:
-//   GET  /cache
-//   GET  /cache/{hardware}
+const charts = {};
 
-
-let charts = {};
-
-function $(id) { return document.getElementById(id); }
-
-function ensureChart() {
-    if (typeof Chart === "undefined") {
-        throw new Error("Chart.js não carregou (Chart is undefined). Verifique o <script> CDN.");
-    }
+function $(id) {
+    return document.getElementById(id);
 }
 
 async function apiFetch(path) {
-    if (!URL_BASE) {
-        throw new Error(
-            "URL_BASE não configurada. Defina window.__API_BASE__ no HTML ou qb_api_base no localStorage."
-        );
+    if (!URL_BASE) throw new Error("URL da API não configurada.");
+    const response = await fetch(`${URL_BASE}${path}`, { cache: "no-store" });
+    const body = await response.text();
+    if (body.trim().startsWith("<")) throw new Error(`Resposta inválida da API (${response.status}).`);
+    let data;
+    try {
+        data = JSON.parse(body);
+    } catch {
+        throw new Error("A API retornou dados inválidos.");
     }
-
-    const url = `${URL_BASE}${path}`;
-    const res = await fetch(url, { cache: "no-store" });
-    const text = await res.text();
-
-    // Se vier HTML (ex: 403/404 com página), explode cedo
-    if (text.trim().startsWith("<")) {
-        throw new Error(`Resposta não é JSON (parece HTML). URL: ${url}`);
-    }
-
-    let data = {};
-    try { data = JSON.parse(text); } catch { data = {}; }
-
-    if (!res.ok) {
-        throw new Error(data?.error || `HTTP ${res.status} em ${url}`);
-    }
+    if (!response.ok) throw new Error(data.error || `Falha na API (${response.status}).`);
     return data;
 }
 
-async function loadHardwareList() {
-    // GET /cache
-    // Esperado: { hardwares: [...] } (mas aceito { items: [...] } etc)
-    const data = await apiFetch("/cache");
-
-    const hardwares =
-        data.hardwares ||
-        data.items ||
-        data.backends ||
-        [];
-
-    if (!Array.isArray(hardwares) || hardwares.length === 0) {
-        throw new Error("Endpoint /cache não retornou lista de hardwares.");
-    }
-
-    return hardwares;
-}
-
-async function loadHardware(hw) {
-    // GET /cache/{hardware}
-    // Esperado: { bitstrings: [...], n_qubits?: number }
-    const data = await apiFetch(`/cache/${encodeURIComponent(hw)}`);
-
-    const bitstrings =
-        data.bitstrings ||
-        data.data || // se você devolver direto como "data"
-        [];
-
-    if (!Array.isArray(bitstrings) || bitstrings.length === 0) {
-        throw new Error(`Sem bitstrings para ${hw} (cache vazio ou backend offline).`);
-    }
-
-    const nQ =
-        data.n_qubits ??
-        data.nQ ??
-        (bitstrings[0]?.length ?? 0);
-
-    return { hw, nQ, bitstrings };
-}
-
-function takeShots(bitstrings, n) {
-    if (!Array.isArray(bitstrings)) return [];
-    if (!Number.isFinite(n) || n <= 0) return bitstrings;
-    return bitstrings.slice(0, Math.min(n, bitstrings.length));
-}
-
-function bitFreqPerQubit(bitstrings, nQ) {
-    const freq = new Array(nQ).fill(0);
-    const N = bitstrings.length || 1;
-
-    for (const s of bitstrings) {
-        // Se vier bitstring maior/menor, corta/ignora fora do range
-        for (let i = 0; i < nQ; i++) {
-            if (s[i] === "1") freq[i] += 1;
-        }
-    }
-    return freq.map(x => x / N);
-}
-
-function hammingWeights(bitstrings) {
-    return bitstrings.map(s => {
-        let w = 0;
-        for (let i = 0; i < s.length; i++) if (s[i] === "1") w++;
-        return w;
-    });
-}
-
-function histogram(values, maxVal) {
-    const bins = new Array(maxVal + 1).fill(0);
-    for (const v of values) {
-        if (v >= 0 && v <= maxVal) bins[v] += 1;
-    }
-    return bins;
-}
-
-function entropyBinary(p) {
-    if (p <= 0 || p >= 1) return 0;
-    return -p * Math.log2(p) - (1 - p) * Math.log2(1 - p);
-}
-
-function entropyPerQubit(freq) {
-    return freq.map(p => entropyBinary(p));
-}
-
-function autocorrLag1toK(bitstrings, maxLag = 20) {
-    // Converte cada shot em inteiro e mede autocorr normalizada
-    const xs = bitstrings.map(s => parseInt(s, 2));
-    const N = xs.length;
-
-    const mean = xs.reduce((a, b) => a + b, 0) / (N || 1);
-    const varx = xs.reduce((a, b) => a + (b - mean) * (b - mean), 0) / (N || 1);
-
-    const out = [];
-    for (let lag = 1; lag <= maxLag; lag++) {
-        if (N - lag <= 1 || varx === 0) { out.push(0); continue; }
-
-        let cov = 0;
-        for (let i = 0; i < N - lag; i++) {
-            cov += (xs[i] - mean) * (xs[i + lag] - mean);
-        }
-        cov /= (N - lag);
-        out.push(cov / varx);
-    }
-    return out;
+function setStatus(message, state = "ready") {
+    $("statusMessage").textContent = message;
+    $("statusIndicator").dataset.state = state;
 }
 
 function destroyCharts() {
-    Object.values(charts).forEach(ch => ch?.destroy?.());
-    charts = {};
+    Object.values(charts).forEach(chart => chart?.destroy());
+    for (const key of Object.keys(charts)) delete charts[key];
 }
 
-function renderCharts({ hw, nQ, shots, bitstrings }) {
+function chartOptions({ min, max, percent = false } = {}) {
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { intersect: false, mode: "index" },
+        plugins: {
+            legend: { labels: { color: "#64777b", usePointStyle: true, boxWidth: 8, font: { size: 11 } } },
+            tooltip: { backgroundColor: "#26383c", titleFont: { family: "Avenir Next, sans-serif" }, bodyFont: { family: "Avenir Next, sans-serif" } },
+        },
+        scales: {
+            x: { grid: { display: false }, ticks: { color: "#64777b", maxRotation: 0, autoSkip: true }, border: { color: "#d7e1e1" } },
+            y: { min, max, grid: { color: "#e8eeee" }, ticks: { color: "#64777b", callback: value => percent ? `${Math.round(value * 100)}%` : value }, border: { display: false } },
+        },
+    };
+}
+
+function renderCharts(analysis, boardSize, classicalExcluded) {
     destroyCharts();
+    const accent = "#096e71";
+    const orange = "#e87924";
+    const qubits = analysis.frequencia_bit_1_por_qubit.length;
+    const outcomeCount = boardSize * boardSize;
 
-    const weights = hammingWeights(bitstrings);
-    const hist = histogram(weights, nQ);
-
-    const freq = bitFreqPerQubit(bitstrings, nQ);
-    const ent = entropyPerQubit(freq);
-    const ac = autocorrLag1toK(bitstrings, 20);
-
-    // 1) Hamming histogram
     charts.hamming = new Chart($("chartHamming"), {
         type: "bar",
         data: {
-            labels: hist.map((_, i) => String(i)),
-            datasets: [{ label: "contagem", data: hist }]
+            labels: analysis.hamming.map((_, index) => String(index)),
+            datasets: [{ label: "Ataques observados", data: analysis.hamming, backgroundColor: accent, borderRadius: 2, maxBarThickness: 36 }],
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { title: { display: true, text: "nº de 1s na bitstring" } },
-                y: { title: { display: true, text: "contagem" } }
-            }
-        }
+        options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: "Peso de Hamming (número de bits 1)", color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: "Contagem", color: "#64777b" } } } },
     });
 
-    // 2) Bit frequency
-    charts.freq = new Chart($("chartBitFreq"), {
-        type: "line",
+    charts.bits = new Chart($("chartBits"), {
+        type: "bar",
+        data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: "Frequência observada", data: analysis.frequencia_bit_1_por_qubit, backgroundColor: accent, borderRadius: 2, maxBarThickness: 32 }] },
+        options: chartOptions({ min: 0, max: 1, percent: true }),
+    });
+
+    charts.entropy = new Chart($("chartEntropy"), {
+        type: "bar",
+        data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: "Entropia de Shannon", data: analysis.entropia_por_qubit, backgroundColor: "#3286ab", borderRadius: 2, maxBarThickness: 32 }] },
+        options: chartOptions({ min: 0, max: 1 }),
+    });
+
+    const rows = boardSize;
+    const rowCounts = Array.from({ length: rows }, (_, row) => analysis.frequencias.slice(row * rows, (row + 1) * rows).reduce((sum, value) => sum + value, 0));
+    const esperadoPorLinha = analysis.amostras / rows;
+    charts.cells = new Chart($("chartCells"), {
+        type: "bar",
         data: {
-            labels: freq.map((_, i) => String(i)),
-            datasets: [{ label: "P(bit=1)", data: freq, tension: 0.15 }]
+            labels: Array.from({ length: rows }, (_, index) => String.fromCharCode(65 + index)),
+            datasets: [
+                { type: "bar", label: "Ataques observados", data: rowCounts, backgroundColor: accent, borderRadius: 2, maxBarThickness: 44 },
+                { type: "line", label: "Esperado uniforme", data: Array(rows).fill(esperadoPorLinha), borderColor: orange, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 },
+            ],
         },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { min: 0, max: 1 } }
-        }
+        options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: "Linha do tabuleiro", color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: "Contagem", color: "#64777b" } } } },
     });
 
-    // 3) Autocorrelation
-    charts.ac = new Chart($("chartAutoCorr"), {
-        type: "line",
-        data: {
-            labels: ac.map((_, i) => String(i + 1)),
-            datasets: [{ label: "autocorr", data: ac, tension: 0.15 }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { min: -1, max: 1 } }
-        }
-    });
-
-    // 4) Entropy
-    charts.ent = new Chart($("chartEntropy"), {
-        type: "line",
-        data: {
-            labels: ent.map((_, i) => String(i)),
-            datasets: [{ label: "H(bit)", data: ent, tension: 0.15 }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { y: { min: 0, max: 1 } }
-        }
-    });
-
-    // Summary
-    const avgFreq = freq.reduce((a, b) => a + b, 0) / (freq.length || 1);
-    const avgEnt = ent.reduce((a, b) => a + b, 0) / (ent.length || 1);
-
-    $("summary").textContent =
-        `hardware: ${hw}
-n_qubits: ${nQ}
-shots usados: ${shots}
-
-média P(bit=1): ${avgFreq.toFixed(4)}
-média entropia: ${avgEnt.toFixed(4)} bits
-
-nota:
-- ideal: P(bit=1) ~ 0.5, entropia ~ 1 por qubit
-- autocorr ~ 0 (lags pequenos)`;
+    $("sampleCount").textContent = analysis.amostras.toLocaleString("pt-BR");
+    $("entropyValue").textContent = `${analysis.entropia_bits.toFixed(2)} bits`;
+    $("minEntropyValue").textContent = analysis.min_entropia_empirica_bits == null ? "—" : `${analysis.min_entropia_empirica_bits.toFixed(2)} bits`;
+    $("analysisNote").textContent = `${analysis.celulas_observadas} de ${outcomeCount} casas observadas · ${analysis.repeticoes} repetidas · ${classicalExcluded} clássicas excluídas`;
 }
 
-async function fillHardwareSelect() {
-    const sel = $("hardwareSelect");
-    sel.innerHTML = "";
-
-    const hardwares = await loadHardwareList();
-
-    hardwares.forEach(hw => {
-        const opt = document.createElement("option");
-        opt.value = hw;
-        opt.textContent = hw;
-        sel.appendChild(opt);
-    });
-
-    sel.value = hardwares.includes("ionq_aria2") ? "ionq_aria2" : hardwares[0];
+function formatDate(value) {
+    if (!value) return "Data indisponível";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Data indisponível" : date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 }
 
-async function reload() {
-    ensureChart();
-
-    const hw = $("hardwareSelect").value;
-    const desiredShots = parseInt($("shotsInput").value || "200", 10);
-
-    const data = await loadHardware(hw);
-
-    const shots = Math.min(desiredShots, data.bitstrings.length);
-    const bitstrings = takeShots(data.bitstrings, shots);
-
-    renderCharts({ hw: data.hw, nQ: data.nQ, shots, bitstrings });
-}
-
-function wire() {
-    $("backBtn").addEventListener("click", () => window.location.href = "./index.html");
-    $("reloadBtn").addEventListener("click", () => reload().catch(e => alert(e.message)));
-    $("hardwareSelect").addEventListener("change", () => reload().catch(e => alert(e.message)));
-}
-
-(async function init() {
-    try {
-        await fillHardwareSelect();
-        wire();
-        await reload();
-    } catch (e) {
-        alert(e.message);
+function renderMatches(matches) {
+    const list = $("matchesList");
+    list.replaceChildren();
+    if (!matches.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "Nenhuma partida arquivada para esta seleção.";
+        list.appendChild(empty);
+        return;
     }
-})();
+
+    matches.forEach(match => {
+        const item = document.createElement("details");
+        item.className = "match-item";
+        const summary = document.createElement("summary");
+        const title = document.createElement("span");
+        title.className = "match-title";
+        title.textContent = `${match.jogador} · ${formatDate(match.data)}`;
+        const count = document.createElement("span");
+        count.className = "match-count";
+        count.textContent = `${match.ataques_quanticos} ataques quânticos`;
+        summary.append(title, count);
+        item.appendChild(summary);
+
+        const metrics = document.createElement("dl");
+        metrics.className = "match-metrics";
+        for (const [label, value] of [
+            ["Partida", match.id || "—"],
+            ["Resultado", match.vencedor || "—"],
+            ["Acertos quânticos", `${match.acertos} / ${match.ataques_quanticos}`],
+            ["Ataques clássicos excluídos", match.ataques_classicos],
+            ["Pontuação", match.pontuacao],
+            ["Incluída nos índices", match.incluida ? "Sim" : "Não · sem ataques quânticos"],
+        ]) {
+            const row = document.createElement("div");
+            const term = document.createElement("dt");
+            term.textContent = label;
+            const definition = document.createElement("dd");
+            definition.textContent = value;
+            row.append(term, definition);
+            metrics.appendChild(row);
+        }
+        item.appendChild(metrics);
+        list.appendChild(item);
+    });
+}
+
+function renderUnavailable() {
+    destroyCharts();
+    for (const id of ["sampleCount", "entropyValue", "minEntropyValue"]) $(id).textContent = "—";
+    $("analysisNote").textContent = "Sem dados quânticos arquivados para esta seleção.";
+}
+
+async function loadHardwareList() {
+    const data = await apiFetch("/analises");
+    return Array.isArray(data.hardwares) ? data.hardwares : [];
+}
+
+async function reloadAnalysis() {
+    if (typeof Chart === "undefined") throw new Error("Os gráficos não carregaram.");
+    const hardware = $("hardwareSelect").value;
+    const size = $("boardSelect").value;
+    if (!hardware) {
+        renderUnavailable();
+        setStatus("Selecione um computador", "empty");
+        return;
+    }
+    setStatus("Atualizando partidas", "loading");
+    const query = new URLSearchParams({ hardware, tamanho_tabuleiro: size });
+    const data = await apiFetch(`/analises?${query}`);
+    $("selectionMeta").textContent = `${data.partidas_total} partidas · tabuleiro ${size} × ${size} · ${data.qubits_total} qubits`;
+    $("matchCount").textContent = `${data.partidas_analisadas} / ${data.partidas_total}`;
+    $("xebValue").textContent = data.xeb?.disponivel ? data.xeb.valor.toFixed(3) : "Não calculável";
+    $("xebReason").textContent = data.xeb?.motivo || "";
+    $("tqcValue").textContent = data.tqc?.disponivel ? `${data.tqc.segundos.toFixed(3)} s` : "Não disponível";
+    $("tqcReason").textContent = data.tqc?.motivo || "";
+    $("certifiedEntropyValue").textContent = data.entropia_certificada?.disponivel ? `${data.entropia_certificada.bits} bits` : "Não certificada";
+    $("certifiedEntropyReason").textContent = data.entropia_certificada?.motivo || "";
+    $("excludedCount").textContent = `${data.ataques_classicos_excluidos} ataques clássicos fora da amostra`;
+    renderMatches(data.partidas || []);
+
+    if (!data.analise?.disponivel) {
+        renderUnavailable();
+        setStatus("Sem partidas para esta seleção", "empty");
+        return;
+    }
+    renderCharts(data.analise, Number(size), data.ataques_classicos_excluidos);
+    setStatus("Análise atualizada", "ready");
+}
+
+async function initialize() {
+    lucide.createIcons();
+    $("backBtn").addEventListener("click", () => window.location.href = "./index.html");
+    $("reloadBtn").addEventListener("click", () => reloadAnalysis().catch(showError));
+    $("hardwareSelect").addEventListener("change", () => reloadAnalysis().catch(showError));
+    $("boardSelect").addEventListener("change", () => reloadAnalysis().catch(showError));
+
+    try {
+        const hardwares = await loadHardwareList();
+        const select = $("hardwareSelect");
+        select.replaceChildren();
+        hardwares.forEach(hardware => {
+            const option = document.createElement("option");
+            option.value = hardware.id;
+            option.textContent = hardware.nome.replaceAll("_", " ");
+            select.appendChild(option);
+        });
+        const firstWithGames = hardwares.find(hardware => hardware.partidas > 0);
+        if (firstWithGames) select.value = firstWithGames.id;
+        if (!hardwares.length) setStatus("Nenhum hardware listado", "empty");
+        await reloadAnalysis();
+    } catch (error) {
+        showError(error);
+    }
+}
+
+function showError(error) {
+    setStatus(error.message || "Falha ao carregar a análise", "error");
+}
+
+initialize();
