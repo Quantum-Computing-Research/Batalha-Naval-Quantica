@@ -59,12 +59,26 @@ def handle_cache_list(event):
 
     items = []
     for hw, fname in HARDWARE_FILES.items():
-        key = _hardware_cache_key(fname)
-        online = _s3_exists(CACHE_BUCKET, key)
+        legado = _hardware_cache_key(fname)
+        tamanhos = {}
+        tamanhos_sinteticos = 0
+        for tamanho in (4, 8, 16):
+            moves, origem = _load_moves_from_s3_with_source(hw, tamanho)
+            if moves:
+                tamanhos[tamanho] = {"moves_count": len(moves), "origem": origem}
+                if origem == "simulador_cache_v0":
+                    tamanhos_sinteticos += 1
+        cache_legado = _s3_exists(CACHE_BUCKET, legado)
+        online = True
         items.append({
             "hardware": hw,
-            "s3_key": key,
+            "s3_key": legado,
             "online": online,
+            "moves_count": sum(item["moves_count"] for item in tamanhos.values()),
+            "tamanhos": tamanhos,
+            "cache_mock_disponivel": True,
+            "cache_legado_disponivel": cache_legado,
+            "tamanhos_com_cache_sintetico": tamanhos_sinteticos,
         })
 
     return _resp(200, {
@@ -82,19 +96,27 @@ def handle_cache_get(event, hardware: str):
         return _resp(404, {"error": f"Unknown hardware: {hardware}", "known": list(HARDWARE_FILES.keys())})
 
     key = _hardware_cache_key(fname)
-    if not _s3_exists(CACHE_BUCKET, key):
-        return _resp(404, {"error": "Cache not found", "hardware": hardware, "s3_key": key, "backend_offline": True})
+    if _s3_exists(CACHE_BUCKET, key):
+        try:
+            return _resp(200, {"hardware": hardware, "s3_key": key, "data": _load_json_from_s3(CACHE_BUCKET, key)})
+        except Exception:
+            logger.exception("Failed reading cache %s", key)
+            return _resp(500, {"error": "Failed to load cache", "hardware": hardware})
 
-    try:
-        data = _load_json_from_s3(CACHE_BUCKET, key)
-        return _resp(200, {
-            "hardware": hardware,
-            "s3_key": key,
-            "data": data,   # devolve o JSON inteiro do arquivo
-        })
-    except Exception as e:
-        logger.exception("Failed reading cache %s: %s", key, e)
-        return _resp(500, {"error": "Failed to load cache", "hardware": hardware})
+    dados_por_tamanho = {}
+    fontes = set()
+    for tamanho in (4, 8, 16):
+        moves, origem = _load_moves_from_s3_with_source(hardware, tamanho)
+        if moves:
+            dados_por_tamanho[f"tamanho_tabuleiro_{tamanho}"] = moves
+            fontes.add(origem)
+    if not dados_por_tamanho:
+        return _resp(404, {"error": "Cache ainda não gerado", "hardware": hardware, "backend_offline": True})
+    return _resp(200, {
+        "hardware": hardware,
+        "s3_key": f"{CACHE_PREFIX.rstrip('/')}/{hardware}/",
+        "data": {"hardware": hardware, "origem_jogadas": sorted(fontes), "data": dados_por_tamanho},
+    })
 
 if not GAME_TABLE:
     raise RuntimeError("Missing env GAME_TABLE")
@@ -192,6 +214,10 @@ def _dynamo_delete_game(game_id: str):
 # ----------------------------
 
 def _load_moves_from_s3(backend: str, tamanho_tabuleiro: int) -> Optional[list]:
+    moves, _origem = _load_moves_from_s3_with_source(backend, tamanho_tabuleiro)
+    return moves
+
+def _load_moves_from_s3_with_source(backend: str, tamanho_tabuleiro: int) -> Tuple[list, Optional[str]]:
     """
     Espera:
       s3://<CACHE_BUCKET>/<CACHE_PREFIX>/<backend>/tamanho_<N>.json
@@ -202,7 +228,7 @@ def _load_moves_from_s3(backend: str, tamanho_tabuleiro: int) -> Optional[list]:
       {"moves": ["A1","B7",...]}  (ou lista direta ["A1",...])
     """
     if not CACHE_BUCKET:
-        return None
+        return [], None
 
     prefix = CACHE_PREFIX.rstrip("/")
     keys = [
@@ -217,8 +243,26 @@ def _load_moves_from_s3(backend: str, tamanho_tabuleiro: int) -> Optional[list]:
             continue
         moves = _normalize_moves(data, tamanho_tabuleiro)
         if moves:
-            return moves
-    return []
+            origem = data.get("origem_jogadas") if isinstance(data, dict) else None
+            return moves, origem or "cache_hardware"
+    return [], None
+
+def _gerar_cache_sintetico(backend: str, tamanho_tabuleiro: int) -> list:
+    bits_por_eixo = int(math.log2(tamanho_tabuleiro))
+    moves = [
+        f"{linha:0{bits_por_eixo}b}{coluna:0{bits_por_eixo}b}"
+        for linha in range(tamanho_tabuleiro)
+        for coluna in range(tamanho_tabuleiro)
+    ]
+    random.shuffle(moves)
+    cache = {
+        "hardware": backend,
+        "tamanho_tabuleiro": tamanho_tabuleiro,
+        "origem_jogadas": "simulador_cache_v0",
+        "moves": moves,
+    }
+    _s3_put_json(_cache_key(backend, tamanho_tabuleiro), cache)
+    return _normalize_moves(cache, tamanho_tabuleiro)
 
 def _normalize_moves(data, tamanho):
     if isinstance(data, dict):
@@ -431,6 +475,7 @@ def _resumo_partida(state):
         "jogador": meta.get("jogador_nome", meta.get("jogador", "")),
         "backend": meta.get("backend"),
         "modo": meta.get("modo", "cache"),
+        "origem_jogadas": meta.get("origem_jogadas", "cache_hardware"),
         "dificuldade": meta.get("dificuldade", "normal"),
         "pontuacao": pontuacao,
         "bonus_tempo": bonus_tempo,
@@ -487,14 +532,18 @@ def handle_iniciar(event):
 
     # 1) tenta carregar cache primeiro
     medicoes = []
+    origem_jogadas = "simulador_v0"
     if modo == "simulador":
         bits = 2 * int(math.log2(tamanho_tabuleiro))
         medicoes = [format(random.getrandbits(bits), f"0{bits}b") for _ in range(32 * tamanho_tabuleiro * tamanho_tabuleiro)]
         pilha = _normalize_moves(medicoes, tamanho_tabuleiro)
     else:
-        pilha = _load_moves_from_s3(backend, tamanho_tabuleiro) or []
+        pilha, origem_jogadas = _load_moves_from_s3_with_source(backend, tamanho_tabuleiro)
+        if not pilha:
+            pilha = _gerar_cache_sintetico(backend, tamanho_tabuleiro)
+            origem_jogadas = "simulador_cache_v0"
 
-    # 2) se não tem jogadas, backend OFFLINE para esse tamanho
+    # 2) cache sintético de teste já foi gerado se não havia cache
     if len(pilha) == 0:
         return _resp(200, {
             "backend_offline": True,
@@ -521,6 +570,7 @@ def handle_iniciar(event):
         "jogador_id": _player_id_from_name(jogador),
         "jogador_nome": jogador,
         "modo": modo,
+        "origem_jogadas": origem_jogadas,
         "circuito": _circuito_partida(tamanho_tabuleiro, modo),
         "medicoes_brutas": medicoes,
         "placar": {"jogador": 0, "computador": 0},
@@ -545,6 +595,7 @@ def handle_iniciar(event):
         "modo": modo,
         "game_id": game_id,
         "backend": backend,
+        "origem_jogadas": origem_jogadas,
         "tamanho_tabuleiro": tamanho_tabuleiro,
         "ranking": ranking,
         "fila_espera": fila_espera,
@@ -552,7 +603,6 @@ def handle_iniciar(event):
         "tabuleiro_jogador": game.tabuleiro_jogador,
         "frota_adversaria": _frota_adversaria(state),
         "frota_jogador": _frota_adversaria(state, "jogador"),
-        "ranking": ranking,
     })
 
 def handle_atacar(event):
@@ -760,6 +810,7 @@ def _persist_partida_e_jogador_no_s3(state: dict):
         "resumo": resumo,
         "pontuacao": resumo["pontuacao"],
         "modo": meta.get("modo", "cache"),
+        "origem_jogadas": meta.get("origem_jogadas", "cache_hardware"),
         "created_at": meta.get("created_at"),
         "ended_at": meta.get("ended_at") or _now_iso(),
         "backend": meta.get("backend"),
@@ -976,6 +1027,7 @@ def handle_analises(event):
             "id": partida.get("partida_id") or resumo.get("partida_id"),
             "data": partida.get("ended_at") or resumo.get("fim") or "",
             "hardware": partida.get("backend"),
+            "origem_jogadas": partida.get("origem_jogadas") or resumo.get("origem_jogadas") or "cache_hardware",
             "jogador": (partida.get("jogador") or {}).get("nome") or resumo.get("jogador") or "Jogador",
             "modo": partida.get("modo") or resumo.get("modo") or "cache",
             "vencedor": partida.get("vencedor") or resumo.get("vencedor"),
@@ -1116,6 +1168,7 @@ def _analise_conjunta_partidas(hardware: str, selecionadas: list, partidas_total
             "id": partida.get("partida_id") or resumo.get("partida_id"),
             "data": partida.get("ended_at") or resumo.get("fim") or "",
             "hardware": partida.get("backend"),
+            "origem_jogadas": partida.get("origem_jogadas") or resumo.get("origem_jogadas") or "cache_hardware",
             "jogador": (partida.get("jogador") or {}).get("nome") or resumo.get("jogador") or "Jogador",
             "modo": partida.get("modo") or resumo.get("modo") or "cache",
             "vencedor": partida.get("vencedor") or resumo.get("vencedor"),

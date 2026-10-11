@@ -66,6 +66,56 @@ class JogoLambdaTest(unittest.TestCase):
                 self.request("/encerrar_jogo", game_id=game_id)
                 self.request("/atacar", {"coordenada": "A1"}, game_id, expected=404)
 
+    def test_cache_mode_generates_and_persists_mock_moves_for_selected_hardware(self):
+        cache = {}
+        key = "cache/rigetti_cepheus/4.json"
+
+        def load_cache(backend, size):
+            if key not in cache:
+                return [], None
+            return self.handler._normalize_moves(cache[key], size), cache[key]["origem_jogadas"]
+
+        with patch.object(self.handler, "_load_moves_from_s3_with_source", side_effect=load_cache), patch.object(
+            self.handler, "_s3_put_json", side_effect=lambda cache_key, document: cache.update({cache_key: document})
+        ) as save_cache:
+            result = self.request("/iniciar_jogo", {
+                "nome": "Teste mock",
+                "backend": "rigetti_cepheus",
+                "modo": "cache",
+                "tamanho_tabuleiro": 4,
+                "num_navios": 2,
+            })
+            second_result = self.request("/iniciar_jogo", {
+                "nome": "Teste mock 2",
+                "backend": "rigetti_cepheus",
+                "modo": "cache",
+                "tamanho_tabuleiro": 4,
+                "num_navios": 2,
+            })
+
+        self.assertFalse(result["backend_offline"])
+        self.assertEqual(result["backend"], "rigetti_cepheus")
+        self.assertEqual(result["modo"], "cache")
+        self.assertEqual(result["origem_jogadas"], "simulador_cache_v0")
+        state = self.states[result["game_id"]]
+        self.assertEqual(state["meta"]["backend"], "rigetti_cepheus")
+        self.assertEqual(state["meta"]["origem_jogadas"], "simulador_cache_v0")
+        cache_doc = cache[key]
+        self.assertEqual(len(self.handler._normalize_moves(cache_doc, 4)), 16)
+        self.assertEqual(len(state["pilha"]), 16)
+        self.assertEqual(second_result["origem_jogadas"], "simulador_cache_v0")
+        self.assertEqual(len(self.states[second_result["game_id"]]["pilha"]), 16)
+        self.assertEqual(save_cache.call_count, 1)
+
+    def test_supported_hardware_is_available_when_mock_cache_can_be_generated(self):
+        with patch.object(self.handler, "_load_moves_from_s3_with_source", return_value=([], None)), patch.object(self.handler, "_s3_exists", return_value=False):
+            result = self.request("/cache", method="GET")
+
+        rigetti = next(item for item in result["hardwares"] if item["hardware"] == "rigetti_cepheus")
+        self.assertTrue(rigetti["online"])
+        self.assertTrue(rigetti["cache_mock_disponivel"])
+        self.assertEqual(rigetti["moves_count"], 0)
+
     def test_computer_turn_and_final_hit(self):
         game_id = self.start_game(8)
         state = self.states[game_id]
@@ -424,6 +474,7 @@ class JogoLambdaTest(unittest.TestCase):
                 "partida_id": "match-hardware-simulado",
                 "backend": "ionq_forte",
                 "modo": "simulador",
+                "origem_jogadas": "simulador_cache_v0",
                 "tamanho_tabuleiro": 4,
                 "ended_at": "2026-01-03T00:00:01Z",
                 "historico": [
@@ -458,6 +509,7 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertEqual(result["partidas_modo_simulador"], 1)
         self.assertEqual(result["partidas_total"], 3)
         self.assertEqual(result["partidas"][0]["hardware"], "ionq_forte")
+        self.assertEqual(result["partidas"][0]["origem_jogadas"], "simulador_cache_v0")
         self.assertEqual(result["partidas_analisadas"], 3)
         self.assertEqual(result["analise"]["frequencias"], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0])
         self.assertAlmostEqual(result["analise"]["min_entropia_empirica_bits"], 1.5849625007)

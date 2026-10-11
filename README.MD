@@ -12,12 +12,17 @@ A lista de ataques e deduplicada separadamente; o lote bruto nao e alterado.
 Nao e uma execucao de hardware quantico. O modo fica registrado na partida.
 Nao dispara tarefas Braket nem gera custos de QPU.
 
-Desmarcar a opcao exige selecionar um hardware e ter cache no S3.
+Selecione um hardware para associar a partida ao seu perfil de cache.
+No modo v0, se nao existir cache para o hardware e tabuleiro selecionados,
+o handler gera uma permutacao sintetica das coordenadas e a grava no S3 em
+`cache/<hardware>/<tamanho>.json`. As partidas seguintes reutilizam esse
+arquivo como mock QPU, sem chamar Braket nem gerar custos.
 O handler aceita `cache/<hardware>/tamanho_<N>.json`,
 `cache/<hardware>/<N>.json` e o legado `cache/<hardware>.json`.
 Aceita listas de coordenadas, `moves`, bitstrings em
 `data.tamanho_tabuleiro_<N>` e `dados_randomicos_gerados` com coordenadas.
-Cache ausente permanece offline; esgotamento encerra sem vencedor.
+O endpoint `/cache` considera disponiveis os hardwares suportados pelo gerador
+v0. Esgotamento da lista de jogadas encerra sem vencedor.
 
 Tabuleiros 4x4, 8x8 e 16x16 sao suportados, com 1 a N navios de tamanhos 1 a N.
 Usam respectivamente 4, 6 e 8 qubits: log2(N) por eixo. No modelo ideal
