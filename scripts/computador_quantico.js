@@ -55,7 +55,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
-    composicao.style.gridTemplateColumns = "minmax(0, 30%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
+    composicao.style.gridTemplateColumns = "minmax(0, 25.5%) minmax(0, min(256px, 50%)) minmax(64px, 1fr)";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     figuraChip.setAttribute("aria-label", "Computador clássico");
@@ -79,7 +79,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const fios = [];
     const portas = [];
     const saidas = [];
-    composicao.style.gridTemplateColumns = "minmax(0, 25.5%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
+    composicao.style.gridTemplateColumns = "minmax(0, 25.5%) minmax(0, min(256px, 50%)) minmax(64px, 1fr)";
     for (let camada = 0; camada < 3; camada++) {
         const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {
