@@ -68,6 +68,9 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const coord = estadoChipClassico.coordenada;
     const eixo = bits / 2;
     const leitura = criarLeituraJogada(coord, eixo, Boolean(coord));
+    const sequencia = coord
+        ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("")
+        : null;
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
     diagrama.style.gridTemplateColumns = "0 minmax(0, 1fr)";
@@ -114,7 +117,16 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     }
     const areaRede = document.createElement("div");
     areaRede.className = "chip-rede-scroll";
-    areaRede.appendChild(rede);
+    const saidas = document.createElement("div");
+    saidas.className = "chip-rede-saidas";
+    for (let indice = 0; indice < bits; indice++) {
+        const valor = document.createElement("span");
+        valor.className = "chip-bit-saida";
+        valor.setAttribute("aria-label", `Bit de saída b${indice}`);
+        valor.textContent = sequencia ? sequencia[indice] : "—";
+        saidas.appendChild(valor);
+    }
+    areaRede.append(rede, saidas);
     diagrama.append(entradas, areaRede);
     composicao.append(figuraChip, diagrama, leitura);
     area.appendChild(composicao);
