@@ -274,7 +274,8 @@ async function initialize() {
             const option = document.createElement("option");
             option.value = hardware.id;
             const simuladas = hardware.partidas_modo_simulador || 0;
-            option.textContent = `${hardware.nome.replaceAll("_", " ")}${simuladas ? ` · ${simuladas} testes` : ""}`;
+            const amostrasTeste = simuladas ? ` · ${simuladas} ${simuladas === 1 ? "teste" : "testes"}` : "";
+            option.textContent = `${hardware.nome.replaceAll("_", " ")}${amostrasTeste}`;
             select.appendChild(option);
         });
         const firstWithGames = hardwares.find(hardware => hardware.partidas > 0);
