@@ -55,7 +55,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
-    composicao.style.gridTemplateColumns = "minmax(0, 48%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
+    composicao.style.gridTemplateColumns = "minmax(0, 30%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     figuraChip.setAttribute("aria-label", "Computador clássico");
@@ -80,26 +80,26 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const portas = [];
     const saidas = [];
     for (let camada = 0; camada < 3; camada++) {
-        const esquerda = 20 + camada * 38;
+        const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {
             const centro = indice * 32 + 16;
             if (camada === 0) {
                 const bifurcacao = esquerda - 12;
-                fios.push(`<path d="M0 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
+                fios.push(`<path d="M18 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
             } else {
-                const saidaAnteriorX = esquerda - 8;
+                const saidaAnteriorX = esquerda - 46;
                 const fontes = [indice, (indice + 1) % bits];
                 fontes.forEach((fonte, entrada) => {
                     const yOrigem = fonte * 32 + 16;
                     const yDestino = centro + (entrada === 0 ? -5 : 5);
-                    const rotaX = saidaAnteriorX + 2 + entrada * 3;
+                    const rotaX = saidaAnteriorX + 12 + entrada * 10;
                     fios.push(`<path d="M${saidaAnteriorX} ${yOrigem}H${rotaX}V${yDestino}H${esquerda}"/>`);
                 });
             }
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
             if (camada === 2) {
-                fios.push(`<path d="M${esquerda + 30} ${centro}H144"/>`);
-                saidas.push(`<text x="150" y="${centro + 4}" fill="#365b49" stroke="none" font-family="monospace" font-size="11">${sequencia ? sequencia[indice] : "—"}</text>`);
+                fios.push(`<path d="M${esquerda + 30} ${centro}H220"/>`);
+                saidas.push(`<text x="226" y="${centro + 4}" fill="#365b49" stroke="none" font-family="monospace" font-size="11">${sequencia ? sequencia[indice] : "—"}</text>`);
             }
         }
     }
