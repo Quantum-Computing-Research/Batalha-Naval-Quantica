@@ -449,6 +449,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 }
 
 @media (min-width: 641px) {
+  .partida-operacao .jogada-jogador { transform: translateY(-12px); }
   .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .partida-painel .circuito-hardware { flex-basis: 30.6%; width: 30.6%; }
 }
