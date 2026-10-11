@@ -241,7 +241,8 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .modal-content .botoes { flex-wrap: wrap; }
 }
 
-.partida-layout[data-layout] { display: grid; align-items: start; gap: 24px; padding-top: 20px; scroll-margin-top: 12px; }
+.partida-layout[data-layout] { display: grid; align-content: start; align-items: start; gap: 24px; padding-top: 20px; scroll-margin-top: 12px; min-height: calc(100dvh - 24px); }
+.partida-layout[data-layout] .partida-chips { max-height: clamp(160px, 34dvh, 320px); overflow-y: auto; overflow-x: hidden; padding-right: 8px; }
 .partida-layout[data-layout='superior'] { grid-template-columns: minmax(0, 1fr); }
 .partida-layout[data-layout='superior'] > .boards { grid-column: 1; grid-row: 2; }
 .partida-layout[data-layout='superior'] .partida-painel { grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 1.7fr) minmax(210px, 0.9fr) minmax(160px, 0.7fr); margin: 0; padding: 0 0 18px; border-left: none; border-bottom: 1px solid var(--line); gap: 18px; }
@@ -275,4 +276,6 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout[data-layout='superior'] .partida-chips { grid-column: auto; }
   .partida-layout[data-layout] .partida-painel .circuito-diagrama { grid-template-columns: minmax(0, 1fr); }
   .partida-layout[data-layout] #frota-lista { grid-template-columns: repeat(3, minmax(0, 1fr)); max-height: 130px; }
+  .partida-layout[data-layout] .partida-chips { max-height: 190px; }
+  .partida-layout[data-layout] #frota-lista { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 108px; grid-template-rows: auto; overflow-x: auto; max-height: 90px; }
 }

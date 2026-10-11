@@ -15,10 +15,11 @@ function ajustarLayoutPartida() {
     const largura = area.clientWidth;
     const altura = window.visualViewport?.height || window.innerHeight;
     const larguraLateral = 390;
-    const colunas = largura >= 2 * (tamanho + 1) * 22 + 24 ? 2 : 1;
+    const colunas = largura >= 2 * Math.max(240, (tamanho + 1) * 22) + 24 ? 2 : 1;
     const cabeLateral = colunas === 2 && largura >= 2 * (tamanho + 1) * 28 + larguraLateral + 52 && largura / altura >= 1.45;
     area.dataset.layout = cabeLateral ? 'lateral' : 'superior';
-    if (cabeLateral && area.querySelector('.partida-painel').getBoundingClientRect().height > altura - 48) {
+    const alturaIdealTabuleiro = (tamanho + 1) * Math.min(52, Math.floor((largura - larguraLateral - 52) / 2 / (tamanho + 1)));
+    if (cabeLateral && area.querySelector('.partida-painel').getBoundingClientRect().height > Math.min(altura - 48, alturaIdealTabuleiro + 120)) {
         area.dataset.layout = 'superior';
     }
     const lateral = area.dataset.layout === 'lateral';
@@ -37,7 +38,7 @@ function focarAreaPartida() {
     ajustarLayoutPartida();
     const area = document.querySelector('.partida-layout');
     document.getElementById('playerMove').focus({ preventScroll: true });
-    area.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    area.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
 }
 
 window.addEventListener('resize', agendarAjustePartida);

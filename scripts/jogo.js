@@ -116,7 +116,7 @@ function limparInputJogada() {
     const input = document.getElementById("playerMove");
     if (!input) return;
     input.value = "";
-    input.focus();
+    input.focus({ preventScroll: true });
     input.select();
 }
 
@@ -391,6 +391,9 @@ async function ataqueComputador() {
         if (data.fonte_ataque !== "classico") atualizarCircuitoPartida(circuitoAtual, coordenada);
         document.getElementById("circuitoPartida").classList.toggle("quantico-executando", data.fonte_ataque !== "classico");
         atualizarChipClassico(!!data.chip_classico_ativo, data.fonte_ataque === "classico" ? coordenada : null, data.fonte_ataque === "classico");
+        const chips = document.querySelector(".partida-chips");
+        const chip = document.getElementById(data.fonte_ataque === "classico" ? "chipClassico" : "circuitoPartida");
+        chips.scrollTop += chip.getBoundingClientRect().top - chips.getBoundingClientRect().top;
     }
 
     atualizarStatusBar(data.mensagem || "Ataque quântico executado.");
