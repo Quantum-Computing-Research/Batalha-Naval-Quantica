@@ -234,6 +234,7 @@ async function iniciarJogo(nome) {
     atualizarChipClassico();
     document.getElementById("circuitoPartida").classList.remove("quantico-executando");
     atualizarFrotaAdversaria(data.frota_adversaria);
+    atualizarFrotaJogador(data.frota_jogador);
 
     // UI states
     placar.jogador = 0;
@@ -278,6 +279,7 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     estadoChipClassico = { ativo: false, coordenada: null, executando: false };
     atualizarChipClassico();
     atualizarFrotaAdversaria([]);
+    atualizarFrotaJogador([]);
     clearTimeout(temporizadorResultado);
     resultadoFinalPendente = false;
     document.getElementById("playerMove").disabled = false;
@@ -382,6 +384,7 @@ async function ataqueComputador() {
     }
 
     const [linha, coluna] = data.jogada_quantica || [];
+    if (data.frota_jogador !== undefined) atualizarFrotaJogador(data.frota_jogador);
     const acertou = data.status === "acerto";
 
     // cuidado: seu desenho usa (coluna, linha)

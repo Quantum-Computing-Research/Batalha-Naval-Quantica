@@ -33,6 +33,7 @@ window.onload = async () => {
         document.getElementById("dificuldade").value = data.dificuldade || "normal";
         atualizarChipClassico(!!data.chip_classico_ativo);
         atualizarFrotaAdversaria(data.frota_adversaria);
+        atualizarFrotaJogador(data.frota_jogador);
         renderizarTabuleiro(containerJogador, data.tamanho_tabuleiro, "playerBoard");
         renderizarTabuleiro(containerComputador, data.tamanho_tabuleiro, "computerBoard");
         desenharNavios(data.tabuleiro_jogador);

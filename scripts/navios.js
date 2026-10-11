@@ -12,10 +12,9 @@ function desenharNavios(tabuleiro) {
 
 let frotaAdversariaAtual = null;
 
-function atualizarFrotaAdversaria(frota) {
-    frotaAdversariaAtual = frota ?? null;
-    const lista = document.getElementById("frota-lista");
-    const resumo = document.getElementById("frota-resumo");
+function renderizarFrota(frota, listaId, resumoId) {
+    const lista = document.getElementById(listaId);
+    const resumo = document.getElementById(resumoId);
     lista.replaceChildren();
     if (!Array.isArray(frota)) {
         resumo.textContent = "Frota indisponível nesta partida";
@@ -42,6 +41,19 @@ function atualizarFrotaAdversaria(frota) {
         item.append(silhueta, status);
         lista.appendChild(item);
     });
+}
+
+function atualizarFrotaJogador(frota) {
+    renderizarFrota(frota, "frota-jogador-lista", "frota-jogador-resumo");
+    if (typeof registroPartida !== "undefined" && registroPartida) {
+        registroPartida.frota_jogador = frota;
+        guardarRegistro("qb_partida_atual", registroPartida);
+    }
+}
+
+function atualizarFrotaAdversaria(frota) {
+    frotaAdversariaAtual = frota ?? null;
+    renderizarFrota(frota, "frota-lista", "frota-resumo");
     if (typeof registroPartida !== "undefined" && registroPartida) {
         registroPartida.frota_adversaria = frota;
         guardarRegistro("qb_partida_atual", registroPartida);

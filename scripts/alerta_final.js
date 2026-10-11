@@ -74,6 +74,7 @@ function finalizarComRegistro(data, atraso = 3000) {
     atualizarChipClassico(false);
     atualizarCircuitoPartida(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo));
     atualizarFrotaAdversaria(resumo.frota_adversaria);
+    atualizarFrotaJogador(resumo.frota_jogador);
     for (const [id, seletor, board] of [
         ["playerBoard", ".tabuleiro-jogador", resumo.tabuleiro_jogador],
         ["computerBoard", ".tabuleiro-computador", resumo.tabuleiro_quantico],
