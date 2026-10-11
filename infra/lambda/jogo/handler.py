@@ -28,11 +28,12 @@ CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
 # Quais arquivos existem no bucket (mapeamento "hardware" -> "filename.json")
 # Você pode trocar os nomes à vontade, desde que o front use a chave.
 HARDWARE_FILES = {
-    "ionq_aria2":   "ionq_aria2.json",
-    "ionq_forti1":  "ionq_forti1.json",
+    "aqt_ibex_q1":  "aqt_ibex_q1.json",
+    "ionq_forte":   "ionq_forti1.json",
+    "iqm_emerald":  "iqm_emerald.json",
     "iqm_garnet":   "iqm_garnet.json",
     "quera_aquila": "quera_aquila.json",
-    "rigetti_ankaa": "rigetti_ankaa.json",
+    "rigetti_cepheus": "rigetti_cepheus.json",
 }
 
 def _hardware_cache_key(filename: str) -> str:
