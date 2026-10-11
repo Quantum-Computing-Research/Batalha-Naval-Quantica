@@ -900,19 +900,29 @@ def handle_analises(event):
         return _resp(500, {"error": "Não foi possível carregar as partidas arquivadas."})
 
     contagem = {}
+    simuladas_por_hardware = {}
     for partida in partidas:
         hw = partida.get("backend")
         if hw:
-            contagem[hw] = contagem.get(hw, 0) + 1
+            if partida.get("modo", "cache") == "simulador":
+                simuladas_por_hardware[hw] = simuladas_por_hardware.get(hw, 0) + 1
+            else:
+                contagem[hw] = contagem.get(hw, 0) + 1
     hardwares = [
-        {"id": hw, "nome": hw, "partidas": contagem.get(hw, 0)}
+        {"id": hw, "nome": hw, "partidas": contagem.get(hw, 0), "simuladas_excluidas": simuladas_por_hardware.get(hw, 0)}
         for hw in sorted(set(HARDWARE_FILES) | set(contagem))
     ]
 
     if not hardware:
         return _resp(200, {"hardwares": hardwares})
     if tamanho_raw is None:
-        return _resp(400, {"error": "Informe o tamanho_tabuleiro para comparar amostras equivalentes."})
+        return _resp(400, {"error": "Informe o tamanho_tabuleiro ou use 'todos' para uma análise conjunta."})
+    todos_tamanhos = str(tamanho_raw).strip().lower() in ("todos", "all")
+    if todos_tamanhos:
+        hardware_partidas = [partida for partida in partidas if partida.get("backend") == hardware]
+        simuladas_excluidas = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
+        selecionadas = [partida for partida in hardware_partidas if partida.get("modo", "cache") != "simulador"]
+        return _resp(200, _analise_conjunta_partidas(hardware, selecionadas, len(hardware_partidas), simuladas_excluidas))
     try:
         tamanho = int(tamanho_raw)
     except (ValueError, TypeError):
@@ -920,10 +930,12 @@ def handle_analises(event):
     if tamanho not in (4, 8, 16):
         return _resp(400, {"error": "tamanho_tabuleiro deve ser 4, 8 ou 16."})
 
-    selecionadas = [
+    hardware_partidas = [
         partida for partida in partidas
         if partida.get("backend") == hardware and int(partida.get("tamanho_tabuleiro") or 0) == tamanho
     ]
+    simuladas_excluidas = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
+    selecionadas = [partida for partida in hardware_partidas if partida.get("modo", "cache") != "simulador"]
     bits_por_eixo = int(math.log2(tamanho))
     qubits = bits_por_eixo * 2
     bitstrings = []
@@ -963,6 +975,7 @@ def handle_analises(event):
         partidas_resumo.append({
             "id": partida.get("partida_id") or resumo.get("partida_id"),
             "data": partida.get("ended_at") or resumo.get("fim") or "",
+            "hardware": partida.get("backend"),
             "jogador": (partida.get("jogador") or {}).get("nome") or resumo.get("jogador") or "Jogador",
             "modo": partida.get("modo") or resumo.get("modo") or "cache",
             "vencedor": partida.get("vencedor") or resumo.get("vencedor"),
@@ -1007,8 +1020,9 @@ def handle_analises(event):
         "tamanho_tabuleiro": tamanho,
         "qubits_total": qubits,
         "amostras": len(bitstrings),
-        "partidas_total": len(partidas_resumo),
+        "partidas_total": len(hardware_partidas),
         "partidas_analisadas": sum(partida["incluida"] for partida in partidas_resumo),
+        "partidas_simuladas_excluidas": simuladas_excluidas,
         "ataques_classicos_excluidos": classicas_excluidas,
         "xeb": {
             "disponivel": False,
@@ -1025,6 +1039,166 @@ def handle_analises(event):
         "partidas": partidas_resumo,
         "analise": analise,
     })
+
+def _analise_conjunta_partidas(hardware: str, selecionadas: list, partidas_total: int, simuladas_excluidas: int) -> dict:
+    por_tamanho = {4: [], 8: [], 16: []}
+    partidas_resumo = []
+    ataques_classicos_excluidos = 0
+    frequencias_celulas = [0] * 256
+    esperadas_celulas = [0.0] * 256
+    frequencias_linhas = [0] * 16
+    frequencias_colunas = [0] * 16
+    esperadas_linhas = [0.0] * 16
+    esperadas_colunas = [0.0] * 16
+    hamming_normalizado = [0] * 9
+    amostras = 0
+
+    for partida in selecionadas:
+        try:
+            tamanho = int(partida.get("tamanho_tabuleiro") or 0)
+        except (TypeError, ValueError):
+            continue
+        if tamanho not in por_tamanho:
+            continue
+        bits_por_eixo = int(math.log2(tamanho))
+        historico = partida.get("historico") or []
+        ataques = []
+        classicas = 0
+        for ataque in historico:
+            if ataque.get("tipo") == "ataque_classico":
+                classicas += 1
+                continue
+            if ataque.get("tipo") != "ataque_quantico":
+                continue
+            try:
+                linha = int(ataque["linha"])
+                coluna = int(ataque["coluna"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not (0 <= linha < tamanho and 0 <= coluna < tamanho):
+                continue
+            ataques.append({
+                "linha": linha,
+                "coluna": coluna,
+                "bits": f"{linha:0{bits_por_eixo}b}{coluna:0{bits_por_eixo}b}",
+                "t": ataque.get("t") or "",
+                "acertou": bool(ataque.get("acertou")),
+            })
+        ataques.sort(key=lambda ataque: ataque["t"])
+        por_tamanho[tamanho].extend(ataque["bits"] for ataque in ataques)
+        ataques_classicos_excluidos += classicas
+        amostras += len(ataques)
+
+        esperado_por_casa = len(ataques) / (tamanho * tamanho) if ataques else 0
+        esperado_por_linha = len(ataques) / tamanho if ataques else 0
+        for linha in range(tamanho):
+            linha_normalizada = linha * 16 // tamanho
+            esperadas_linhas[linha_normalizada] += esperado_por_linha
+            for coluna in range(tamanho):
+                coluna_normalizada = coluna * 16 // tamanho
+                esperadas_celulas[linha_normalizada * 16 + coluna_normalizada] += esperado_por_casa
+        for coluna in range(tamanho):
+            esperadas_colunas[coluna * 16 // tamanho] += esperado_por_linha
+
+        for ataque in ataques:
+            linha_normalizada = ataque["linha"] * 16 // tamanho
+            coluna_normalizada = ataque["coluna"] * 16 // tamanho
+            frequencias_celulas[linha_normalizada * 16 + coluna_normalizada] += 1
+            frequencias_linhas[linha_normalizada] += 1
+            frequencias_colunas[coluna_normalizada] += 1
+            peso = ataque["bits"].count("1")
+            qubits = bits_por_eixo * 2
+            faixa_hamming = round((peso / qubits) * 8)
+            hamming_normalizado[faixa_hamming] += 1
+
+        resumo = partida.get("resumo") or {}
+        partidas_resumo.append({
+            "id": partida.get("partida_id") or resumo.get("partida_id"),
+            "data": partida.get("ended_at") or resumo.get("fim") or "",
+            "hardware": partida.get("backend"),
+            "jogador": (partida.get("jogador") or {}).get("nome") or resumo.get("jogador") or "Jogador",
+            "modo": partida.get("modo") or resumo.get("modo") or "cache",
+            "vencedor": partida.get("vencedor") or resumo.get("vencedor"),
+            "pontuacao": int(partida.get("pontuacao", resumo.get("pontuacao", 0)) or 0),
+            "tamanho_tabuleiro": tamanho,
+            "ataques_quanticos": len(ataques),
+            "acertos": sum(ataque["acertou"] for ataque in ataques),
+            "ataques_classicos": classicas,
+            "incluida": bool(ataques),
+        })
+
+    if amostras:
+        probabilidades = [frequencia / amostras for frequencia in frequencias_celulas if frequencia]
+        probabilidades_esperadas = [frequencia / amostras for frequencia in esperadas_celulas if frequencia]
+        entropia = -sum(probabilidade * math.log2(probabilidade) for probabilidade in probabilidades)
+        entropia_esperada = -sum(probabilidade * math.log2(probabilidade) for probabilidade in probabilidades_esperadas if probabilidade)
+        chi2 = sum(
+            (observada - esperada) ** 2 / esperada
+            for observada, esperada in zip(frequencias_celulas, esperadas_celulas)
+            if esperada > 0
+        )
+        analise_por_tamanho = []
+        for tamanho, bitstrings in por_tamanho.items():
+            if not bitstrings:
+                continue
+            analise_tamanho = _analise_medicoes(bitstrings, tamanho)
+            max_entropia = math.log2(tamanho * tamanho)
+            analise_por_tamanho.append({
+                "tamanho_tabuleiro": tamanho,
+                "amostras": len(bitstrings),
+                "entropia_bits": analise_tamanho["entropia_bits"],
+                "entropia_normalizada": analise_tamanho["entropia_bits"] / max_entropia if max_entropia else 0,
+                "min_entropia_empirica_bits": -math.log2(max(analise_tamanho["frequencias"]) / len(bitstrings)),
+                "chi2_por_grau_liberdade": analise_tamanho["qui_quadrado"] / analise_tamanho["graus_liberdade"] if analise_tamanho["graus_liberdade"] else None,
+            })
+        analise_por_tamanho.sort(key=lambda item: item["tamanho_tabuleiro"])
+        analise = {
+            "disponivel": True,
+            "conjunta": True,
+            "amostras": amostras,
+            "entropia_bits": entropia,
+            "entropia_esperada_bits": entropia_esperada,
+            "entropia_normalizada": entropia / entropia_esperada if entropia_esperada else 0,
+            "min_entropia_empirica_bits": -math.log2(max(frequencias_celulas) / amostras),
+            "qui_quadrado": chi2,
+            "graus_liberdade": sum(esperada > 0 for esperada in esperadas_celulas) - 1,
+            "hamming_normalizado": hamming_normalizado,
+            "frequencia_linha_normalizada": frequencias_linhas,
+            "esperada_linha_normalizada": esperadas_linhas,
+            "frequencia_coluna_normalizada": frequencias_colunas,
+            "esperada_coluna_normalizada": esperadas_colunas,
+            "entropia_por_tabuleiro": analise_por_tamanho,
+            "baseline": "Mistura ponderada pelo número de ataques: cada tabuleiro usa uniforme apenas entre suas próprias casas, mapeadas em coordenadas relativas 16×16.",
+            "nota": "Índices empíricos normalizados; não são XEB nem certificam aleatoriedade quântica.",
+        }
+    else:
+        analise = {"disponivel": False, "conjunta": True, "motivo": "Nenhuma jogada quântica arquivada para este hardware."}
+
+    partidas_resumo.sort(key=lambda partida: partida["data"], reverse=True)
+    return {
+        "hardware": hardware,
+        "tamanho_tabuleiro": "todos",
+        "qubits_total": None,
+        "amostras": amostras,
+        "partidas_total": partidas_total,
+        "partidas_analisadas": sum(partida["incluida"] for partida in partidas_resumo),
+        "partidas_simuladas_excluidas": simuladas_excluidas,
+        "ataques_classicos_excluidos": ataques_classicos_excluidos,
+        "xeb": {
+            "disponivel": False,
+            "motivo": "XEB requer probabilidades ideais por circuito e não é informativo para a saída uniforme Hadamard do jogo, inclusive na mistura de tamanhos.",
+        },
+        "tqc": {
+            "disponivel": False,
+            "motivo": "Os arquivos guardam horário da jogada, não duração de execução/resposta do QPU.",
+        },
+        "entropia_certificada": {
+            "disponivel": False,
+            "motivo": "A agregação de tamanhos usa métricas normalizadas empíricas; não equivale à min-entropia suave certificada do artigo.",
+        },
+        "partidas": partidas_resumo,
+        "analise": analise,
+    }
 
 import re
 import uuid

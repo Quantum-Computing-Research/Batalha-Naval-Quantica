@@ -100,8 +100,14 @@ recalculados e preservam o criterio anterior de um ponto por acerto.
 
 `GET /analises` lista os hardwares com partidas arquivadas. Com `hardware` e
 `tamanho_tabuleiro` (4, 8 ou 16), agrega as coordenadas de ataque quantico das
-partidas em `partidas/{partida_id}.json`; ataques classicos do modo Plus ficam
-fora da amostra. A resposta inclui distribuicao de Hamming, frequencia e
+partidas em `partidas/{partida_id}.json`. O campo `backend` preserva o hardware
+selecionado mesmo em modo simulador; a analise inclui somente partidas `cache`
+e informa quantas partidas `simulador` foram excluidas. Ataques classicos do
+modo Plus tambem ficam fora da amostra. `tamanho_tabuleiro=todos` combina os
+tamanhos usando coordenadas relativas numa grade 16x16 e um baseline esperado
+ponderado pelas amostras e pelo espaco de cada tamanho; entropia e Hamming sao
+normalizados, e as metricas de cada tamanho continuam disponiveis separadas.
+A resposta inclui distribuicao de Hamming, frequencia e
 entropia por bit, frequencias por casa, qui-quadrado, repeticoes, min-entropia
 e entropia de colisao empiricas, alem das partidas que formaram a amostra.
 

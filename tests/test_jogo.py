@@ -299,7 +299,7 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertFalse(self.request("/estado", game_id=game_id, method="GET")["em_andamento"])
 
     def test_finished_match_archive_uses_stable_ids_and_mode(self):
-        game_id = self.start_game()
+        game_id = self.request("/iniciar_jogo", {"nome": "Teste", "modo": "simulador", "backend": "ionq_forte", "tamanho_tabuleiro": 8, "num_navios": 4})["game_id"]
         tabuleiro = copy.deepcopy(self.states[game_id]["tabuleiro_quantico"])
         for linha, row in enumerate(tabuleiro):
             for coluna, cell in enumerate(row):
@@ -326,6 +326,7 @@ class JogoLambdaTest(unittest.TestCase):
             self.handler._persist_partida_e_jogador_no_s3(state)
         match = documents[f"partidas/{game_id}.json"]
         self.assertEqual(match["modo"], "simulador")
+        self.assertEqual(match["backend"], "ionq_forte")
         self.assertEqual(match["jogador"]["nome"], "Teste")
         self.assertEqual(match["vencedor"], "jogador")
         self.assertEqual(match["pontuacao"], result["resumo"]["pontuacao"])
@@ -420,6 +421,16 @@ class JogoLambdaTest(unittest.TestCase):
                 ],
             },
             {
+                "partida_id": "match-simulado",
+                "backend": "ionq_forte",
+                "modo": "simulador",
+                "tamanho_tabuleiro": 4,
+                "ended_at": "2026-01-03T00:00:01Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 2, "coluna": 2, "acertou": True, "t": "2026-01-03T00:00:00Z"},
+                ],
+            },
+            {
                 "partida_id": "match-c",
                 "backend": "rigetti_cepheus",
                 "tamanho_tabuleiro": 8,
@@ -434,6 +445,9 @@ class JogoLambdaTest(unittest.TestCase):
 
         self.assertEqual(result["amostras"], 2)
         self.assertEqual(result["ataques_classicos_excluidos"], 1)
+        self.assertEqual(result["partidas_simuladas_excluidas"], 1)
+        self.assertEqual(result["partidas_total"], 3)
+        self.assertEqual(result["partidas"][0]["hardware"], "ionq_forte")
         self.assertEqual(result["partidas_analisadas"], 2)
         self.assertEqual(result["analise"]["frequencias"], [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
         self.assertEqual(result["analise"]["min_entropia_empirica_bits"], 1)
@@ -445,6 +459,40 @@ class JogoLambdaTest(unittest.TestCase):
         with patch.object(self.handler, "_listar_partidas_s3", return_value=[]):
             self.request("/analises", method="GET", query={"hardware": "ionq_forte"}, expected=400)
             self.request("/analises", method="GET", query={"hardware": "ionq_forte", "tamanho_tabuleiro": "10"}, expected=400)
+
+    def test_analytics_combines_board_sizes_with_stratified_uniform_baseline(self):
+        partidas = [
+            {
+                "partida_id": "match-4",
+                "backend": "ionq_forte",
+                "tamanho_tabuleiro": 4,
+                "ended_at": "2026-01-01T00:00:00Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 0, "coluna": 0, "acertou": False, "t": "2026-01-01T00:00:00Z"},
+                    {"tipo": "ataque_quantico", "linha": 3, "coluna": 3, "acertou": True, "t": "2026-01-01T00:00:01Z"},
+                ],
+            },
+            {
+                "partida_id": "match-8",
+                "backend": "ionq_forte",
+                "tamanho_tabuleiro": 8,
+                "ended_at": "2026-01-02T00:00:00Z",
+                "historico": [
+                    {"tipo": "ataque_quantico", "linha": 7, "coluna": 7, "acertou": True, "t": "2026-01-02T00:00:00Z"},
+                ],
+            },
+        ]
+        with patch.object(self.handler, "_listar_partidas_s3", return_value=partidas):
+            result = self.request("/analises", method="GET", query={"hardware": "ionq_forte", "tamanho_tabuleiro": "todos"})
+
+        analise = result["analise"]
+        self.assertEqual(result["tamanho_tabuleiro"], "todos")
+        self.assertEqual(result["amostras"], 3)
+        self.assertEqual(sum(analise["frequencia_linha_normalizada"]), 3)
+        self.assertEqual(sum(analise["esperada_linha_normalizada"]), 3)
+        self.assertEqual([item["tamanho_tabuleiro"] for item in analise["entropia_por_tabuleiro"]], [4, 8])
+        self.assertEqual([partida["tamanho_tabuleiro"] for partida in result["partidas"]], [8, 4])
+        self.assertFalse(result["entropia_certificada"]["disponivel"])
 
     def test_match_archive_listing_paginates_s3(self):
         documentos = {
