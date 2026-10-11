@@ -78,6 +78,14 @@ function atualizarVez(vezDoJogador) {
     const painelJogador = document.querySelector(".partida-operacao");
     const partidaAtiva = typeof vezDoJogador === "boolean";
 
+    if (vezDoJogador) {
+        document.getElementById("circuitoPartida")?.classList.remove("quantico-executando");
+        if (estadoChipClassico.executando) {
+            estadoChipClassico.executando = false;
+            document.getElementById("chipClassico")?.classList.remove("chip-executando");
+        }
+    }
+
     painelComputador?.classList.toggle("vez-computador", partidaAtiva && !vezDoJogador);
     painelJogador?.classList.toggle("vez-jogador", partidaAtiva && vezDoJogador);
     if (!vezDiv) return;
