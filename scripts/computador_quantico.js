@@ -36,8 +36,8 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     const imagemChip = document.createElement("img");
-    imagemChip.src = "assets/img/aws_img3.jpg";
-    imagemChip.alt = "Processador clássico em uma placa eletrônica";
+    imagemChip.src = "assets/img/chip-classico.svg";
+    imagemChip.alt = "Microprocessador clássico quadrado com terminais metálicos";
     imagemChip.width = 120;
     imagemChip.height = 100;
     figuraChip.appendChild(imagemChip);
@@ -100,14 +100,8 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
     if (!circuito) return diagrama;
     const bits = circuito.qubits_por_eixo;
     const medicao = coordenada ? [coordenada[0].charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1].map(valor => valor.toString(2).padStart(bits, "0")) : null;
-    const titulo = document.createElement("h3");
-    titulo.textContent = `Circuito da partida · ${circuito.qubits_total} qubits`;
-    const origem = document.createElement("p");
-    origem.className = "circuito-origem";
-    origem.textContent = `${circuito.origem} · P(célula) ideal = ${circuito.probabilidade_celula}`;
     const informacoes = document.createElement("div");
     informacoes.className = "circuito-informacoes";
-    informacoes.append(titulo, origem);
     const grupos = document.createElement("div");
     grupos.className = "circuito-grupos";
     const sequencia = medicao?.join("");
@@ -137,23 +131,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
         linha.append(rotulo, fio, valor);
         grupos.appendChild(linha);
     }
-    const resultado = document.createElement("p");
-    resultado.className = "circuito-leitura";
-    resultado.textContent = medicao ? `Ataque selecionado: ${medicao.join(" | ")} → ${coordenada}` : "|0⟩ → H → medição · Linha | Coluna";
-    informacoes.appendChild(resultado);
-    const resumo = document.createElement("dl");
-    resumo.className = "circuito-numeros";
-    for (const [label, valor] of [["Qubits", circuito.qubits_total], ["Estados", 2 ** circuito.qubits_total], ["P(célula)", circuito.probabilidade_celula]]) {
-        const item = document.createElement("div");
-        const nome = document.createElement("dt");
-        nome.textContent = label;
-        const numero = document.createElement("dd");
-        numero.textContent = valor;
-        item.append(numero, nome);
-        resumo.appendChild(item);
-    }
-    informacoes.appendChild(resumo);
-    diagrama.append(grupos, informacoes);
+    diagrama.appendChild(grupos);
     return diagrama;
 }
 

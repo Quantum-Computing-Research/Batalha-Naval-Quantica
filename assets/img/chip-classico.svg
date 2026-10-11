@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="package" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#45474a"/>
+      <stop offset="0.48" stop-color="#191a1c"/>
+      <stop offset="1" stop-color="#303235"/>
+    </linearGradient>
+    <linearGradient id="pins" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#77797b"/>
+      <stop offset="0.4" stop-color="#f1f1ef"/>
+      <stop offset="0.7" stop-color="#a5a6a5"/>
+      <stop offset="1" stop-color="#f7f7f4"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="#fff"/>
+  <g fill="url(#pins)" stroke="#77797b" stroke-width="1">
+    <path d="M104 16h12v54h-12zM136 16h12v54h-12zM168 16h12v54h-12zM200 16h12v54h-12zM232 16h12v54h-12zM264 16h12v54h-12zM296 16h12v54h-12zM328 16h12v54h-12zM360 16h12v54h-12zM392 16h12v54h-12z"/>
+    <path d="M104 442h12v54h-12zM136 442h12v54h-12zM168 442h12v54h-12zM200 442h12v54h-12zM232 442h12v54h-12zM264 442h12v54h-12zM296 442h12v54h-12zM328 442h12v54h-12zM360 442h12v54h-12zM392 442h12v54h-12z"/>
+    <path d="M16 104h54v12H16zM16 136h54v12H16zM16 168h54v12H16zM16 200h54v12H16zM16 232h54v12H16zM16 264h54v12H16zM16 296h54v12H16zM16 328h54v12H16zM16 360h54v12H16zM16 392h54v12H16z"/>
+    <path d="M442 104h54v12h-54zM442 136h54v12h-54zM442 168h54v12h-54zM442 200h54v12h-54zM442 232h54v12h-54zM442 264h54v12h-54zM442 296h54v12h-54zM442 328h54v12h-54zM442 360h54v12h-54zM442 392h54v12h-54z"/>
+  </g>
+  <path d="M92 78 111 61h290l19 18 30 30v294l-20 22-19 14H111l-19-18-22-18V110z" fill="#111214"/>
+  <path d="M102 84 117 70h278l17 16 28 28v280l-17 19-18 12H117l-15-15-18-15V114z" fill="url(#package)" stroke="#090a0b" stroke-width="5"/>
+  <path d="m116 74 265 0-48 320H105V91z" fill="#fff" opacity=".035"/>
+  <g fill="#26282a" stroke="#111214" stroke-width="2">
+    <circle cx="140" cy="118" r="12"/><circle cx="372" cy="118" r="12"/>
+    <circle cx="140" cy="372" r="12"/><circle cx="372" cy="372" r="12"/>
+  </g>
+  <g fill="#a6a7a8" font-family="monospace" letter-spacing="3">
+    <text x="153" y="214" font-size="27" font-weight="bold">CPU</text>
+    <text x="228" y="214" font-size="19">'12 3980-06</text>
+    <text x="153" y="250" font-size="18">MRLU2365C TAIWAN</text>
+    <text x="153" y="287" font-size="18">2400MHz / 4C / 16M</text>
+    <text x="153" y="324" font-size="17">0014351287-92 S4</text>
+  </g>
+</svg>

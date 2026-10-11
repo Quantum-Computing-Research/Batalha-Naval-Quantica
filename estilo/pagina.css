@@ -123,6 +123,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-bit-saida { color: #80611f; font-weight: bold; }
 .circuito-com-hardware { display: flex; align-items: center; gap: 16px; min-width: 0; }
 .circuito-com-hardware > .circuito-diagrama { flex: 1; min-width: 0; }
+.circuito-com-hardware > .circuito-diagrama { grid-template-columns: minmax(0, 1fr); }
 .circuito-hardware { margin: 0; flex: 0 0 120px; width: 120px; }
 .circuito-hardware img { display: block; width: 100%; height: 110px; object-fit: contain; }
 .circuito-hardware figcaption { font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px; }
