@@ -57,18 +57,19 @@ function atualizarStatusBar(texto) {
     const barra = document.getElementById("statusBar");
     if (!barra) return;
     const linhaJogada = document.createElement("span");
-    const linhaResultado = document.createElement("span");
-    const ataque = String(texto).match(/^(.*?)(?:\s*→\s*)(.*)$/);
-    if (ataque) {
-        linhaJogada.textContent = ataque[1];
-        linhaResultado.textContent = `${ataque[2]} · 🎯 Placar → Jogador: ${placar.jogador} | Computador: ${placar.computador}`;
-    } else {
-        linhaJogada.textContent = texto;
-        linhaResultado.textContent = `🎯 Placar → Jogador: ${placar.jogador} | Computador: ${placar.computador}`;
-    }
+    linhaJogada.textContent = texto;
     linhaJogada.className = "status-linha-jogada";
-    linhaResultado.className = "status-linha-resultado";
-    barra.replaceChildren(linhaJogada, linhaResultado);
+    barra.replaceChildren(linhaJogada);
+}
+
+function atualizarUltimaJogadaJogador(coordenada = null) {
+    const marcador = document.getElementById("ultimaJogadaJogador");
+    if (!marcador) return;
+    const bitsPorEixo = Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
+    const leitura = criarLeituraJogada(coordenada, bitsPorEixo, Boolean(coordenada));
+    marcador.replaceChildren(...leitura.childNodes);
+    marcador.className = `${leitura.className} jogada-jogador`;
+    marcador.setAttribute("aria-hidden", String(!coordenada));
 }
 
 function atualizarVez(vezDoJogador) {
@@ -248,6 +249,7 @@ async function iniciarJogo(nome) {
     // começou: salva game_id
     setGameId(data.game_id);
     atualizarCircuitoPartida(data.circuito || modeloCircuito(tamanhoTabuleiro, modo), null, backend);
+    atualizarUltimaJogadaJogador();
     iniciarRegistroPartida({ partida_id: data.game_id, jogador: nome, backend, modo, dificuldade, circuito: circuitoAtual, tamanho_tabuleiro: tamanhoTabuleiro, num_navios: numNavios });
     estadoChipClassico = { ativo: false, coordenada: null, executando: false };
     atualizarChipClassico();
@@ -308,6 +310,7 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
     atualizarStatusBar("");
     limparStatusBarEVezJogador();
+    atualizarUltimaJogadaJogador();
 
     const nomeInput = document.getElementById("nomeJogadorInput");
     if (nomeInput) nomeInput.value = "";
@@ -368,7 +371,8 @@ async function atacar() {
     marcarNavioAfundado(data.navio_afundado);
     if (/^[A-T]\d+$/i.test(coordenada)) registrarJogadaPartida("ataque_jogador", coordenada.toUpperCase(), data.status === "acerto");
 
-    atualizarStatusBar(`Você atacou ${coordenada.toUpperCase()} → ${data.mensagem}`);
+    atualizarUltimaJogadaJogador(coordenada.toUpperCase());
+    atualizarStatusBar("");
     if (!data.finalizado) processarRespostaAtaqueJogador(data);
     if (estadoChipClassico.ativo) atualizarChipClassico(true);
 
@@ -418,7 +422,7 @@ async function ataqueComputador() {
         chips.scrollTop += chip.getBoundingClientRect().top - chips.getBoundingClientRect().top;
     }
 
-    atualizarStatusBar(data.mensagem || "Ataque quântico executado.");
+    atualizarStatusBar("");
     atualizarVez(!!data.vez_do_jogador);
 
     if (acertou) placar.computador++;
