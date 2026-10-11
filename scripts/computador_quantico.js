@@ -55,7 +55,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
-    composicao.style.gridTemplateColumns = "minmax(0, 0.85fr) minmax(0, 1.15fr) clamp(64px, 8vw, 104px)";
+    composicao.style.gridTemplateColumns = "minmax(0, 48%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     figuraChip.setAttribute("aria-label", "Computador clássico");
