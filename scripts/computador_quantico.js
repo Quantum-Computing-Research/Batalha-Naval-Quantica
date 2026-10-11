@@ -78,7 +78,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     diagrama.style.height = `${altura}px`;
     const fios = [];
     const portas = [];
-    const saidas = [];
+    composicao.style.gridTemplateColumns = "minmax(0, 25.5%) minmax(0, 1fr) clamp(64px, 8vw, 104px)";
     for (let camada = 0; camada < 3; camada++) {
         const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {

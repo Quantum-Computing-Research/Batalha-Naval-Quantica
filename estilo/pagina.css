@@ -445,9 +445,10 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 
 @media (min-width: 641px) {
   .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
-  .partida-painel .circuito-hardware { flex-basis: 36%; width: 36%; }
+  .partida-painel .circuito-hardware { flex-basis: 30.6%; width: 30.6%; }
 }
 
 @media (max-width: 640px) {
-  .partida-painel .chip-diagrama { grid-template-columns: minmax(0, 40%) minmax(0, 1fr) 64px !important; }
+  .partida-painel .circuito-hardware { flex-basis: 34%; width: 34%; }
+  .partida-painel .chip-diagrama { grid-template-columns: minmax(0, 34%) minmax(0, 1fr) 64px !important; }
 }
