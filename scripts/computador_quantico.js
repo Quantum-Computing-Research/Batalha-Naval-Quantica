@@ -31,6 +31,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     area.classList.toggle("chip-ativo", ativo);
     area.classList.toggle("chip-executando", executando);
     const bits = circuitoAtual?.qubits_total || 2 * Math.log2(Number(document.getElementById("tamanhoTabuleiro").value));
+    area.style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
     const figuraChip = document.createElement("figure");
@@ -135,6 +136,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
 
 function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
     circuitoAtual = circuito || modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value));
+    document.getElementById("circuitoPartida").style.setProperty("--qubits-total", circuitoAtual.qubits_total);
     if (backend) hardwareCircuitoAtual = backend;
     const hardware = hardwareCircuitoAtual || document.querySelector('.card.selecionado')?.dataset.backend;
     const card = [...document.querySelectorAll('.card[data-backend]')].find(item => item.dataset.backend === hardware);

@@ -143,8 +143,8 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-hardware { margin: 0; min-width: 0; align-self: center; }
 .chip-hardware img { display: block; width: 100%; max-height: 112px; object-fit: contain; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
-.chip-executando { background: #f8f1de; box-shadow: inset 3px 0 #ac842a; padding-left: 12px; }
-.partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: inset 3px 0 var(--accent); padding: 12px; }
+.chip-executando { background: #f8f1de; box-shadow: inset 0 0 0 2px #ac842a; }
+.partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: inset 0 0 0 2px var(--accent); }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
 #statusBar { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0; }
@@ -336,6 +336,32 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 #frota-jogador-lista, .partida-layout[data-frota='dupla'] #frota-lista { list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-flow: row; grid-auto-columns: auto; margin: 0; padding: 0; max-height: none; overflow: visible; }
 .partida-layout[data-frota='dupla'] .board-heading { flex-wrap: wrap; gap: 6px; }
 .partida-layout[data-frota='dupla'] .boards .celula.acerto { font-size: clamp(16px, calc(var(--partida-celula) * 0.65), 40px); }
+
+/* Os estados de ataque realçam os paineis sem alterar dimensoes ou alinhamento. */
+.partida-painel .circuito-partida,
+.partida-painel .chip-classico,
+.partida-painel .partida-chips,
+.partida-painel .circuito-com-hardware,
+.partida-painel .chip-diagrama { box-sizing: border-box; }
+.partida-painel .chip-classico { min-width: 0; align-self: stretch; }
+.partida-painel .partida-chips:has(#chipClassico:not([hidden])) { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; }
+.partida-painel .partida-chips:has(#chipClassico:not([hidden])) #circuitoPartida,
+.partida-painel .partida-chips:has(#chipClassico:not([hidden])) #chipClassico { min-width: 0; min-height: 0; align-self: stretch; }
+.partida-painel .circuito-qubit { height: 32px; }
+.partida-painel .circuito-grupos { gap: 0; max-width: none; }
+.partida-painel .circuito-com-hardware { height: 100%; min-height: calc(var(--qubits-total, 4) * 32px); align-items: stretch; }
+.partida-painel .circuito-hardware { flex: 0 0 44%; width: 44%; min-width: 0; height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; align-self: stretch; }
+.partida-painel .circuito-hardware img { width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.partida-painel .chip-classico { margin-top: 0; padding: 14px 0 0; }
+.partida-painel .chip-diagrama { height: 100% !important; min-height: calc(var(--qubits-total, 4) * 32px); align-items: stretch; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); }
+.partida-painel .chip-hardware { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+.partida-painel .chip-hardware img { width: 100%; height: 100%; max-height: none; min-height: 0; object-fit: contain; }
+.partida-painel .chip-rede { height: 100% !important; min-height: calc(var(--qubits-total, 4) * 32px); }
+.partida-painel .chip-rede-saidas { grid-auto-rows: 32px; }
+@media (max-width: 640px) {
+  .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .partida-painel .circuito-hardware { flex-basis: 40%; width: 40%; }
+}
 @media (max-width: 640px) {
   .partida-layout[data-frota='dupla'] .partida-tabuleiros { grid-template-columns: 64px minmax(0, 1fr) 64px; gap: 8px; }
   .frota-jogador { padding-right: 5px; }
