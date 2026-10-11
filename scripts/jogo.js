@@ -303,7 +303,8 @@ async function encerrarJogo({ silentConfirm = false } = {}) {
     }
 
     try {
-        await apiFetch("/encerrar_jogo", { method: "POST", body: {} });
+        const resultado = await apiFetch("/encerrar_jogo", { method: "POST", body: {} });
+        if (Array.isArray(resultado.ranking)) atualizarRanking(resultado.ranking);
     } catch (err) {
         // mesmo se falhar, limpamos localmente para não ficar preso num game_id ruim
         console.warn("Erro ao encerrar no backend:", err);

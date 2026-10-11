@@ -47,6 +47,7 @@ function resumoLocalPartida(data) {
         const acertos = ataques.filter(ataque => ataque.acertou).length;
         return { jogadas: ataques.length, acertos, erros: ataques.length - acertos, navios_afundados: null };
     };
+    const estatisticasJogador = estatisticas("ataque_jogador");
     return {
         ...registro,
         partida_id: getGameId(),
@@ -56,7 +57,10 @@ function resumoLocalPartida(data) {
         num_navios: Number(document.getElementById("numNavios").value),
         fim: new Date().toISOString(),
         duracao_segundos: registro.inicio ? Math.floor((Date.now() - Date.parse(registro.inicio)) / 1000) : null,
-        estatisticas: { jogador: estatisticas("ataque_jogador"), computador: estatisticas("ataque_quantico") },
+        pontuacao: estatisticasJogador.acertos,
+        bonus_tempo: 0,
+        penalidade_jogadas: 0,
+        estatisticas: { jogador: estatisticasJogador, computador: estatisticas("ataque_quantico") },
         tabuleiro_jogador: data.tabuleiro_jogador || tabuleiroDaTela("playerBoard"),
         tabuleiro_quantico: data.tabuleiro_quantico || tabuleiroDaTela("computerBoard"),
         historico,
@@ -67,6 +71,7 @@ function finalizarComRegistro(data, atraso = 3000) {
     if (resultadoFinalPendente) return;
     resultadoFinalPendente = true;
     const resumo = { ...(data.resumo || resumoLocalPartida(data)), mensagem: data.mensagem };
+    if (Array.isArray(data.ranking)) atualizarRanking(data.ranking);
     guardarRegistro("qb_ultimo_resultado", resumo);
     document.getElementById("tamanhoTabuleiro").value = resumo.tamanho_tabuleiro;
     document.getElementById("numNavios").value = resumo.num_navios;
@@ -119,6 +124,7 @@ function linhasResumo(resumo) {
         `Jogador: ${resumo.jogador}`,
         `Adversário: ${resumo.backend} | ${resumo.modo === "simulador" ? "Dados simulados" : "Cache"}`,
         `Tabuleiro: ${resumo.tamanho_tabuleiro}x${resumo.tamanho_tabuleiro} | Navios por lado: ${resumo.num_navios} | Duração: ${tempo}`,
+        `Pontuação: ${resumo.pontuacao ?? resumo.estatisticas.jogador.acertos} pts | Bônus de tempo: +${resumo.bonus_tempo || 0} | Penalidade por jogadas extras: -${resumo.penalidade_jogadas || 0}`,
         `Fim: ${new Date(resumo.fim).toLocaleString("pt-BR")}`,
     ];
     for (const [lado, nome] of [["jogador", "Jogador"], ["computador", "Computador"]]) {
@@ -183,6 +189,9 @@ async function criarImagemPartida(resumo, tabuleiros, relatorio = null) {
         contexto.fillStyle = "#626a64";
         const tempo = formatarDuracaoPartida(resumo.duracao_segundos);
         contexto.fillText(`${nomeHardwarePartida(resumo.backend)}  ·  ${resumo.modo === "simulador" ? "Dados simulados" : "Cache"}  ·  ${resumo.dificuldade === "plus" ? "Plus" : "Quântico"}  ·  ${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}  ·  ${tempo}`, 600, 254, 1040);
+        contexto.font = "bold 18px Georgia";
+        contexto.fillStyle = "#365b49";
+        contexto.fillText(`Pontuação: ${resumo.pontuacao ?? resumo.estatisticas.jogador.acertos} pts`, 600, 286);
         contexto.textAlign = "left";
         for (const [lado, nome, esquerda] of [["jogador", "Jogador", 76], ["computador", "Computador", 652]]) {
             const stats = resumo.estatisticas[lado];
@@ -271,6 +280,7 @@ function mostrarAlertaFinal(resumo) {
         ["Origem dos dados", resumo.modo === "simulador" ? "Dados simulados" : "Cache"],
         ["Tabuleiro", `${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}`],
         ["Duração", formatarDuracaoPartida(resumo.duracao_segundos)],
+        ["Pontuação", `${resumo.pontuacao ?? resumo.estatisticas.jogador.acertos} pontos`],
     ]) {
         const item = document.createElement("p");
         const legenda = document.createElement("span");

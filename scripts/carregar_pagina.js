@@ -19,7 +19,7 @@ window.onload = async () => {
         atualizarRanking(data.ranking || []);
         atualizarFila(data.fila_espera || []);
         if (data.resumo) {
-            finalizarComRegistro({ resumo: data.resumo, mensagem: data.resumo.vencedor === "jogador" ? "Você venceu!" : data.resumo.vencedor === "computador" ? "O computador venceu!" : "Partida concluída sem vencedor." }, 0);
+            finalizarComRegistro({ resumo: data.resumo, ranking: data.ranking, mensagem: data.resumo.vencedor === "jogador" ? "Você venceu!" : data.resumo.vencedor === "computador" ? "O computador venceu!" : "Partida concluída sem vencedor." }, 0);
             return;
         }
         if (!data.em_andamento) {
