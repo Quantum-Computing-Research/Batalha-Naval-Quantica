@@ -96,7 +96,7 @@ svg.lucide { width: 18px; height: 18px; flex-shrink: 0; stroke-width: 1.7; }
 select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border-radius: 5px; color: var(--ink); min-height: 40px; padding: 8px 12px; }
 .top-section select { height: 27px; min-height: 27px; padding: 2px 12px; }
 .pricing-field { width: 600px; max-width: 100%; min-width: 0; flex: 0 1 600px; order: 2; }
-.pricing-field textarea { width: 100%; height: 27px; min-height: 27px; resize: none; overflow-x: auto; overflow-y: hidden; white-space: pre; border: 1px solid #cad8d9; border-radius: 5px; padding: 0; background: #f5f8f8; color: var(--ink); font: 11px/1.45 'Avenir Next', 'Trebuchet MS', sans-serif; }
+.pricing-field textarea { width: 100%; height: 27px; min-height: 27px; resize: none; overflow-x: auto; overflow-y: hidden; white-space: pre; border: 1px solid #cad8d9; border-radius: 5px; padding: 0; background: #f5f8f8; color: var(--ink); font: 11px/25px 'Avenir Next', 'Trebuchet MS', sans-serif; }
 .pricing-field textarea:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
 .simulation-toggle { display: flex; align-items: center; align-self: end; height: 27px; order: 2; white-space: nowrap; }
 .simulation-toggle label { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
