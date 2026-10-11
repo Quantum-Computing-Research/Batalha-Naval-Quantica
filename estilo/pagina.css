@@ -397,3 +397,34 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout[data-frota='dupla'] .frota-silhueta img { max-width: 100%; }
   .partida-layout[data-frota='dupla'] .board-heading h2 { font-size: 17px; }
 }
+
+.circuito-jogada { box-sizing: border-box; width: clamp(70px, 8vw, 104px); min-width: 0; min-height: 76px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px; }
+.circuito-jogada.sem-jogada { visibility: hidden; }
+.circuito-jogada-binario { color: #7b8588; font: 11px/1.35 'SFMono-Regular', Consolas, monospace; white-space: nowrap; }
+.circuito-jogada-coordenada { color: var(--accent); font: normal 28px/1 Georgia, 'Times New Roman', serif; white-space: nowrap; }
+.circuito-saida-e-rede { display: grid; grid-template-columns: clamp(70px, 8vw, 104px) minmax(0, 1fr); gap: 12px; align-items: center; min-width: 0; height: 100%; flex: 1 1 0; }
+.circuito-saida-e-rede > .circuito-diagrama { min-width: 0; width: 100%; }
+.partida-painel .chip-diagrama { grid-template-columns: minmax(0, 0.85fr) clamp(70px, 8vw, 104px) minmax(0, 1.35fr); align-items: center; gap: 10px; }
+.partida-painel .chip-diagrama > .chip-rede { min-width: 0; }
+.partida-painel .circuito-hardware,
+.partida-painel .chip-hardware { align-self: stretch; }
+.partida-painel .circuito-hardware img,
+.partida-painel .chip-hardware img { width: 100%; height: 100%; object-fit: contain; }
+
+@media (max-width: 640px) {
+  .circuito-jogada { width: 64px; min-height: 64px; gap: 6px; }
+  .circuito-jogada-binario { font-size: 9px; }
+  .circuito-jogada-coordenada { font-size: 21px; }
+  .circuito-saida-e-rede { grid-template-columns: 64px minmax(0, 1fr); gap: 6px; }
+  .partida-painel .chip-diagrama { grid-template-columns: minmax(0, 0.8fr) 64px minmax(0, 1.2fr); gap: 6px; }
+}
+
+@media (max-width: 640px) {
+  .partida-layout[data-layout] .circuito-qubit { grid-template-columns: 34px minmax(18px, 1fr) 14px; gap: 2px; }
+  .partida-layout[data-layout] .circuito-fio { min-width: 0; }
+  .partida-layout[data-layout] .circuito-porta { width: 18px; height: 18px; }
+  .partida-layout[data-layout] .circuito-medicao svg { width: 14px; height: 14px; }
+  .partida-layout[data-layout] .chip-diagrama { grid-template-columns: minmax(0, 1fr) 64px minmax(0, 1fr); }
+  .partida-layout[data-layout] .chip-rede { min-width: 0; grid-template-columns: minmax(0, 1fr) 12px; }
+  .partida-layout[data-layout] .chip-rede-imagem { min-width: 0; width: 100%; }
+}

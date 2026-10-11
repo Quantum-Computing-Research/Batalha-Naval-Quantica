@@ -13,6 +13,25 @@ let circuitoAtual = null;
 let hardwareCircuitoAtual = null;
 let estadoChipClassico = { ativo: false, coordenada: null, executando: false };
 
+function criarLeituraJogada(coordenada, bitsPorEixo, ativa) {
+    const leitura = document.createElement("div");
+    leitura.className = ativa && coordenada ? "circuito-jogada" : "circuito-jogada sem-jogada";
+    leitura.setAttribute("aria-live", "polite");
+    if (!(ativa && coordenada)) leitura.setAttribute("aria-hidden", "true");
+    const binario = document.createElement("span");
+    binario.className = "circuito-jogada-binario";
+    const coordenadaFormatada = document.createElement("span");
+    coordenadaFormatada.className = "circuito-jogada-coordenada";
+    if (coordenada) {
+        const linha = coordenada.charCodeAt(0) - 65;
+        const coluna = Number(coordenada.slice(1)) - 1;
+        binario.textContent = `${linha.toString(2).padStart(bitsPorEixo, "0")} | ${coluna.toString(2).padStart(bitsPorEixo, "0")}`;
+        coordenadaFormatada.textContent = coordenada;
+    }
+    leitura.append(binario, coordenadaFormatada);
+    return leitura;
+}
+
 function atualizarBotaoPlus() {
     const botao = document.getElementById("dificuldade");
     const selecionado = botao.value === "plus";
@@ -36,6 +55,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
+    composicao.style.gridTemplateColumns = "minmax(0, 1fr) clamp(64px, 8vw, 104px) minmax(0, 1fr)";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     figuraChip.setAttribute("aria-label", "Computador clássico");
@@ -45,10 +65,11 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     imagemChip.width = 120;
     imagemChip.height = 100;
     figuraChip.appendChild(imagemChip);
+    const coord = executando ? estadoChipClassico.coordenada : null;
+    const eixo = bits / 2;
+    const leitura = criarLeituraJogada(coord, eixo, executando);
     const diagrama = document.createElement("div");
     diagrama.className = "chip-rede";
-    const coord = estadoChipClassico.coordenada;
-    const eixo = bits / 2;
     const sequencia = coord ? [(coord.charCodeAt(0) - 65).toString(2).padStart(eixo, "0"), (Number(coord.slice(1)) - 1).toString(2).padStart(eixo, "0")].join("") : null;
     const altura = alturaCircuito;
     diagrama.style.height = `${altura}px`;
@@ -82,7 +103,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
         saidas.appendChild(valor);
     }
     diagrama.append(rede, saidas);
-    composicao.append(figuraChip, diagrama);
+    composicao.append(figuraChip, leitura, diagrama);
     area.appendChild(composicao);
 }
 
@@ -99,19 +120,20 @@ function modeloCircuito(tamanho, modo = "simulador") {
 }
 
 function criarDiagramaCircuito(circuito, coordenada = null) {
+    const composicao = document.createElement("div");
+    composicao.className = "circuito-saida-e-rede";
+    composicao.style.gridTemplateColumns = "clamp(64px, 8vw, 104px) minmax(0, 1fr)";
     const diagrama = document.createElement("div");
     diagrama.className = "circuito-diagrama";
     if (!circuito) return diagrama;
     const bits = circuito.qubits_por_eixo;
+    composicao.appendChild(criarLeituraJogada(coordenada, bits, !!coordenada));
     const alturaCircuito = circuito.qubits_total * 32;
     diagrama.style.height = `${alturaCircuito}px`;
-    const medicao = coordenada ? [coordenada[0].charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1].map(valor => valor.toString(2).padStart(bits, "0")) : null;
-    const informacoes = document.createElement("div");
-    informacoes.className = "circuito-informacoes";
     const grupos = document.createElement("div");
     grupos.className = "circuito-grupos";
     grupos.style.height = `${alturaCircuito}px`;
-    const sequencia = medicao?.join("");
+    const sequencia = coordenada ? [coordenada.charCodeAt(0) - 65, Number(coordenada.slice(1)) - 1].map(valor => valor.toString(2).padStart(bits, "0")).join("") : null;
     for (let indice = 0; indice < circuito.qubits_total; indice++) {
         const linha = document.createElement("div");
         linha.className = "circuito-qubit";
@@ -137,7 +159,8 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
         grupos.appendChild(linha);
     }
     diagrama.appendChild(grupos);
-    return diagrama;
+    composicao.appendChild(diagrama);
+    return composicao;
 }
 
 function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
