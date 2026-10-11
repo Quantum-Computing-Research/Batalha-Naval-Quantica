@@ -401,7 +401,7 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
   .partida-layout[data-frota='dupla'] .board-heading h2 { font-size: 17px; }
 }
 
-.circuito-jogada { box-sizing: border-box; width: clamp(70px, 8vw, 104px); min-width: 0; min-height: 76px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 8px; }
+.circuito-jogada { box-sizing: border-box; width: clamp(70px, 8vw, 104px); min-width: 0; min-height: 76px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; text-align: center; }
 .circuito-jogada.sem-jogada { visibility: hidden; }
 .circuito-jogada-binario { color: #7b8588; font: 11px/1.35 'SFMono-Regular', Consolas, monospace; white-space: nowrap; }
 .circuito-jogada-coordenada { color: var(--accent); font: normal 28px/1 Georgia, 'Times New Roman', serif; white-space: nowrap; }
