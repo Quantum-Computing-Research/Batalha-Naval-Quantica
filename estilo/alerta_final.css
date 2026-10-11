@@ -253,6 +253,15 @@
 .circuito-bit { color: #365b49; font-weight: bold; }
 .circuito-leitura { font-family: monospace; font-size: 14px; padding-top: 12px; }
 .certificado-relatorio { text-align: left; padding: 20px 0; border-top: 1px solid #e1e5df; }
+.certificado-circuito-hardware { display: flex; align-items: center; gap: 24px; min-width: 0; }
+.certificado-circuito-hardware > .circuito-diagrama { flex: 1; min-width: 0; }
+.certificado-hardware { margin: 0; width: 150px; flex: 0 0 150px; }
+.certificado-hardware img { display: block; width: 100%; height: 140px; object-fit: contain; }
+.certificado-hardware figcaption { margin-top: 10px; text-align: center; font-size: 13px; color: #626a64; }
+@media (max-width: 640px) {
+    .certificado-circuito-hardware { flex-direction: column; align-items: stretch; gap: 20px; }
+    .certificado-hardware { align-self: center; flex-basis: auto; }
+}
 .certificado-analise { margin-top: 24px; }
 .certificado-analise h3 { font-size: 19px; font-weight: normal; }
 .certificado-analise dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }

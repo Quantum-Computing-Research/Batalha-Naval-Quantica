@@ -128,6 +128,17 @@ function linhasResumo(resumo) {
 }
 
 async function criarImagemPartida(resumo, tabuleiros, relatorio = null) {
+    const foto = relatorio?.querySelector(".certificado-hardware img");
+    if (foto && !foto.src.startsWith("data:")) {
+        await foto.decode();
+        const imagemLocal = document.createElement("canvas");
+        const escala = Math.min(1, 480 / Math.max(foto.naturalWidth, foto.naturalHeight));
+        imagemLocal.width = Math.max(1, Math.round(foto.naturalWidth * escala));
+        imagemLocal.height = Math.max(1, Math.round(foto.naturalHeight * escala));
+        imagemLocal.getContext("2d").drawImage(foto, 0, 0, imagemLocal.width, imagemLocal.height);
+        foto.src = imagemLocal.toDataURL("image/png");
+        await foto.decode();
+    }
     const capturas = await Promise.all(tabuleiros.map(tabuleiro => htmlToImage.toCanvas(tabuleiro, {
         backgroundColor: "#ffffff",
         pixelRatio: 2,
@@ -313,7 +324,23 @@ function mostrarAlertaFinal(resumo) {
     alerta.appendChild(tabuleiros);
     const relatorio = document.createElement("div");
     relatorio.className = "certificado-relatorio";
-    relatorio.append(criarDiagramaCircuito(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo)), criarAnalisePartida(resumo.analise));
+    const circuito = document.createElement("div");
+    circuito.className = "certificado-circuito-hardware";
+    const hardware = [...document.querySelectorAll(".card[data-backend]")].find(card => card.dataset.backend === resumo.backend);
+    if (hardware) {
+        const figura = document.createElement("figure");
+        figura.className = "certificado-hardware";
+        const foto = hardware.querySelector("img").cloneNode(true);
+        foto.width = 160;
+        foto.height = 140;
+        foto.alt = nomeHardwarePartida(resumo.backend);
+        const legenda = document.createElement("figcaption");
+        legenda.textContent = nomeHardwarePartida(resumo.backend);
+        figura.append(foto, legenda);
+        circuito.appendChild(figura);
+    }
+    circuito.appendChild(criarDiagramaCircuito(resumo.circuito || modeloCircuito(resumo.tamanho_tabuleiro, resumo.modo)));
+    relatorio.append(circuito, criarAnalisePartida(resumo.analise));
     if (resumo.dificuldade === "plus") {
         const fontes = document.createElement("p");
         fontes.textContent = `Ataques quânticos: ${resumo.ataques_por_fonte?.quantico ?? "—"} · Ataques clássicos: ${resumo.ataques_por_fonte?.classico ?? "—"}`;
