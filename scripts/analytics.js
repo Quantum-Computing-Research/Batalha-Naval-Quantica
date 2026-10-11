@@ -191,7 +191,7 @@ function renderMatches(matches) {
         for (const [label, value] of [
             ["Partida", match.id || "—"],
             ["Hardware associado", match.hardware || "—"],
-            ["Modo de geração", match.modo === "simulador" ? "Simulador · excluída" : "Cache do hardware"],
+            ["Modo de geração", match.modo === "simulador" ? "Simulador de teste · incluída" : "Cache do hardware"],
             ["Resultado", match.vencedor || "—"],
             ["Acertos quânticos", `${match.acertos} / ${match.ataques_quanticos}`],
             ["Ataques clássicos excluídos", match.ataques_classicos],
@@ -237,9 +237,9 @@ async function reloadAnalysis() {
     setStatus("Atualizando partidas", "loading");
     const query = new URLSearchParams({ hardware, tamanho_tabuleiro: size });
     const data = await apiFetch(`/analises?${query}`);
-    const simuladas = data.partidas_simuladas_excluidas || 0;
+    const simuladas = data.partidas_modo_simulador || 0;
     const tabuleiroLabel = size === "todos" ? "todos os tamanhos" : `tabuleiro ${size} × ${size} · ${data.qubits_total} qubits`;
-    $("selectionMeta").textContent = `${data.partidas_total} partidas · ${simuladas} simuladas excluídas · ${tabuleiroLabel}`;
+    $("selectionMeta").textContent = `${data.partidas_total} partidas · ${simuladas} testes simulados incluídos · ${tabuleiroLabel}`;
     $("matchCount").textContent = `${data.partidas_analisadas} / ${data.partidas_total}`;
     $("xebValue").textContent = data.xeb?.disponivel ? data.xeb.valor.toFixed(3) : "Não calculável";
     $("xebReason").textContent = data.xeb?.motivo || "";
@@ -247,7 +247,7 @@ async function reloadAnalysis() {
     $("tqcReason").textContent = data.tqc?.motivo || "";
     $("certifiedEntropyValue").textContent = data.entropia_certificada?.disponivel ? `${data.entropia_certificada.bits} bits` : "Não certificada";
     $("certifiedEntropyReason").textContent = data.entropia_certificada?.motivo || "";
-    $("excludedCount").textContent = `${data.ataques_classicos_excluidos} ataques clássicos e ${simuladas} partidas simuladas excluídos`;
+    $("excludedCount").textContent = `${data.ataques_classicos_excluidos} ataques clássicos excluídos · ${simuladas} partidas simuladas de hardware incluídas`;
     renderMatches(data.partidas || []);
 
     if (!data.analise?.disponivel) {
@@ -273,7 +273,8 @@ async function initialize() {
         hardwares.forEach(hardware => {
             const option = document.createElement("option");
             option.value = hardware.id;
-            option.textContent = hardware.nome.replaceAll("_", " ");
+            const simuladas = hardware.partidas_modo_simulador || 0;
+            option.textContent = `${hardware.nome.replaceAll("_", " ")}${simuladas ? ` · ${simuladas} testes` : ""}`;
             select.appendChild(option);
         });
         const firstWithGames = hardwares.find(hardware => hardware.partidas > 0);
