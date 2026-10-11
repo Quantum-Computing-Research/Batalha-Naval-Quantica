@@ -80,3 +80,18 @@ a pilha quantica. Identidade interna do navio confirma acertos e afundamento,
 mas as casas candidatas sao geradas a partir dos acertos, nao das casas ocultas.
 Estado chip_classico persiste no DynamoDB. Historico distingue ataque_classico
 de ataque_quantico, e analise usa somente medicoes brutas, nao ataques de busca.
+
+## Pontuacao e ranking
+
+Cada acerto vale 1 ponto. Em vitorias por jogadas, ha bonus de tempo de ate 60
+pontos: 1 ponto por cada 10 segundos abaixo de 10 minutos. Cada ataque acima do
+minimo teorico (total de casas ocupadas pela frota adversaria) tira 1 ponto.
+Derrotas e partidas abandonadas mantem somente os pontos dos acertos. Vitorias
+por codigo secreto nao recebem bonus ou penalidade de eficiencia.
+
+A pontuacao e incluida no resumo e no certificado. O arquivo completo continua
+em `partidas/{partida_id}.json`; `jogadores/{jogador_id}.json` guarda os pontos
+totais, melhor partida, vitorias, derrotas e referencias das partidas. O ranking
+mostra os dez maiores totais, lidos desses documentos no S3. A finalizacao e
+idempotente por identificador da partida. Pontos de partidas antigas nao sao
+recalculados e preservam o criterio anterior de um ponto por acerto.

@@ -24,6 +24,8 @@ CACHE_BUCKET = os.environ.get("CACHE_BUCKET", "")
 CACHE_PREFIX = os.environ.get("CACHE_PREFIX", "cache/")
 GAME_TTL_SECONDS = int(os.environ.get("GAME_TTL_SECONDS", "21600"))  # 6h default
 CORS_ORIGIN = os.environ.get("CORS_ORIGIN", "*")
+BONUS_TEMPO_LIMITE_SEGUNDOS = 600
+PENALIDADE_JOGADA_EXTRA = 1
 
 # Quais arquivos existem no bucket (mapeamento "hardware" -> "filename.json")
 # Você pode trocar os nomes à vontade, desde que o front use a chave.
@@ -412,22 +414,38 @@ def _resumo_partida(state):
             "erros": len(ataques) - acertos,
             "navios_afundados": sum(all(tabuleiro[int(linha)][int(coluna)] == 2 for linha, coluna in navio) for navio in navios) if navios is not None else None,
         }
+    duracao_segundos = max(0, int(fim - int(meta["created_at"])))
+    estatisticas_jogador = estatisticas("ataque_jogador", state["tabuleiro_quantico"], state.get("navios_quantico"))
+    estatisticas_computador = estatisticas("ataque_quantico", state["tabuleiro_jogador"], state.get("navios_jogador"))
+    frota_alvo = state.get("navios_quantico")
+    jogadas_minimas = sum(len(navio) for navio in frota_alvo) if frota_alvo is not None else None
+    vitoria_normal = meta.get("vencedor") == "jogador" and not meta.get("vitoria_por_codigo")
+    bonus_tempo = max(0, (BONUS_TEMPO_LIMITE_SEGUNDOS - duracao_segundos) // 10) if vitoria_normal else 0
+    penalidade_jogadas = (
+        max(0, estatisticas_jogador["jogadas"] - jogadas_minimas) * PENALIDADE_JOGADA_EXTRA
+        if vitoria_normal and jogadas_minimas is not None else 0
+    )
+    pontuacao = max(0, estatisticas_jogador["acertos"] + bonus_tempo - penalidade_jogadas)
     return {
         "partida_id": meta.get("partida_id"),
         "jogador": meta.get("jogador_nome", meta.get("jogador", "")),
         "backend": meta.get("backend"),
         "modo": meta.get("modo", "cache"),
         "dificuldade": meta.get("dificuldade", "normal"),
+        "pontuacao": pontuacao,
+        "bonus_tempo": bonus_tempo,
+        "penalidade_jogadas": penalidade_jogadas,
+        "jogadas_minimas": jogadas_minimas,
         "ataques_por_fonte": {fonte: sum(ataque["tipo"] == tipo and ataque.get("linha") is not None for ataque in historico) for fonte, tipo in [("quantico", "ataque_quantico"), ("classico", "ataque_classico")]},
         "vencedor": meta.get("vencedor"),
         "inicio": datetime.fromtimestamp(int(meta["created_at"]), timezone.utc).isoformat(),
         "fim": ended_at,
-        "duracao_segundos": max(0, int(fim - int(meta["created_at"]))),
+        "duracao_segundos": duracao_segundos,
         "tamanho_tabuleiro": state["tamanho_tabuleiro"],
         "num_navios": state["num_navios"],
         "estatisticas": {
-            "jogador": estatisticas("ataque_jogador", state["tabuleiro_quantico"], state.get("navios_quantico")),
-            "computador": estatisticas("ataque_quantico", state["tabuleiro_jogador"], state.get("navios_jogador")),
+            "jogador": estatisticas_jogador,
+            "computador": estatisticas_computador,
         },
         "tabuleiro_jogador": state["tabuleiro_jogador"],
         "tabuleiro_quantico": state["tabuleiro_quantico"],
@@ -494,11 +512,7 @@ def handle_iniciar(event):
 
     game_id = str(uuid.uuid4())
 
-    ranking = [
-        {"nome": "Jogador 1", "pontos": 200},
-        {"nome": "Jogador 2", "pontos": 180},
-        {"nome": "Jogador 3", "pontos": 150},
-    ]
+    ranking = _ranking_global()
     fila_espera = []
 
     meta = {
@@ -514,7 +528,6 @@ def handle_iniciar(event):
         "em_andamento": True,
         "jogador": jogador,
         "backend": backend,
-        "ranking": ranking,
         "fila_espera": fila_espera,
         # opcional: auditoria
         "created_at": int(time.time()),
@@ -539,6 +552,7 @@ def handle_iniciar(event):
         "tabuleiro_jogador": game.tabuleiro_jogador,
         "frota_adversaria": _frota_adversaria(state),
         "frota_jogador": _frota_adversaria(state, "jogador"),
+        "ranking": ranking,
     })
 
 def handle_atacar(event):
@@ -559,7 +573,8 @@ def handle_atacar(event):
 
     if not game.vez_do_jogador:
         return _resp(409, {"error": "Aguarde o ataque do computador."})
-    if not game.verificar_codigo_secreto(coordenada):
+    vitoria_por_codigo = game.verificar_codigo_secreto(coordenada)
+    if not vitoria_por_codigo:
         if not game.validar_coordenada(coordenada):
             return _resp(400, {"error": "Coordenada inválida."})
         linha, coluna = game.recupera_coordenada(coordenada)
@@ -584,6 +599,7 @@ def handle_atacar(event):
         mensagem = "Jogo finalizado! Você venceu!"
         state["meta"]["em_andamento"] = False
         state["meta"]["ended_at"] = _now_iso()
+        state["meta"]["vitoria_por_codigo"] = vitoria_por_codigo
         vencedor = "jogador"
     else:
         mensagem = f"Ataque do jogador em {coordenada.upper()} → {'Acertou!' if acertou else 'Errou!'}"
@@ -629,6 +645,7 @@ def handle_atacar(event):
         "finalizado": bool(finalizado),
         "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
         "resumo": _resumo_partida(state) if finalizado else None,
+        "ranking": _ranking_global() if finalizado else None,
     })
 
 def handle_ataque_quantico(event):
@@ -697,6 +714,7 @@ def handle_ataque_quantico(event):
         "finalizado": bool(finalizado),
         "tabuleiro_quantico": state["tabuleiro_quantico"] if finalizado else None,
         "resumo": _resumo_partida(state) if finalizado else None,
+        "ranking": _ranking_global() if finalizado else None,
     })
 
 def handle_encerrar(event):
@@ -708,14 +726,23 @@ def handle_encerrar(event):
     # opção 1: marca encerrado
     state = _dynamo_get_game(game_id)
     if state:
+        meta = state.setdefault("meta", {})
+        if meta.get("em_andamento", state.get("em_andamento", False)):
+            meta["vencedor"] = meta.get("vencedor") or "abandonada"
+            meta["ended_at"] = meta.get("ended_at") or _now_iso()
         state["em_andamento"] = False
-        state["meta"]["em_andamento"] = False
+        meta["em_andamento"] = False
         _dynamo_put_game(game_id, state)
+        _persist_partida_e_jogador_no_s3(state)
 
     # opção 2 (mais “cache-like”): apaga o item
     # _dynamo_delete_game(game_id)
 
-    return _resp(200, {"status": "jogo encerrado"})
+    return _resp(200, {
+        "status": "jogo encerrado",
+        "pontuacao": _resumo_partida(state)["pontuacao"] if state else 0,
+        "ranking": _ranking_global(),
+    })
 
 def _persist_partida_e_jogador_no_s3(state: dict):
     if not CACHE_BUCKET:
@@ -724,12 +751,14 @@ def _persist_partida_e_jogador_no_s3(state: dict):
     meta = state.get("meta", {})
     partida_id = meta.get("partida_id") or state.get("game_id") or str(uuid.uuid4())
     jogador_id = meta.get("jogador_id") or "jogador_anon"
+    resumo = _resumo_partida(state)
 
     # 1) salva a partida completa
     partida_key = f"{MATCH_PREFIX}{partida_id}.json"
     partida_doc = {
         "partida_id": partida_id,
-        "resumo": _resumo_partida(state),
+        "resumo": resumo,
+        "pontuacao": resumo["pontuacao"],
         "modo": meta.get("modo", "cache"),
         "created_at": meta.get("created_at"),
         "ended_at": meta.get("ended_at") or _now_iso(),
@@ -767,37 +796,41 @@ def _persist_partida_e_jogador_no_s3(state: dict):
                 "melhor_pontuacao_partida": 0,
             },
             "hardwares_jogados": [],
-            "partidas": [],  # <- só ids
+            "partidas": [],
         }
 
     backend = meta.get("backend")
-    if backend and backend not in jogador_doc.get("hardwares_jogados", []):
-        jogador_doc["hardwares_jogados"].append(backend)
+    hardwares = jogador_doc.setdefault("hardwares_jogados", [])
+    if backend and backend not in hardwares:
+        hardwares.append(backend)
 
-    # define pontos da partida (aqui usei placar do jogador como métrica)
-    pontos_partida = int(meta.get("placar", {}).get("jogador", 0))
-    jogador_doc["pontuacao_global"]["pontos_totais"] += pontos_partida
-    jogador_doc["pontuacao_global"]["melhor_pontuacao_partida"] = max(
-        int(jogador_doc["pontuacao_global"].get("melhor_pontuacao_partida", 0)),
-        pontos_partida,
-    )
+    pontos_partida = resumo["pontuacao"]
+    partidas = jogador_doc.setdefault("partidas", [])
+    if not isinstance(partidas, list):
+        partidas = []
+        jogador_doc["partidas"] = partidas
+    if not any(partida.get("id_partida") == partida_id for partida in partidas):
+        pontuacao_global = jogador_doc.setdefault("pontuacao_global", {})
+        pontuacao_global["pontos_totais"] = int(pontuacao_global.get("pontos_totais", 0)) + pontos_partida
+        pontuacao_global["melhor_pontuacao_partida"] = max(
+            int(pontuacao_global.get("melhor_pontuacao_partida", 0)),
+            pontos_partida,
+        )
+        pontuacao_global["partidas"] = int(pontuacao_global.get("partidas", 0)) + 1
 
-    venceu = meta.get("vencedor") == "jogador"
-    if meta.get("vencedor") in ("jogador", "computador"):
-        if venceu:
-            jogador_doc["pontuacao_global"]["vitorias"] += 1
-        else:
-            jogador_doc["pontuacao_global"]["derrotas"] += 1
+        venceu = meta.get("vencedor") == "jogador"
+        if meta.get("vencedor") in ("jogador", "computador"):
+            resultado = "vitorias" if venceu else "derrotas"
+            pontuacao_global[resultado] = int(pontuacao_global.get(resultado, 0)) + 1
 
-    # adiciona somente referência
-    jogador_doc["partidas"].append({
-        "id_partida": partida_id,
-        "data": meta.get("ended_at") or _now_iso(),
-        "hardware": backend,
-        "tamanho_tabuleiro": f"{state.get('tamanho_tabuleiro')}x{state.get('tamanho_tabuleiro')}",
-        "pontos": pontos_partida,
-        "vencedor": meta.get("vencedor"),
-    })
+        partidas.append({
+            "id_partida": partida_id,
+            "data": meta.get("ended_at") or _now_iso(),
+            "hardware": backend,
+            "tamanho_tabuleiro": f"{state.get('tamanho_tabuleiro')}x{state.get('tamanho_tabuleiro')}",
+            "pontos": pontos_partida,
+            "vencedor": meta.get("vencedor"),
+        })
 
     _s3_put_json(jogador_key, jogador_doc)
 
@@ -827,14 +860,14 @@ def handle_estado(event):
     body = _parse_json_body(event)
     game_id = _get_game_id(event, body)
     if not game_id:
-        return _resp(200, {"ranking": [], "fila_espera": [], "em_andamento": False})
+        return _resp(200, {"ranking": _ranking_global(), "fila_espera": [], "em_andamento": False})
 
     state = _dynamo_get_game(game_id)
     if not state:
         return _resp(404, {"error": "Jogo não encontrado."})
 
     return _resp(200, {
-        "ranking": state.get("ranking", []),
+        "ranking": _ranking_global(),
         "fila_espera": state.get("fila_espera", []),
         "em_andamento": state.get("meta", {}).get("em_andamento", False),
         "tamanho_tabuleiro": state["tamanho_tabuleiro"],
@@ -884,6 +917,46 @@ def _s3_get_json(key: str):
     obj = s3.get_object(Bucket=CACHE_BUCKET, Key=key)
     raw = obj["Body"].read().decode("utf-8", errors="replace")
     return json.loads(raw)
+
+def _ranking_global(limite: int = 10) -> list:
+    if not CACHE_BUCKET:
+        return []
+
+    jogadores = []
+    token = None
+    try:
+        while True:
+            args = {"Bucket": CACHE_BUCKET, "Prefix": PLAYER_PREFIX}
+            if token:
+                args["ContinuationToken"] = token
+            pagina = s3.list_objects_v2(**args)
+            for item in pagina.get("Contents", []):
+                chave = item.get("Key", "")
+                if not chave.endswith(".json"):
+                    continue
+                try:
+                    jogador = _s3_get_json(chave)
+                except Exception:
+                    logger.exception("Falha ao carregar jogador do ranking: %s", chave)
+                    continue
+                if not isinstance(jogador, dict):
+                    continue
+                pontuacao = jogador.get("pontuacao_global") or {}
+                jogadores.append({
+                    "nome": jogador.get("nome") or "Jogador",
+                    "pontos": int(pontuacao.get("pontos_totais", 0)),
+                })
+            if pagina.get("IsTruncated") is not True:
+                break
+            token = pagina.get("NextContinuationToken")
+            if not token:
+                break
+    except Exception:
+        logger.exception("Falha ao montar ranking global do S3")
+        return []
+
+    jogadores.sort(key=lambda jogador: (-jogador["pontos"], jogador["nome"].casefold()))
+    return jogadores[:limite]
 
 def _s3_put_json(key: str, data: dict):
     s3.put_object(

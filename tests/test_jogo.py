@@ -299,24 +299,103 @@ class JogoLambdaTest(unittest.TestCase):
 
     def test_finished_match_archive_uses_stable_ids_and_mode(self):
         game_id = self.start_game()
-        self.request("/atacar", {"coordenada": self.states[game_id]["codigo_secreto"]}, game_id)
+        tabuleiro = copy.deepcopy(self.states[game_id]["tabuleiro_quantico"])
+        for linha, row in enumerate(tabuleiro):
+            for coluna, cell in enumerate(row):
+                if cell == 1:
+                    result = self.request("/atacar", {"coordenada": self.handler.coord_para_letra_numero(linha, coluna)}, game_id)
         state = self.states[game_id]
         state["tabuleiro_jogador"][0][0] = Decimal(1)
         class NoSuchKey(Exception):
             pass
         client = MagicMock()
         client.exceptions.NoSuchKey = NoSuchKey
-        client.get_object.side_effect = NoSuchKey()
+        documents = {}
+        def get_object(Bucket, Key):
+            if Key not in documents:
+                raise NoSuchKey()
+            return {"Body": io.BytesIO(json.dumps(documents[Key]).encode())}
+        def put_object(Bucket, Key, Body, ContentType):
+            documents[Key] = json.loads(Body)
+        client.get_object.side_effect = get_object
+        client.put_object.side_effect = put_object
         with patch.object(self.handler, "s3", client):
             self.patches[2].stop()
             self.handler._persist_partida_e_jogador_no_s3(state)
-        documents = {call.kwargs["Key"]: json.loads(call.kwargs["Body"]) for call in client.put_object.call_args_list}
+            self.handler._persist_partida_e_jogador_no_s3(state)
         match = documents[f"partidas/{game_id}.json"]
         self.assertEqual(match["modo"], "simulador")
         self.assertEqual(match["jogador"]["nome"], "Teste")
         self.assertEqual(match["vencedor"], "jogador")
+        self.assertEqual(match["pontuacao"], result["resumo"]["pontuacao"])
         player = documents[f"jogadores/{state['meta']['jogador_id']}.json"]
         self.assertEqual(player["pontuacao_global"]["vitorias"], 1)
+        self.assertEqual(player["pontuacao_global"]["partidas"], 1)
+        self.assertEqual(player["pontuacao_global"]["pontos_totais"], match["pontuacao"])
+        self.assertEqual(len(player["partidas"]), 1)
+
+    def test_manual_end_archives_partial_score_as_abandoned(self):
+        game_id = self.start_game()
+        self.states[game_id]["meta"]["placar"]["jogador"] = 2
+        self.states[game_id]["meta"]["historico"] = [
+            {"tipo": "ataque_jogador", "linha": 0, "coluna": indice, "acertou": True}
+            for indice in range(2)
+        ]
+
+        result = self.request("/encerrar_jogo", game_id=game_id)
+
+        self.assertEqual(result["pontuacao"], 2)
+        self.assertEqual(self.states[game_id]["meta"]["vencedor"], "abandonada")
+        self.assertFalse(self.states[game_id]["meta"]["em_andamento"])
+        self.handler._persist_partida_e_jogador_no_s3.assert_called_once()
+
+    def test_score_rewards_fast_minimum_move_win_and_penalizes_extra_moves(self):
+        game_id = self.start_game(8, 4)
+        state = self.states[game_id]
+        state["meta"]["created_at"] = 1000
+        state["meta"]["ended_at"] = self.handler.datetime.fromtimestamp(1300, self.handler.timezone.utc).isoformat()
+        state["meta"]["vencedor"] = "jogador"
+        state["meta"]["placar"]["jogador"] = 10
+        state["meta"]["historico"] = [
+            {"tipo": "ataque_jogador", "linha": indice % 8, "coluna": indice % 8, "acertou": indice < 10}
+            for indice in range(12)
+        ]
+
+        resumo = self.handler._resumo_partida(state)
+
+        self.assertEqual(resumo["jogadas_minimas"], 10)
+        self.assertEqual(resumo["bonus_tempo"], 30)
+        self.assertEqual(resumo["penalidade_jogadas"], 2)
+        self.assertEqual(resumo["pontuacao"], 38)
+
+        state["meta"]["vitoria_por_codigo"] = True
+        resumo_codigo = self.handler._resumo_partida(state)
+        self.assertEqual(resumo_codigo["bonus_tempo"], 0)
+        self.assertEqual(resumo_codigo["penalidade_jogadas"], 0)
+        self.assertEqual(resumo_codigo["pontuacao"], 10)
+
+    def test_global_ranking_reads_and_sorts_player_s3_documents(self):
+        client = MagicMock()
+        client.list_objects_v2.side_effect = [
+            {"Contents": [{"Key": "jogadores/ana.json"}], "IsTruncated": True, "NextContinuationToken": "next"},
+            {"Contents": [{"Key": "jogadores/bia.json"}, {"Key": "jogadores/caio.json"}], "IsTruncated": False},
+        ]
+        jogadores = {
+            "jogadores/ana.json": {"nome": "Ana", "pontuacao_global": {"pontos_totais": 80}},
+            "jogadores/bia.json": {"nome": "Bia", "pontuacao_global": {"pontos_totais": 120}},
+            "jogadores/caio.json": {"nome": "Caio", "pontuacao_global": {"pontos_totais": 120}},
+        }
+        client.get_object.side_effect = lambda Bucket, Key: {"Body": io.BytesIO(json.dumps(jogadores[Key]).encode())}
+
+        with patch.object(self.handler, "s3", client):
+            ranking = self.handler._ranking_global()
+
+        self.assertEqual(ranking, [
+            {"nome": "Bia", "pontos": 120},
+            {"nome": "Caio", "pontos": 120},
+            {"nome": "Ana", "pontos": 80},
+        ])
+        self.assertEqual(client.list_objects_v2.call_count, 2)
 
 
 if __name__ == "__main__":
