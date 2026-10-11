@@ -80,12 +80,21 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
         const esquerda = 30 + camada * 76;
         for (let indice = 0; indice < bits; indice++) {
             const centro = indice * 32 + 16;
-            const origem = ((indice + camada + 1) % bits) * 32 + 16;
-            const entrada = camada === 0 ? 0 : esquerda - 40;
-            const dobra = esquerda - 16 - (indice % 3) * 4;
-            fios.push(`<path d="M${entrada} ${centro}H${esquerda}M${entrada} ${origem}H${dobra}V${centro + 5}H${esquerda}"/>`);
+            if (camada === 0) {
+                const bifurcacao = esquerda - 12;
+                fios.push(`<path d="M18 ${centro}H${bifurcacao}V${centro - 5}H${esquerda}M${bifurcacao} ${centro}V${centro + 5}H${esquerda}"/>`);
+                rotulosBits.push(`<text x="0" y="${centro + 4}" fill="#69777b" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
+            } else {
+                const saidaAnteriorX = esquerda - 46;
+                const fontes = [indice, (indice + 1) % bits];
+                fontes.forEach((fonte, entrada) => {
+                    const yOrigem = fonte * 32 + 16;
+                    const yDestino = centro + (entrada === 0 ? -5 : 5);
+                    const rotaX = saidaAnteriorX + 12 + entrada * 10;
+                    fios.push(`<path d="M${saidaAnteriorX} ${yOrigem}H${rotaX}V${yDestino}H${esquerda}"/>`);
+                });
+            }
             portas.push(`<path d="M${esquerda} ${centro - 9}h15a9 9 0 0 1 0 18h-15z" fill="#d5eafa"/><circle cx="${esquerda + 27}" cy="${centro}" r="3" fill="#fff"/>`);
-            if (camada === 0) rotulosBits.push(`<text x="0" y="${centro + 4}" fill="#69777b" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
             if (camada === 2) {
                 fios.push(`<path d="M${esquerda + 30} ${centro}H250"/>`);
                 rotulosBits.push(`<text x="258" y="${centro + 4}" fill="#80611f" stroke="none" font-family="monospace" font-size="10">b${indice}</text>`);
