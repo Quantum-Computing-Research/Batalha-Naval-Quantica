@@ -158,6 +158,16 @@ function atualizarCircuitoPartida(circuito, coordenada = null, backend = null) {
         figura.setAttribute("aria-label", card.querySelector('h3').textContent);
         figura.append(imagem);
         composicao.appendChild(figura);
+    } else {
+        const placeholder = document.createElement("div");
+        placeholder.className = "circuito-hardware circuito-hardware-pendente";
+        placeholder.setAttribute("role", "img");
+        placeholder.setAttribute("aria-label", "Selecione um computador quântico");
+        const interrogacao = document.createElement("span");
+        interrogacao.setAttribute("aria-hidden", "true");
+        interrogacao.textContent = "?";
+        placeholder.appendChild(interrogacao);
+        composicao.appendChild(placeholder);
     }
     composicao.appendChild(criarDiagramaCircuito(circuitoAtual, coordenada));
     document.getElementById("circuitoPartida").replaceChildren(composicao);
