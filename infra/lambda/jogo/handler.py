@@ -903,26 +903,26 @@ def handle_analises(event):
     simuladas_por_hardware = {}
     for partida in partidas:
         hw = partida.get("backend")
-        if hw:
+        if hw in HARDWARE_FILES:
+            contagem[hw] = contagem.get(hw, 0) + 1
             if partida.get("modo", "cache") == "simulador":
                 simuladas_por_hardware[hw] = simuladas_por_hardware.get(hw, 0) + 1
-            else:
-                contagem[hw] = contagem.get(hw, 0) + 1
     hardwares = [
-        {"id": hw, "nome": hw, "partidas": contagem.get(hw, 0), "simuladas_excluidas": simuladas_por_hardware.get(hw, 0)}
-        for hw in sorted(set(HARDWARE_FILES) | set(contagem))
+        {"id": hw, "nome": hw, "partidas": contagem.get(hw, 0), "partidas_modo_simulador": simuladas_por_hardware.get(hw, 0)}
+        for hw in sorted(HARDWARE_FILES)
     ]
 
     if not hardware:
         return _resp(200, {"hardwares": hardwares})
+    if hardware not in HARDWARE_FILES:
+        return _resp(400, {"error": "Selecione um computador quântico listado."})
     if tamanho_raw is None:
         return _resp(400, {"error": "Informe o tamanho_tabuleiro ou use 'todos' para uma análise conjunta."})
     todos_tamanhos = str(tamanho_raw).strip().lower() in ("todos", "all")
     if todos_tamanhos:
         hardware_partidas = [partida for partida in partidas if partida.get("backend") == hardware]
-        simuladas_excluidas = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
-        selecionadas = [partida for partida in hardware_partidas if partida.get("modo", "cache") != "simulador"]
-        return _resp(200, _analise_conjunta_partidas(hardware, selecionadas, len(hardware_partidas), simuladas_excluidas))
+        partidas_modo_simulador = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
+        return _resp(200, _analise_conjunta_partidas(hardware, hardware_partidas, len(hardware_partidas), partidas_modo_simulador))
     try:
         tamanho = int(tamanho_raw)
     except (ValueError, TypeError):
@@ -934,8 +934,8 @@ def handle_analises(event):
         partida for partida in partidas
         if partida.get("backend") == hardware and int(partida.get("tamanho_tabuleiro") or 0) == tamanho
     ]
-    simuladas_excluidas = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
-    selecionadas = [partida for partida in hardware_partidas if partida.get("modo", "cache") != "simulador"]
+    partidas_modo_simulador = sum(partida.get("modo", "cache") == "simulador" for partida in hardware_partidas)
+    selecionadas = hardware_partidas
     bits_por_eixo = int(math.log2(tamanho))
     qubits = bits_por_eixo * 2
     bitstrings = []
@@ -1022,7 +1022,7 @@ def handle_analises(event):
         "amostras": len(bitstrings),
         "partidas_total": len(hardware_partidas),
         "partidas_analisadas": sum(partida["incluida"] for partida in partidas_resumo),
-        "partidas_simuladas_excluidas": simuladas_excluidas,
+        "partidas_modo_simulador": partidas_modo_simulador,
         "ataques_classicos_excluidos": classicas_excluidas,
         "xeb": {
             "disponivel": False,
@@ -1040,7 +1040,7 @@ def handle_analises(event):
         "analise": analise,
     })
 
-def _analise_conjunta_partidas(hardware: str, selecionadas: list, partidas_total: int, simuladas_excluidas: int) -> dict:
+def _analise_conjunta_partidas(hardware: str, selecionadas: list, partidas_total: int, partidas_modo_simulador: int) -> dict:
     por_tamanho = {4: [], 8: [], 16: []}
     partidas_resumo = []
     ataques_classicos_excluidos = 0
@@ -1182,7 +1182,7 @@ def _analise_conjunta_partidas(hardware: str, selecionadas: list, partidas_total
         "amostras": amostras,
         "partidas_total": partidas_total,
         "partidas_analisadas": sum(partida["incluida"] for partida in partidas_resumo),
-        "partidas_simuladas_excluidas": simuladas_excluidas,
+        "partidas_modo_simulador": partidas_modo_simulador,
         "ataques_classicos_excluidos": ataques_classicos_excluidos,
         "xeb": {
             "disponivel": False,
