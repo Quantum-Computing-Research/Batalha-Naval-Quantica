@@ -55,7 +55,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
     document.querySelector(".partida-chips").style.setProperty("--qubits-total", bits);
     const composicao = document.createElement("div");
     composicao.className = "circuito-diagrama chip-diagrama";
-    composicao.style.gridTemplateColumns = "minmax(0, 1fr) clamp(64px, 8vw, 104px) minmax(0, 1fr)";
+    composicao.style.gridTemplateColumns = "minmax(0, 0.85fr) minmax(0, 1.15fr) clamp(64px, 8vw, 104px)";
     const figuraChip = document.createElement("figure");
     figuraChip.className = "chip-hardware";
     figuraChip.setAttribute("aria-label", "Computador clássico");
@@ -103,7 +103,7 @@ function atualizarChipClassico(ativo = false, coordenada = null, executando = fa
         saidas.appendChild(valor);
     }
     diagrama.append(rede, saidas);
-    composicao.append(figuraChip, leitura, diagrama);
+    composicao.append(figuraChip, diagrama, leitura);
     area.appendChild(composicao);
 }
 
@@ -122,12 +122,12 @@ function modeloCircuito(tamanho, modo = "simulador") {
 function criarDiagramaCircuito(circuito, coordenada = null) {
     const composicao = document.createElement("div");
     composicao.className = "circuito-saida-e-rede";
-    composicao.style.gridTemplateColumns = "clamp(64px, 8vw, 104px) minmax(0, 1fr)";
+    composicao.style.gridTemplateColumns = "minmax(0, 1fr) clamp(64px, 8vw, 104px)";
     const diagrama = document.createElement("div");
     diagrama.className = "circuito-diagrama";
     if (!circuito) return diagrama;
     const bits = circuito.qubits_por_eixo;
-    composicao.appendChild(criarLeituraJogada(coordenada, bits, !!coordenada));
+    const leitura = criarLeituraJogada(coordenada, bits, !!coordenada);
     const alturaCircuito = circuito.qubits_total * 32;
     diagrama.style.height = `${alturaCircuito}px`;
     const grupos = document.createElement("div");
@@ -159,7 +159,7 @@ function criarDiagramaCircuito(circuito, coordenada = null) {
         grupos.appendChild(linha);
     }
     diagrama.appendChild(grupos);
-    composicao.appendChild(diagrama);
+    composicao.append(diagrama, leitura);
     return composicao;
 }
 
