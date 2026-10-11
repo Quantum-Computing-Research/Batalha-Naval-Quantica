@@ -246,7 +246,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
   .partida-painel .circuito-grupos { max-width: 160px; }
   .partida-painel .circuito-numeros { flex-wrap: wrap; gap: 12px; }
   .partida-layout:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 1fr); gap: 24px; }
-  .partida-layout:has(#chipClassico:not([hidden])) > .partida-painel { grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 1fr) 190px; margin: 0; padding: 0 0 18px; border: 0; border-bottom: 1px solid var(--line); }
+  .partida-layout:has(#chipClassico:not([hidden])) > .partida-painel { grid-column: 1; grid-row: 1; grid-template-columns: minmax(0, 1fr) minmax(190px, 0.28fr); margin: 0; padding: 0 0 18px; border: 0; border-bottom: 1px solid var(--line); }
   .partida-layout:has(#chipClassico:not([hidden])) > .partida-tabuleiros { grid-column: 1; grid-row: 2; }
 }
 
@@ -446,7 +446,7 @@ select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border
 }
 
 @media (min-width: 641px) {
-  .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+  .partida-painel .partida-chips:has(#chipClassico:not([hidden])) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .partida-painel .circuito-hardware { flex-basis: 30.6%; width: 30.6%; }
 }
 
