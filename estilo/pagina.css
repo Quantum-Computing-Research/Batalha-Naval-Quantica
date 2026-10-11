@@ -143,11 +143,8 @@ input[type='checkbox'] { accent-color: var(--accent); width: 15px; height: 15px;
 .chip-hardware { margin: 0; min-width: 0; align-self: center; }
 .chip-hardware img { display: block; width: 100%; max-height: 112px; object-fit: contain; }
 .chip-ativo { color: #80611f; border-top-color: #c9b16c; }
-.chip-executando { position: relative; background: #f8f1de; box-shadow: none; padding-left: 0; }
-.chip-executando::after,
-.partida-painel .circuito-partida.quantico-executando::after { content: ''; position: absolute; inset: 4px; border: 2px solid #ac842a; pointer-events: none; }
-.partida-painel .circuito-partida.quantico-executando { position: relative; background: #e1f1f2; box-shadow: none; padding: 0; }
-.partida-painel .circuito-partida.quantico-executando::after { border-color: var(--accent); }
+.chip-executando { background: #f8f1de; box-shadow: none; padding-left: 0; outline: 2px solid #ac842a; outline-offset: 3px; }
+.partida-painel .circuito-partida.quantico-executando { background: #e1f1f2; box-shadow: none; padding: 0; outline: 2px solid var(--accent); outline-offset: 3px; }
 .partida-operacao { min-width: 0; border-inline: 1px solid var(--line); padding-inline: 18px; }
 .match-status { display: flex; flex-direction: column; align-items: start; gap: 12px; padding: 0; min-height: 70px; }
 #statusBar { font-size: 12px; line-height: 1.6; color: var(--muted); margin: 0; }
