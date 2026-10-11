@@ -68,3 +68,15 @@ entropia de Shannon e correlacao de Pearson lag 1 sobre valores inteiros.
 Sao indicadores descritivos sobre o lote inteiro; nao certificam aleatoriedade
 quantica nem oferecem p-valor. Cache sem medicoes brutas retorna indisponivel,
 sem analisar ataques deduplicados. O PNG inclui circuito e painel estatistico.
+
+## Plus - dificil
+
+POST /iniciar_jogo aceita dificuldade normal ou plus. Plus inicia com ataque
+quantico; um acerto ativa a busca classica no navio atingido. Ela tenta casas
+ortogonais nao atacadas, infere orientacao apos dois acertos e busca extremos.
+Um erro passa a vez ao jogador sem descartar o alvo. O quântico retorna apos
+afundamento; navios de uma casa nao mantem o chip ativo. A busca nao consome
+a pilha quantica. Identidade interna do navio confirma acertos e afundamento,
+mas as casas candidatas sao geradas a partir dos acertos, nao das casas ocultas.
+Estado chip_classico persiste no DynamoDB. Historico distingue ataque_classico
+de ataque_quantico, e analise usa somente medicoes brutas, nao ataques de busca.

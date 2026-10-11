@@ -307,6 +307,48 @@ def _frota_adversaria(state):
         for indice, navio in enumerate(navios)
     ]
 
+def _ataque_computador(state, game):
+    chip = state.setdefault("chip_classico", {"ativo": False, "alvo": None, "acertos": []})
+    fonte = "quantico"
+    if state["meta"].get("dificuldade") == "plus" and chip["ativo"]:
+        fonte = "classico"
+        acertos = [[int(row), int(col)] for row, col in chip["acertos"]]
+        horizontal = len(acertos) > 1 and len({row for row, col in acertos}) == 1
+        vertical = len(acertos) > 1 and len({col for row, col in acertos}) == 1
+        direcoes = [(0, -1), (0, 1)] if horizontal else [(-1, 0), (1, 0)] if vertical else [(-1, 0), (0, 1), (1, 0), (0, -1)]
+        candidatos = []
+        for row, col in acertos:
+            for delta_row, delta_col in direcoes:
+                vizinho = [row + delta_row, col + delta_col]
+                if all(0 <= valor < game.tamanho_tabuleiro for valor in vizinho) and game.tabuleiro_jogador[vizinho[0]][vizinho[1]] in (0, 1) and vizinho not in candidatos:
+                    candidatos.append(vizinho)
+        if not candidatos:
+            raise RuntimeError("Alvo clássico ativo sem vizinhos disponíveis")
+        linha, coluna = candidatos[0]
+        acertou = game.performar_ataque(linha, coluna, game.tabuleiro_jogador)
+        finalizado = game.verificar_condicao_finalizacao(game.tabuleiro_jogador)
+        game.vez_do_jogador = not acertou
+        resultado = (finalizado, "Jogo finalizado! O computador venceu!", acertou, linha, coluna)
+    else:
+        resultado = game.ataque_quantico()
+        finalizado, mensagem, acertou, linha, coluna = resultado
+    afundado = False
+    if acertou and state["meta"].get("dificuldade") == "plus":
+        navios = state.get("navios_jogador", [])
+        if not chip["ativo"]:
+            alvo = next((indice for indice, navio in enumerate(navios) if [linha, coluna] in navio), None)
+            if alvo is not None:
+                acertos_conhecidos = [[int(row), int(col)] for row, col in navios[alvo] if game.tabuleiro_jogador[int(row)][int(col)] == 2]
+                chip.update(ativo=True, alvo=alvo, acertos=acertos_conhecidos)
+        if chip["ativo"]:
+            alvo = navios[int(chip["alvo"])]
+            if [linha, coluna] in alvo and [linha, coluna] not in chip["acertos"]:
+                chip["acertos"].append([linha, coluna])
+            afundado = all(game.tabuleiro_jogador[int(row)][int(col)] == 2 for row, col in alvo)
+            if afundado:
+                chip.update(ativo=False, alvo=None, acertos=[])
+    return resultado, fonte, afundado
+
 def _circuito_partida(tamanho, modo):
     bits = int(math.log2(tamanho))
     return {
@@ -361,7 +403,7 @@ def _resumo_partida(state):
     ended_at = meta.get("ended_at") or _now_iso()
     fim = datetime.fromisoformat(ended_at).timestamp()
     def estatisticas(tipo, tabuleiro, navios):
-        ataques = [ataque for ataque in historico if ataque["tipo"] == tipo and ataque.get("linha") is not None]
+        ataques = [ataque for ataque in historico if (ataque["tipo"] == tipo or tipo == "ataque_quantico" and ataque["tipo"] == "ataque_classico") and ataque.get("linha") is not None]
         acertos = sum(bool(ataque["acertou"]) for ataque in ataques)
         return {
             "jogadas": len(ataques),
@@ -374,6 +416,8 @@ def _resumo_partida(state):
         "jogador": meta.get("jogador_nome", meta.get("jogador", "")),
         "backend": meta.get("backend"),
         "modo": meta.get("modo", "cache"),
+        "dificuldade": meta.get("dificuldade", "normal"),
+        "ataques_por_fonte": {fonte: sum(ataque["tipo"] == tipo and ataque.get("linha") is not None for ataque in historico) for fonte, tipo in [("quantico", "ataque_quantico"), ("classico", "ataque_classico")]},
         "vencedor": meta.get("vencedor"),
         "inicio": datetime.fromtimestamp(int(meta["created_at"]), timezone.utc).isoformat(),
         "fim": ended_at,
@@ -411,6 +455,9 @@ def handle_iniciar(event):
         return _resp(400, {"error": "A quantidade de navios deve ser de 1 até o tamanho do tabuleiro."})
 
     jogador = (body.get("nome") or "").strip()
+    dificuldade = body.get("dificuldade", "normal")
+    if dificuldade not in ("normal", "plus"):
+        return _resp(400, {"error": "Dificuldade inválida."})
     modo = body.get("modo", "cache")
     if modo not in ("simulador", "cache"):
         return _resp(400, {"error": "Modo inválido."})
@@ -454,6 +501,7 @@ def handle_iniciar(event):
 
     meta = {
         "partida_id": game_id,
+        "dificuldade": dificuldade,
         "jogador_id": _player_id_from_name(jogador),
         "jogador_nome": jogador,
         "modo": modo,
@@ -594,7 +642,8 @@ def handle_ataque_quantico(event):
     if game.vez_do_jogador:
         return _resp(409, {"error": "Agora é a vez do jogador."})
 
-    finalizado, _msg, acertou, linha, coluna = game.ataque_quantico()
+    resultado, fonte, navio_afundado = _ataque_computador(state, game)
+    finalizado, _msg, acertou, linha, coluna = resultado
 
     if finalizado:
         mensagem = _msg
@@ -602,7 +651,9 @@ def handle_ataque_quantico(event):
         state["meta"]["ended_at"] = _now_iso()
         vencedor = "computador" if game.verificar_condicao_finalizacao(game.tabuleiro_jogador) else "sem_jogadas"
     else:
-        mensagem = f"Ataque quântico em {coord_para_letra_numero(linha, coluna)} → {'Acertou!' if acertou else 'Errou!'}"
+        mensagem = f"Ataque {'clássico' if fonte == 'classico' else 'quântico'} em {coord_para_letra_numero(linha, coluna)} → {'Acertou!' if acertou else 'Errou!'}"
+        if navio_afundado:
+            mensagem += " Navio afundado. Chip quântico retomado."
         vencedor = None
 
     if acertou:
@@ -610,7 +661,7 @@ def handle_ataque_quantico(event):
 
     state["meta"]["historico"].append({
         "t": _now_iso(),
-        "tipo": "ataque_quantico",
+        "tipo": "ataque_classico" if fonte == "classico" else "ataque_quantico",
         "coord": coord_para_letra_numero(linha, coluna) if linha is not None else None,
         "acertou": bool(acertou),
         "linha": linha,
@@ -633,6 +684,8 @@ def handle_ataque_quantico(event):
 
     return _resp(200, {
         "jogada_quantica": [linha, coluna],
+        "fonte_ataque": fonte,
+        "chip_classico_ativo": state.get("chip_classico", {}).get("ativo", False),
         "status": "acerto" if acertou else "erro",
         "mensagem": mensagem,
         "vez_do_jogador": state["vez_do_jogador"],
@@ -787,6 +840,8 @@ def handle_estado(event):
         "vez_do_jogador": state["vez_do_jogador"],
         "placar": state["meta"].get("placar", {}),
         "circuito": state["meta"].get("circuito"),
+        "dificuldade": state["meta"].get("dificuldade", "normal"),
+        "chip_classico_ativo": state.get("chip_classico", {}).get("ativo", False),
         "resumo": _resumo_partida(state) if state["meta"].get("vencedor") else None,
         "backend": state.get("backend", ""),
         "jogador": state.get("jogador", ""),

@@ -189,6 +189,77 @@ class JogoLambdaTest(unittest.TestCase):
         self.assertTrue(result["frota_adversaria"][0]["afundado"])
         self.assertFalse(result["frota_adversaria"][1]["afundado"])
 
+    def test_plus_keeps_target_across_player_turn_and_resumes_quantum(self):
+        game_id = self.request("/iniciar_jogo", {"modo": "simulador", "dificuldade": "plus", "tamanho_tabuleiro": 8})["game_id"]
+        state = self.states[game_id]
+        state["tabuleiro_jogador"] = [[0] * 8 for _ in range(8)]
+        state["navios_jogador"] = [[[2, 2], [2, 3], [2, 4]], [[7, 7]]]
+        for row, col in [[2, 2], [2, 3], [2, 4], [7, 7]]:
+            state["tabuleiro_jogador"][row][col] = 1
+        state["pilha"] = ["C3", "A1"]
+        state["vez_do_jogador"] = False
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["fonte_ataque"], "quantico")
+        self.assertTrue(result["chip_classico_ativo"])
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["fonte_ataque"], "classico")
+        self.assertEqual(result["jogada_quantica"], [1, 2])
+        self.assertTrue(result["vez_do_jogador"])
+        self.assertTrue(result["chip_classico_ativo"])
+        self.assertEqual(self.states[game_id]["pilha"], ["A1"])
+        self.states[game_id]["tabuleiro_quantico"][0][0] = 0
+        self.request("/atacar", {"coordenada": "A1"}, game_id)
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["jogada_quantica"], [2, 3])
+        self.states[game_id]["tabuleiro_quantico"][0][1] = 0
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["jogada_quantica"], [2, 1])
+        self.request("/atacar", {"coordenada": "A2"}, game_id)
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["jogada_quantica"], [2, 4])
+        self.assertFalse(result["chip_classico_ativo"])
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["fonte_ataque"], "quantico")
+        self.assertEqual(result["jogada_quantica"], [0, 0])
+        summary = self.handler._resumo_partida(self.states[game_id])
+        self.assertEqual(summary["estatisticas"]["computador"]["jogadas"], 6)
+        self.assertEqual(summary["dificuldade"], "plus")
+
+    def test_plus_single_ship_and_vertical_border(self):
+        game_id = self.request("/iniciar_jogo", {"modo": "simulador", "dificuldade": "plus"})["game_id"]
+        state = self.states[game_id]
+        state["tabuleiro_jogador"] = [[0] * 8 for _ in range(8)]
+        state["navios_jogador"] = [[[0, 0]], [[0, 7], [1, 7]], [[7, 0]]]
+        for row, col in [[0, 0], [0, 7], [1, 7], [7, 0]]:
+            state["tabuleiro_jogador"][row][col] = 1
+        state["pilha"] = ["A1", "A8", "H1"]
+        state["vez_do_jogador"] = False
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertFalse(result["chip_classico_ativo"])
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertTrue(result["chip_classico_ativo"])
+        self.assertTrue(self.request("/estado", game_id=game_id, method="GET")["chip_classico_ativo"])
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["jogada_quantica"], [1, 7])
+        self.assertFalse(result["chip_classico_ativo"])
+        self.assertEqual(self.states[game_id]["pilha"], ["H1"])
+
+    def test_plus_reuses_previously_hit_target_cells(self):
+        game_id = self.request("/iniciar_jogo", {"modo": "simulador", "dificuldade": "plus"})["game_id"]
+        state = self.states[game_id]
+        state["tabuleiro_jogador"] = [[0] * 8 for _ in range(8)]
+        state["navios_jogador"] = [[[0, col] for col in range(4)], [[7, 7]]]
+        state["tabuleiro_jogador"][0][:4] = [2, 2, 1, 1]
+        state["tabuleiro_jogador"][7][7] = 1
+        state["pilha"] = ["A3", "H8"]
+        state["vez_do_jogador"] = False
+        self.request("/ataque-quantico", game_id=game_id, method="GET")
+        result = self.request("/ataque-quantico", game_id=game_id, method="GET")
+        self.assertEqual(result["fonte_ataque"], "classico")
+        self.assertEqual(result["jogada_quantica"], [0, 3])
+        self.assertFalse(result["chip_classico_ativo"])
+        self.assertEqual(self.states[game_id]["pilha"], ["H8"])
+
     def test_summary_survives_reload_and_supports_legacy_games(self):
         game_id = self.start_game()
         self.request("/atacar", {"coordenada": self.states[game_id]["codigo_secreto"]}, game_id)
