@@ -116,8 +116,29 @@
             <button id="prev" class="nav-button" aria-label="Computadores anteriores" title="Computadores anteriores"><i
                 data-lucide="chevron-left" aria-hidden="true"></i></button>
             <div class="carousel">
+              <div class="card" data-backend="aqt_ibex_q1">
+                <img src="assets/img/aws_img1.jpeg" alt="Computador quântico AQT">
+                <h3>IBEX-Q1</h3>
+                <p>Íons aprisionados</p>
+                <a class="company-link" href="https://aws.amazon.com/braket/quantum-computers/aqt/" target="_blank"
+                  title="Conheça as especificações do hardware">AQT</a>
+              </div>
+              <div class="card" data-backend="ionq_forte">
+                <img src="assets/img/aws-ionq.png" alt="IonQ Forte">
+                <h3>Forte</h3>
+                <p>Íons aprisionados</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
+                  title="Conheça as especificações do hardware">IonQ</a>
+              </div>
+              <div class="card" data-backend="iqm_emerald">
+                <img src="assets/img/aws-iqm.jpg" alt="IQM Emerald">
+                <h3>Emerald</h3>
+                <p>Supercondutor</p>
+                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
+                  title="Conheça as especificações do hardware">IQM</a>
+              </div>
               <div class="card" data-backend="iqm_garnet">
-                <img src="assets/img/aws-iqm.jpg" alt="Garnet">
+                <img src="assets/img/aws-iqm.jpg" alt="IQM Garnet">
                 <h3>Garnet</h3>
                 <p>Supercondutor</p>
                 <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/iqm/" target="_blank"
@@ -130,26 +151,12 @@
                 <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/quera/" target="_blank"
                   title="Conheça as especificações do hardware">QuEra</a>
               </div>
-              <div class="card" data-backend="rigetti_ankaa">
-                <img src="assets/img/aws-rigetti.jpg" alt="Ankaa-3">
-                <h3>Ankaa-3</h3>
+              <div class="card" data-backend="rigetti_cepheus">
+                <img src="assets/img/aws-rigetti.jpg" alt="Rigetti Cepheus">
+                <h3>Cepheus</h3>
                 <p>Supercondutor</p>
                 <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/rigetti/"
                   target="_blank" title="Conheça as especificações do hardware">Rigetti</a>
-              </div>
-              <div class="card" data-backend="ionq_aria2">
-                <img src="assets/img/aws-ionq.png" alt="Aria 2">
-                <h3>Aria 2</h3>
-                <p>Íons aprisionados</p>
-                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
-                  title="Conheça as especificações do hardware">IonQ</a>
-              </div>
-              <div class="card" data-backend="ionq_forti1">
-                <img src="assets/img/aws-ionq.png" alt="Forte 1">
-                <h3>Forte 1</h3>
-                <p>Íons aprisionados</p>
-                <a class="company-link" href="https://aws.amazon.com/pt/braket/quantum-computers/ionq/" target="_blank"
-                  title="Conheça as especificações do hardware">IonQ</a>
               </div>
             </div>
             <button id="next" class="nav-button" aria-label="Próximos computadores" title="Próximos computadores"><i
@@ -195,10 +202,11 @@
             </script>
           </select>
         </div>
-        <label for="modoSimulador" class="synthetic-toggle">
-          <input type="checkbox" id="modoSimulador" checked>
-          Dados sintéticos · v0
-        </label>
+        <div class="config-field pricing-field">
+          <label for="precoPartida">Estimativa por partida · AWS Braket</label>
+          <textarea id="precoPartida" rows="3" readonly aria-live="polite"
+            aria-label="Estimativa do custo AWS Braket para a partida"></textarea>
+        </div>
         <div class="config-field fleet-field">
           <label for="numNavios">Navios</label>
           <select id="numNavios" name="numNavios">

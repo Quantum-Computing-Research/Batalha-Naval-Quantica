@@ -93,7 +93,7 @@ function setButtonsState({ startEnabled, waitEnabled, endEnabled }) {
     if (startBtn) startBtn.disabled = !startEnabled;
     if (waitBtn) waitBtn.disabled = !waitEnabled;
     if (endBtn) endBtn.disabled = !endEnabled;
-    for (const id of ["tamanhoTabuleiro", "numNavios", "modoSimulador", "dificuldade"]) {
+    for (const id of ["tamanhoTabuleiro", "numNavios", "dificuldade"]) {
         const controle = document.getElementById(id);
         if (controle) controle.disabled = !startEnabled;
     }
@@ -192,7 +192,7 @@ async function iniciarJogo(nome) {
     const tamanhoTabuleiro = parseInt(document.getElementById("tamanhoTabuleiro")?.value, 10);
 
     const backend = getBackendSelecionado();
-    const modo = document.getElementById("modoSimulador")?.checked ? "simulador" : "cache";
+    const modo = "simulador";
     const dificuldade = document.getElementById("dificuldade").value;
 
     // travar botões enquanto inicia

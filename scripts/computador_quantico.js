@@ -281,6 +281,5 @@ document.getElementById("dificuldade").addEventListener("click", event => {
     atualizarChipClassico();
 });
 document.getElementById("tamanhoTabuleiro").addEventListener("change", () => atualizarChipClassico());
-document.getElementById("modoSimulador").addEventListener("change", () => atualizarCircuitoPartida(modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value), document.getElementById("modoSimulador").checked ? "simulador" : "cache")));
 atualizarCircuitoPartida();
 lucide.createIcons();
