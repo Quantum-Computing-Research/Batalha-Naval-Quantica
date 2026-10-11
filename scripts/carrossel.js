@@ -16,17 +16,20 @@ function atualizarEstimativaPreco() {
     if (!campo) return;
     const tabuleiro = Number(document.getElementById("tamanhoTabuleiro").value);
     const shotsMaximos = tabuleiro * tabuleiro;
-    const shotsMinimos = Number(document.getElementById("numNavios").value);
+    const numNavios = Number(document.getElementById("numNavios").value);
+    const ajudaClassica = document.getElementById("dificuldade").value === "plus";
+    const shotsMinimos = ajudaClassica ? numNavios : numNavios * (numNavios + 1) / 2;
+    const modoAjuda = ajudaClassica ? "com Plus" : "sem Plus";
     const hardware = document.querySelector(".card.selecionado")?.dataset.backend;
     const tarifa = tarifasBraket[hardware];
     const usd = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 6 });
     if (!tarifa) {
-        campo.value = `Selecione um QPU · ${shotsMinimos} a ${shotsMaximos} shots`;
+        campo.value = `Selecione um QPU · ${shotsMinimos} a ${shotsMaximos} shots (${modoAjuda})`;
         return;
     }
     const custoMinimo = shotsMinimos * tarifa.porShot;
     const custoMaximo = shotsMaximos * tarifa.porShot;
-    campo.value = `${tarifa.nome} · ${usd.format(tarifa.porShot)}/shot · ${shotsMinimos} a ${shotsMaximos} shots · ${usd.format(custoMinimo)} a ${usd.format(custoMaximo)}`;
+    campo.value = `${tarifa.nome} · ${usd.format(tarifa.porShot)}/shot · ${shotsMinimos} a ${shotsMaximos} shots (${modoAjuda}) · ${usd.format(custoMinimo)} a ${usd.format(custoMaximo)}`;
 }
 
 function atualizarNavegacaoCarrossel() {
@@ -74,4 +77,5 @@ document.querySelectorAll('.card').forEach(card => {
 
 document.getElementById("tamanhoTabuleiro").addEventListener("change", atualizarEstimativaPreco);
 document.getElementById("numNavios").addEventListener("change", atualizarEstimativaPreco);
+document.getElementById("dificuldade").addEventListener("click", atualizarEstimativaPreco);
 atualizarEstimativaPreco();
