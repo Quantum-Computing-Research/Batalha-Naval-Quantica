@@ -73,12 +73,12 @@ function atualizarStatusBar(texto) {
 
 function atualizarVez(vezDoJogador) {
     const vezDiv = document.getElementById("vez-indicador");
-    const painelComputador = document.querySelector(".partida-painel");
-    const quadroJogador = document.querySelector(".board-zone-jogador");
+    const painelComputador = document.querySelector(".partida-chips");
+    const painelJogador = document.querySelector(".partida-operacao");
     const partidaAtiva = typeof vezDoJogador === "boolean";
 
     painelComputador?.classList.toggle("vez-computador", partidaAtiva && !vezDoJogador);
-    quadroJogador?.classList.toggle("vez-jogador", partidaAtiva && vezDoJogador);
+    painelJogador?.classList.toggle("vez-jogador", partidaAtiva && vezDoJogador);
     if (!vezDiv) return;
 
     if (vezDoJogador) {
@@ -94,8 +94,8 @@ function limparStatusBarEVezJogador() {
     const barra = document.getElementById("statusBar");
     if (barra) barra.replaceChildren();
 
-    document.querySelector(".partida-painel")?.classList.remove("vez-computador");
-    document.querySelector(".board-zone-jogador")?.classList.remove("vez-jogador");
+    document.querySelector(".partida-chips")?.classList.remove("vez-computador");
+    document.querySelector(".partida-operacao")?.classList.remove("vez-jogador");
 
     const vezDiv = document.getElementById("vez-indicador");
     if (vezDiv) {
