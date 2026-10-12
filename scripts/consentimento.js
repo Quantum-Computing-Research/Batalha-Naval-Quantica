@@ -8,7 +8,12 @@ function consentimento() {
         return; // Retorna para interromper a função
     }
 
-    // 3. Se um hardware foi selecionado, chame a função consentimento()
-    document.getElementById("consentimentoModal").style.display = "flex";
+    const modal = document.getElementById("consentimentoModal");
+    const simulado = getModoSelecionado() === "simulador";
+    document.getElementById("consentimentoTitulo").textContent = t(simulado ? "Divirta-se!" : "Participar do experimento");
+    document.getElementById("consentimentoNomePrompt").textContent = t(simulado ? "Digite seu nome" : "Digite seu nome:");
+    modal.querySelector(".mensagem").hidden = simulado;
+    document.getElementById("cancelarConsentimento").hidden = simulado;
+    modal.style.display = "flex";
 }
 

@@ -43,6 +43,11 @@
     margin-bottom: 1.5rem;
 }
 
+.modal-content .mensagem[hidden],
+.modal-content .botoes button[hidden] {
+    display: none;
+}
+
 .modal-content .botoes button {
     margin: 0 10px;
     padding: 10px 20px;
