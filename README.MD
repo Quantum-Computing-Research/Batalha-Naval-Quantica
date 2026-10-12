@@ -1,5 +1,7 @@
 # Batalha Naval Quantica - Frontend
 
+Acessem em https://Quantum-Computing-Research.github.io/Batalha-Naval-Quantica
+
 Abra index.html no navegador. O endpoint fica em scripts/url_backend.js.
 Tamanhos 4x4, 8x8 e 16x16 correspondem a 4, 6 e 8 qubits no modelo H + medicao.
 O circuito fica visivel durante o jogo; a leitura destaca os bits do ataque
