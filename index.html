@@ -198,14 +198,12 @@
             </script>
           </select>
         </div>
-        <div class="config-field pricing-field">
-          <label for="precoPartida">Tarifa e faixa estimada · AWS Braket</label>
-          <textarea id="precoPartida" rows="1" readonly aria-live="polite"
-            aria-label="Estimativa do custo AWS Braket para a partida"></textarea>
-        </div>
-        <div class="simulation-toggle">
-          <label for="jogadasSimuladas"><input id="jogadasSimuladas" type="checkbox" checked> Jogadas simuladas (Sem
-            custo)</label>
+        <div class="config-field mock-mode-field">
+          <span class="field-label">Modo de execução · v0</span>
+          <div class="mock-mode-indicator" role="status">
+            <i data-lucide="cpu" aria-hidden="true"></i>
+            <span>Mock QPU · cache sintético · sem chamada à AWS</span>
+          </div>
         </div>
         <div class="config-field fleet-field">
           <label for="numNavios">Navios</label>

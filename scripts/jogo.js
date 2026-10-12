@@ -127,7 +127,7 @@ function setButtonsState({ startEnabled, waitEnabled, endEnabled }) {
     if (startBtn) startBtn.disabled = !startEnabled;
     if (waitBtn) waitBtn.disabled = !waitEnabled;
     if (endBtn) endBtn.disabled = !endEnabled;
-    for (const id of ["tamanhoTabuleiro", "numNavios", "dificuldade", "jogadasSimuladas"]) {
+    for (const id of ["tamanhoTabuleiro", "numNavios", "dificuldade"]) {
         const controle = document.getElementById(id);
         if (controle) controle.disabled = !startEnabled;
     }
@@ -226,7 +226,7 @@ async function iniciarJogo(nome) {
     const tamanhoTabuleiro = parseInt(document.getElementById("tamanhoTabuleiro")?.value, 10);
 
     const backend = getBackendSelecionado();
-    const modo = document.getElementById("jogadasSimuladas")?.checked ? "simulador" : "cache";
+    const modo = "cache";
     const dificuldade = document.getElementById("dificuldade").value;
 
     // travar botões enquanto inicia
@@ -275,7 +275,8 @@ async function iniciarJogo(nome) {
     placar.jogador = 0;
     placar.computador = 0;
     setButtonsState({ startEnabled: false, waitEnabled: true, endEnabled: true });
-    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} (${data.modo === "simulador" ? "dados simulados" : "cache"})`);
+    const origem = data.origem_jogadas === "simulador_cache_v0" ? "mock QPU v0" : "cache do hardware";
+    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} (${origem})`);
     atualizarVez(true);
 
     // desenha navios e outros painéis

@@ -191,7 +191,7 @@ function renderMatches(matches) {
         for (const [label, value] of [
             ["Partida", match.id || "—"],
             ["Hardware associado", match.hardware || "—"],
-            ["Modo de geração", match.modo === "simulador" ? "Simulador de teste · incluída" : "Cache do hardware"],
+            ["Modo de geração", match.origem_jogadas === "simulador_cache_v0" ? "Mock QPU v0 · cache persistido" : match.modo === "simulador" ? "Simulador direto" : "Cache do hardware"],
             ["Resultado", match.vencedor || "—"],
             ["Acertos quânticos", `${match.acertos} / ${match.ataques_quanticos}`],
             ["Ataques clássicos excluídos", match.ataques_classicos],
