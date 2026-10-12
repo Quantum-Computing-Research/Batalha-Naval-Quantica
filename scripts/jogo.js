@@ -275,8 +275,7 @@ async function iniciarJogo(nome) {
     placar.jogador = 0;
     placar.computador = 0;
     setButtonsState({ startEnabled: false, waitEnabled: true, endEnabled: true });
-    const origem = data.origem_jogadas === "simulador_cache_v0" ? "mock QPU v0" : "cache do hardware";
-    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} (${origem})`);
+    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} · ${backend}`);
     atualizarVez(true);
 
     // desenha navios e outros painéis

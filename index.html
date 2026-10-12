@@ -198,12 +198,10 @@
             </script>
           </select>
         </div>
-        <div class="config-field mock-mode-field">
-          <span class="field-label">Modo de execução · v0</span>
-          <div class="mock-mode-indicator" role="status">
-            <i data-lucide="cpu" aria-hidden="true"></i>
-            <span>Mock QPU · cache sintético · sem chamada à AWS</span>
-          </div>
+        <div class="config-field pricing-field">
+          <span class="field-label">Tarifa e faixa estimada · AWS Braket</span>
+          <textarea id="precoPartida" rows="1" readonly aria-live="polite"
+            aria-label="Estimativa de custo no hardware quântico selecionado"></textarea>
         </div>
         <div class="config-field fleet-field">
           <label for="numNavios">Navios</label>
