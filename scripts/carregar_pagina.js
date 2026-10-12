@@ -51,6 +51,6 @@ window.onload = async () => {
     } catch (err) {
         clearGameId();
         setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
-        atualizarStatusBar(t("Erro ao recuperar partida: {message}", { message: err.message }));
+        // atualizarStatusBar(t("Erro ao recuperar partida: {message}", { message: err.message }));
     }
 };
