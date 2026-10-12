@@ -60,7 +60,9 @@
     }
 
     /* Ao passar o mouse sobre a área, as referências aparecem */
-    .hover-container:hover .references {
+    .hover-container:hover .references,
+    .hover-container:focus-within .references,
+    .hover-container:target .references {
         opacity: 1;
         transform: translate(0, 0);
         pointer-events: auto;
