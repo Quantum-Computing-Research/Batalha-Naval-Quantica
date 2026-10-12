@@ -231,6 +231,8 @@ async function iniciarJogo(nome) {
 
     // travar botões enquanto inicia
     setButtonsState({ startEnabled: false, waitEnabled: false, endEnabled: false });
+    limparInputJogada();
+    focarAreaPartida();
     atualizarStatusBar(`⏳ Iniciando partida… (${backend})`);
 
     let data;
@@ -283,9 +285,7 @@ async function iniciarJogo(nome) {
     if (data.ranking) atualizarRanking(data.ranking);
     if (data.fila_espera) atualizarFila(data.fila_espera);
 
-    // foco no input de jogada
     limparInputJogada();
-    focarAreaPartida();
 }
 
 /**
