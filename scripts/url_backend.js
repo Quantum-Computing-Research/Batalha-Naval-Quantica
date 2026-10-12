@@ -125,6 +125,19 @@ Object.assign(LANGUAGE_STRINGS, {
     "Data indisponível": ["Date unavailable", "Fecha no disponible", "日期不可用"],
 });
 
+Object.assign(LANGUAGE_STRINGS, {
+    "e, ao final, você receberá uma análise referente aos números produzidos nesta partida.": ["and you will receive an analysis of the numbers produced in this match.", "y recibirás un análisis de los números producidos en esta partida.", "结束后你将收到关于本局产生数字的分析。"],
+    "Quântico": ["Quantum", "Cuántico", "量子"],
+    "Plus · quântico + clássico": ["Plus · quantum + classical", "Plus · cuántico + clásico", "Plus · 量子 + 经典"],
+    "{count} pontos": ["{count} points", "{count} puntos", "{count} 分"],
+    "Partida {id}": ["Match {id}", "Partida {id}", "对局 {id}"],
+    "{sunk} de {total} afundados": ["{sunk} of {total} sunk", "{sunk} de {total} hundidos", "已击沉 {sunk}/{total}"],
+    "{name} · {count} teste": ["{name} · {count} test", "{name} · {count} prueba", "{name} · {count} 次测试"],
+    "{name} · {count} testes": ["{name} · {count} tests", "{name} · {count} pruebas", "{name} · {count} 次测试"],
+    "Partidas que compõem a amostra": ["Matches included in the sample", "Partidas incluidas en la muestra", "样本包含的对局"],
+    "{base}. {note} Frequências esperadas baixas: aproximação χ² inadequada.": ["{base}. {note} Low expected frequencies: χ² approximation is unsuitable.", "{base}. {note} Frecuencias esperadas bajas: la aproximación χ² no es adecuada.", "{base}。{note} 期望频数较低：χ² 近似不适用。"],
+});
+
 let currentLanguage = "pt";
 const textSources = new WeakMap();
 const textOutputs = new WeakMap();
@@ -161,7 +174,8 @@ function localizeTextNode(node) {
     const priorTranslation = reverseTranslations.get(content);
     const storedSource = textSources.get(node);
     const unchanged = storedSource && raw === previousOutput;
-    const source = unchanged ? storedSource : priorTranslation?.source || content;
+    const normalizedContent = content.replace(/\s+/g, " ");
+    const source = unchanged ? storedSource : priorTranslation?.source || (LANGUAGE_STRINGS[normalizedContent] ? normalizedContent : content);
     const values = unchanged ? textValues.get(node) || {} : priorTranslation?.values || {};
     textSources.set(node, source);
     textValues.set(node, values);

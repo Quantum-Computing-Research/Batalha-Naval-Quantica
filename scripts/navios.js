@@ -21,7 +21,7 @@ function renderizarFrota(frota, listaId, resumoId) {
         return;
     }
     const afundados = frota.filter(navio => navio.afundado).length;
-    resumo.textContent = frota.length ? `${afundados} de ${frota.length} afundados` : "Nenhuma partida ativa";
+    resumo.textContent = frota.length ? t("{sunk} de {total} afundados", { sunk: afundados, total: frota.length }) : "Nenhuma partida ativa";
     [...frota].sort((primeiro, segundo) => segundo.tamanho - primeiro.tamanho).forEach(navio => {
         const item = document.createElement("li");
         item.dataset.navioId = navio.id;

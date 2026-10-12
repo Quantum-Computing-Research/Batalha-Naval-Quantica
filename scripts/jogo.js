@@ -97,10 +97,10 @@ function atualizarVez(vezDoJogador) {
     if (!vezDiv) return;
 
     if (vezDoJogador) {
-        vezDiv.innerHTML = "🟢 Sua vez de atacar!";
+        vezDiv.replaceChildren(document.createTextNode("🟢 "), document.createTextNode(t("Sua vez de atacar!")));
         vezDiv.className = "vez-status vez-jogador";
     } else {
-        vezDiv.innerHTML = "⏳ Esperando ataque quântico...";
+        vezDiv.replaceChildren(document.createTextNode("⏳ "), document.createTextNode(t("Esperando ataque quântico...")));
         vezDiv.className = "vez-status vez-computador";
     }
 }

@@ -264,7 +264,9 @@ function criarAnalisePartida(analise) {
     esperado.style.bottom = `${100 * analise.esperado_por_celula / maximo}%`;
     grafico.appendChild(esperado);
     bloco.appendChild(grafico);
-    nota.textContent = `${analise.base}. ${analise.nota}${analise.aproximacao_chi2_adequada ? "" : " Frequências esperadas baixas: aproximação χ² inadequada."}`;
+    nota.textContent = analise.aproximacao_chi2_adequada
+        ? `${analise.base}. ${analise.nota}`
+        : t("{base}. {note} Frequências esperadas baixas: aproximação χ² inadequada.", { base: analise.base, note: analise.nota });
     bloco.appendChild(nota);
     return bloco;
 }

@@ -280,7 +280,7 @@ function mostrarAlertaFinal(resumo) {
         ["Origem dos dados", resumo.modo === "simulador" ? "Dados simulados" : "Cache"],
         ["Tabuleiro", `${resumo.tamanho_tabuleiro} × ${resumo.tamanho_tabuleiro}`],
         ["Duração", formatarDuracaoPartida(resumo.duracao_segundos)],
-        ["Pontuação", `${resumo.pontuacao ?? resumo.estatisticas.jogador.acertos} pontos`],
+        ["Pontuação", t("{count} pontos", { count: resumo.pontuacao ?? resumo.estatisticas.jogador.acertos })],
     ]) {
         const item = document.createElement("p");
         const legenda = document.createElement("span");
@@ -365,9 +365,9 @@ function mostrarAlertaFinal(resumo) {
     const rodape = document.createElement("footer");
     rodape.className = "certificado-rodape";
     const data = document.createElement("span");
-    data.textContent = new Date(resumo.fim).toLocaleString("pt-BR");
+    data.textContent = new Date(resumo.fim).toLocaleString(getSiteLocale());
     const identificador = document.createElement("span");
-    identificador.textContent = `Partida ${resumo.partida_id}`;
+    identificador.textContent = t("Partida {id}", { id: resumo.partida_id });
     rodape.append(data, identificador);
     alerta.appendChild(rodape);
     const acoes = document.createElement("div");
