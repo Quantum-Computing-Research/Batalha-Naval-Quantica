@@ -233,7 +233,7 @@ async function iniciarJogo(nome) {
     setButtonsState({ startEnabled: false, waitEnabled: false, endEnabled: false });
     limparInputJogada();
     focarAreaPartida();
-    atualizarStatusBar(`⏳ Iniciando partida… (${backend})`);
+    atualizarStatusBar(t("Iniciando partida… ({backend})", { backend }));
 
     let data;
     try {
@@ -244,8 +244,8 @@ async function iniciarJogo(nome) {
     } catch (err) {
         // reabilita start se falhar
         setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
-        atualizarStatusBar(`❌ Erro ao iniciar: ${err.message}`);
-        alert(`Erro ao iniciar: ${err.message}`);
+        atualizarStatusBar(t("Erro ao iniciar: {message}", { message: err.message }));
+        alert(t("Erro ao iniciar: {message}", { message: err.message }));
         return;
     }
 
@@ -253,10 +253,8 @@ async function iniciarJogo(nome) {
     if (data.backend_offline) {
         marcarBackendOfflineSeSelecionado();
 
-        atualizarStatusBar(
-            `⚠️ Backend "${data.backend}" OFFLINE (sem cache) para tabuleiro ${data.tamanho_tabuleiro}.`
-        );
-        alert(`Backend "${data.backend}" está OFFLINE para tabuleiro ${data.tamanho_tabuleiro}.`);
+        atualizarStatusBar(t('Backend "{backend}" OFFLINE (sem cache) para tabuleiro {size}.', { backend: data.backend, size: data.tamanho_tabuleiro }));
+        alert(t('Backend "{backend}" está OFFLINE para tabuleiro {size}.', { backend: data.backend, size: data.tamanho_tabuleiro }));
 
         setButtonsState({ startEnabled: true, waitEnabled: false, endEnabled: false });
         return;
@@ -277,7 +275,7 @@ async function iniciarJogo(nome) {
     placar.jogador = 0;
     placar.computador = 0;
     setButtonsState({ startEnabled: false, waitEnabled: true, endEnabled: true });
-    atualizarStatusBar(`Jogo em andamento. Jogador: ${nome} · ${backend}`);
+    atualizarStatusBar(t("Jogo em andamento. Jogador: {name} · {backend}", { name: nome, backend }));
     atualizarVez(true);
 
     // desenha navios e outros painéis
@@ -367,8 +365,8 @@ async function atacar() {
     try {
         data = await apiFetch("/atacar", { method: "POST", body: { coordenada } });
     } catch (err) {
-        atualizarStatusBar(`❌ Erro no ataque: ${err.message}`);
-        alert(`Erro no ataque: ${err.message}`);
+        atualizarStatusBar(t("Erro no ataque: {message}", { message: err.message }));
+        alert(t("Erro no ataque: {message}", { message: err.message }));
         return;
     }
 
@@ -425,8 +423,8 @@ async function ataqueComputador() {
         data = await apiFetch("/ataque-quantico");
     } catch (err) {
         limparDestaqueExecucaoComputador();
-        atualizarStatusBar(`❌ Erro no ataque quântico: ${err.message}`);
-        alert(`Erro no ataque quântico: ${err.message}`);
+        atualizarStatusBar(t("Erro no ataque quântico: {message}", { message: err.message }));
+        alert(t("Erro no ataque quântico: {message}", { message: err.message }));
         return;
     }
 

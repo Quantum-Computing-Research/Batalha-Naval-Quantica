@@ -32,6 +32,10 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.7; }
 .app-header h1 { margin: 0; color: #fff; font: normal 38px/1.1 Georgia, serif; }
 .icon-button { flex: 0 0 40px; }
 .refresh-status { position: absolute; top: 24px; right: max(24px, calc((100vw - 1440px) / 2 + 40px)); display: flex; align-items: center; gap: 10px; color: #d4e2df; font-size: 12px; }
+.language-switch { display: inline-flex; gap: 0; padding: 3px; border: 1px solid #ffffff66; border-radius: 5px; background: #ffffff12; }
+.language-switch button { width: auto; min-width: 30px; min-height: 28px; padding: 3px 7px; border: 0; border-radius: 3px; background: transparent; color: #e0eae8; font-size: 10px; font-weight: 700; }
+.language-switch button:hover { background: #ffffff24; }
+.language-switch button[aria-pressed='true'] { background: #e6b957; color: #26383c; }
 .status-indicator { width: 8px; height: 8px; border-radius: 50%; background: #62976e; }
 .status-indicator[data-state='loading'] { background: #d39b32; }
 .status-indicator[data-state='error'] { background: #a34a4f; }
@@ -92,7 +96,7 @@ svg.lucide { width: 18px; height: 18px; stroke-width: 1.7; }
   .app-identity { max-width: 100%; padding-inline: 34px; }
   .app-identity > .icon-button { top: 18px; left: 14px; }
   .app-header h1 { font-size: 28px; }
-  .refresh-status { position: static; justify-content: center; gap: 8px; margin-top: 14px; }
+  .refresh-status { position: static; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
   #statusMessage { max-width: 180px; text-align: left; line-height: 1.35; }
   .refresh-status .icon-button { width: 36px; min-height: 36px; }
   .container { padding: 18px 18px 32px; }

@@ -86,7 +86,7 @@ async function tryRecoverGameFromServer(gameId) {
     // Se quiser, você pode também:
     // - destacar no UI qual backend está em uso (st.backend)
     // - colocar o nome do jogador (st.jogador) em algum lugar
-    atualizarStatusBar(`🔁 Partida recuperada (backend: ${st.backend || "?"})`);
+    atualizarStatusBar(t("Partida recuperada (backend: {backend})", { backend: st.backend || "?" }));
     setButtonsState({ startEnabled: false, waitEnabled: true, endEnabled: true });
 
     // opcional: marcar backend atual como selecionado/ativo

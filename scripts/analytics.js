@@ -1,4 +1,5 @@
 const charts = {};
+let chartRenderState;
 
 function $(id) {
     return document.getElementById(id);
@@ -20,7 +21,7 @@ async function apiFetch(path) {
 }
 
 function setStatus(message, state = "ready") {
-    $("statusMessage").textContent = message;
+    $("statusMessage").textContent = t(message);
     $("statusIndicator").dataset.state = state;
 }
 
@@ -46,6 +47,7 @@ function chartOptions({ min, max, percent = false } = {}) {
 }
 
 function renderCharts(analysis, boardSize, classicalExcluded) {
+    chartRenderState = { analysis, boardSize, classicalExcluded };
     destroyCharts();
     const accent = "#096e71";
     const orange = "#e87924";
@@ -78,9 +80,9 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
         type: "bar",
         data: {
             labels: hammingLabels,
-            datasets: [{ label: "Ataques observados", data: hammingData, backgroundColor: accent, borderRadius: 2, maxBarThickness: 36 }],
+            datasets: [{ label: t("Ataques observados"), data: hammingData, backgroundColor: accent, borderRadius: 2, maxBarThickness: 36 }],
         },
-        options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: conjunta ? "Fração de bits 1" : "Peso de Hamming (número de bits 1)", color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: "Contagem", color: "#64777b" } } } },
+        options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: t(conjunta ? "Fração de bits 1" : "Peso de Hamming (número de bits 1)"), color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: t("Contagem"), color: "#64777b" } } } },
     });
 
     if (conjunta) {
@@ -90,9 +92,9 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
             data: {
                 labels: Array.from({ length: 16 }, (_, index) => `${Math.round(index * 100 / 16)}%`),
                 datasets: [
-                    { label: "Linha observada", data: analysis.frequencia_linha_normalizada.map(value => value / count), borderColor: accent, backgroundColor: accent, tension: 0.15 },
-                    { label: "Coluna observada", data: analysis.frequencia_coluna_normalizada.map(value => value / count), borderColor: "#3286ab", backgroundColor: "#3286ab", tension: 0.15 },
-                    { label: "Baseline ponderado", data: analysis.esperada_linha_normalizada.map(value => value / count), borderColor: orange, borderDash: [5, 4], pointRadius: 0, tension: 0 },
+                    { label: t("Linha observada"), data: analysis.frequencia_linha_normalizada.map(value => value / count), borderColor: accent, backgroundColor: accent, tension: 0.15 },
+                    { label: t("Coluna observada"), data: analysis.frequencia_coluna_normalizada.map(value => value / count), borderColor: "#3286ab", backgroundColor: "#3286ab", tension: 0.15 },
+                    { label: t("Baseline ponderado"), data: analysis.esperada_linha_normalizada.map(value => value / count), borderColor: orange, borderDash: [5, 4], pointRadius: 0, tension: 0 },
                 ],
             },
             options: chartOptions({ min: 0, percent: true }),
@@ -100,18 +102,18 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
     } else {
         charts.bits = new Chart($("chartBits"), {
             type: "bar",
-            data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: "Frequência observada", data: analysis.frequencia_bit_1_por_qubit, backgroundColor: accent, borderRadius: 2, maxBarThickness: 32 }] },
+            data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: t("Frequência observada"), data: analysis.frequencia_bit_1_por_qubit, backgroundColor: accent, borderRadius: 2, maxBarThickness: 32 }] },
             options: chartOptions({ min: 0, max: 1, percent: true }),
         });
     }
 
     charts.entropy = new Chart($("chartEntropy"), conjunta ? {
         type: "bar",
-        data: { labels: analysis.entropia_por_tabuleiro.map(item => `${item.tamanho_tabuleiro} × ${item.tamanho_tabuleiro}`), datasets: [{ label: "Entropia / máximo", data: analysis.entropia_por_tabuleiro.map(item => item.entropia_normalizada), backgroundColor: "#3286ab", borderRadius: 2, maxBarThickness: 48 }] },
+        data: { labels: analysis.entropia_por_tabuleiro.map(item => `${item.tamanho_tabuleiro} × ${item.tamanho_tabuleiro}`), datasets: [{ label: t("Entropia / máximo"), data: analysis.entropia_por_tabuleiro.map(item => item.entropia_normalizada), backgroundColor: "#3286ab", borderRadius: 2, maxBarThickness: 48 }] },
         options: chartOptions({ min: 0, max: 1, percent: true }),
     } : {
         type: "bar",
-        data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: "Entropia de Shannon", data: analysis.entropia_por_qubit, backgroundColor: "#3286ab", borderRadius: 2, maxBarThickness: 32 }] },
+        data: { labels: Array.from({ length: qubits }, (_, index) => `q${index}`), datasets: [{ label: t("Entropia de Shannon"), data: analysis.entropia_por_qubit, backgroundColor: "#3286ab", borderRadius: 2, maxBarThickness: 32 }] },
         options: chartOptions({ min: 0, max: 1 }),
     });
 
@@ -121,8 +123,8 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
             data: {
                 labels: analysis.entropia_por_tabuleiro.map(item => `${item.tamanho_tabuleiro} × ${item.tamanho_tabuleiro}`),
                 datasets: [
-                    { type: "bar", label: "χ² / graus de liberdade", data: analysis.entropia_por_tabuleiro.map(item => item.chi2_por_grau_liberdade), backgroundColor: accent, borderRadius: 2, maxBarThickness: 48 },
-                    { type: "line", label: "Referência descritiva", data: analysis.entropia_por_tabuleiro.map(() => 1), borderColor: orange, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 },
+                    { type: "bar", label: t("χ² / graus de liberdade"), data: analysis.entropia_por_tabuleiro.map(item => item.chi2_por_grau_liberdade), backgroundColor: accent, borderRadius: 2, maxBarThickness: 48 },
+                    { type: "line", label: t("Referência descritiva"), data: analysis.entropia_por_tabuleiro.map(() => 1), borderColor: orange, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 },
                 ],
             },
             options: chartOptions({ min: 0 }),
@@ -136,11 +138,11 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
             data: {
                 labels: Array.from({ length: rows }, (_, index) => String.fromCharCode(65 + index)),
                 datasets: [
-                    { type: "bar", label: "Ataques observados", data: rowCounts, backgroundColor: accent, borderRadius: 2, maxBarThickness: 44 },
-                    { type: "line", label: "Esperado uniforme", data: Array(rows).fill(esperadoPorLinha), borderColor: orange, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 },
+                    { type: "bar", label: t("Ataques observados"), data: rowCounts, backgroundColor: accent, borderRadius: 2, maxBarThickness: 44 },
+                    { type: "line", label: t("Esperado uniforme"), data: Array(rows).fill(esperadoPorLinha), borderColor: orange, borderDash: [5, 4], pointRadius: 0, borderWidth: 2 },
                 ],
             },
-            options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: "Linha do tabuleiro", color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: "Contagem", color: "#64777b" } } } },
+            options: { ...chartOptions(), scales: { ...chartOptions().scales, x: { ...chartOptions().scales.x, title: { display: true, text: t("Linha do tabuleiro"), color: "#64777b" } }, y: { ...chartOptions().scales.y, title: { display: true, text: t("Contagem"), color: "#64777b" } } } },
         });
     }
 
@@ -152,14 +154,14 @@ function renderCharts(analysis, boardSize, classicalExcluded) {
     $("minEntropyLabel").textContent = conjunta ? "Min-entropia empírica · grade 16 × 16" : "Min-entropia empírica";
     $("minEntropyValue").textContent = analysis.min_entropia_empirica_bits == null ? "—" : `${analysis.min_entropia_empirica_bits.toFixed(2)} bits`;
     $("analysisNote").textContent = conjunta
-        ? `Entropia relativa ao baseline ponderado por tamanho · ${classicalExcluded} clássicas excluídas`
-        : `${analysis.celulas_observadas} de ${outcomeCount} casas observadas · ${analysis.repeticoes} repetidas · ${classicalExcluded} clássicas excluídas`;
+        ? t("Entropia relativa ao baseline ponderado por tamanho · {classical} clássicas excluídas", { classical: classicalExcluded })
+        : t("{observed} de {total} casas observadas · {repeated} repetidas · {classical} clássicas excluídas", { observed: analysis.celulas_observadas, total: outcomeCount, repeated: analysis.repeticoes, classical: classicalExcluded });
 }
 
 function formatDate(value) {
-    if (!value) return "Data indisponível";
+    if (!value) return t("Data indisponível");
     const date = new Date(value);
-    return Number.isNaN(date.getTime()) ? "Data indisponível" : date.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+    return Number.isNaN(date.getTime()) ? t("Data indisponível") : date.toLocaleString(getSiteLocale(), { dateStyle: "short", timeStyle: "short" });
 }
 
 function renderMatches(matches) {
@@ -168,7 +170,7 @@ function renderMatches(matches) {
     if (!matches.length) {
         const empty = document.createElement("p");
         empty.className = "empty-state";
-        empty.textContent = "Nenhuma partida arquivada para esta seleção.";
+        empty.textContent = t("Nenhuma partida arquivada para esta seleção.");
         list.appendChild(empty);
         return;
     }
@@ -182,7 +184,7 @@ function renderMatches(matches) {
         title.textContent = `${match.jogador} · ${formatDate(match.data)}`;
         const count = document.createElement("span");
         count.className = "match-count";
-        count.textContent = `${match.ataques_quanticos} ataques quânticos`;
+        count.textContent = t("{count} ataques quânticos", { count: match.ataques_quanticos });
         summary.append(title, count);
         item.appendChild(summary);
 
@@ -192,7 +194,7 @@ function renderMatches(matches) {
             ["Partida", match.id || "—"],
             ["Hardware associado", match.hardware || "—"],
             ["Modo de geração", match.origem_jogadas === "simulador_cache_v0" ? "Cache do hardware" : match.modo === "simulador" ? "Simulador direto" : "Cache do hardware"],
-            ["Resultado", match.vencedor || "—"],
+            ["Resultado", match.vencedor ? t(match.vencedor) : "—"],
             ["Acertos quânticos", `${match.acertos} / ${match.ataques_quanticos}`],
             ["Ataques clássicos excluídos", match.ataques_classicos],
             ["Pontuação", match.pontuacao],
@@ -200,9 +202,9 @@ function renderMatches(matches) {
         ]) {
             const row = document.createElement("div");
             const term = document.createElement("dt");
-            term.textContent = label;
+            term.textContent = t(label);
             const definition = document.createElement("dd");
-            definition.textContent = value;
+            definition.textContent = typeof value === "string" ? t(value) : value;
             row.append(term, definition);
             metrics.appendChild(row);
         }
@@ -217,7 +219,7 @@ function renderUnavailable() {
     const conjunta = $("boardSelect").value === "todos";
     $("entropyLabel").textContent = conjunta ? "Entropia / baseline" : "Entropia empírica";
     $("minEntropyLabel").textContent = conjunta ? "Min-entropia empírica · grade 16 × 16" : "Min-entropia empírica";
-    $("analysisNote").textContent = "Sem dados quânticos arquivados para esta seleção.";
+    $("analysisNote").textContent = t("Sem dados quânticos arquivados para esta seleção.");
 }
 
 async function loadHardwareList() {
@@ -238,8 +240,9 @@ async function reloadAnalysis() {
     const query = new URLSearchParams({ hardware, tamanho_tabuleiro: size });
     const data = await apiFetch(`/analises?${query}`);
     const simuladas = data.partidas_modo_simulador || 0;
-    const tabuleiroLabel = size === "todos" ? "todos os tamanhos" : `tabuleiro ${size} × ${size} · ${data.qubits_total} qubits`;
-    $("selectionMeta").textContent = `${data.partidas_total} partidas · ${simuladas} testes simulados incluídos · ${tabuleiroLabel}`;
+    $("selectionMeta").textContent = size === "todos"
+        ? t("{total} partidas · {simulated} testes simulados incluídos · todos os tamanhos", { total: data.partidas_total, simulated: simuladas })
+        : t("{total} partidas · {simulated} testes simulados incluídos · tabuleiro {size} × {size} · {qubits} qubits", { total: data.partidas_total, simulated: simuladas, size, qubits: data.qubits_total });
     $("matchCount").textContent = `${data.partidas_analisadas} / ${data.partidas_total}`;
     $("xebValue").textContent = data.xeb?.disponivel ? data.xeb.valor.toFixed(3) : "Não calculável";
     $("xebReason").textContent = data.xeb?.motivo || "";
@@ -247,7 +250,7 @@ async function reloadAnalysis() {
     $("tqcReason").textContent = data.tqc?.motivo || "";
     $("certifiedEntropyValue").textContent = data.entropia_certificada?.disponivel ? `${data.entropia_certificada.bits} bits` : "Não certificada";
     $("certifiedEntropyReason").textContent = data.entropia_certificada?.motivo || "";
-    $("excludedCount").textContent = `${data.ataques_classicos_excluidos} ataques clássicos excluídos · ${simuladas} partidas simuladas de hardware incluídas`;
+    $("excludedCount").textContent = t("{count} ataques clássicos excluídos · {simulated} partidas simuladas de hardware incluídas", { count: data.ataques_classicos_excluidos, simulated: simuladas });
     renderMatches(data.partidas || []);
 
     if (!data.analise?.disponivel) {
@@ -292,3 +295,7 @@ function showError(error) {
 }
 
 initialize();
+
+document.addEventListener("site-language-change", () => {
+    if (chartRenderState) renderCharts(chartRenderState.analysis, chartRenderState.boardSize, chartRenderState.classicalExcluded);
+});
