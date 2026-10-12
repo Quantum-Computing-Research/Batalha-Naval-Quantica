@@ -410,7 +410,7 @@ def _circuito_partida(tamanho, modo):
 
 def _analise_medicoes(medicoes, tamanho):
     if not medicoes:
-        return {"disponivel": False, "motivo": "Cache legado sem medições brutas ordenadas; ataques filtrados não permitem avaliar aleatoriedade."}
+        return {"disponivel": False, "motivo": "Nenhuma amostra quântica registrada nesta partida."}
     possibilidades = tamanho * tamanho
     frequencias = [0] * possibilidades
     valores = [int(bits, 2) for bits in medicoes]
@@ -443,6 +443,32 @@ def _analise_medicoes(medicoes, tamanho):
         "correlacao_lag_1": correlacao,
         "nota": "Indicadores descritivos, sem p-valor ou certificação de aleatoriedade quântica. Lote gerado inteiro, não apenas medições consumidas na partida.",
     }
+
+def _analise_partida(state):
+    meta = state["meta"]
+    tamanho = int(state["tamanho_tabuleiro"])
+    medicoes = meta.get("medicoes_brutas") or []
+    if medicoes:
+        return _analise_medicoes(medicoes, tamanho)
+
+    bits_por_eixo = int(math.log2(tamanho))
+    ataques = []
+    for jogada in meta.get("historico", []):
+        if jogada.get("tipo") != "ataque_quantico":
+            continue
+        try:
+            linha = int(jogada["linha"])
+            coluna = int(jogada["coluna"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        if 0 <= linha < tamanho and 0 <= coluna < tamanho:
+            ataques.append(f"{linha:0{bits_por_eixo}b}{coluna:0{bits_por_eixo}b}")
+
+    analise = _analise_medicoes(ataques, tamanho)
+    if analise["disponivel"]:
+        analise["base"] = "Jogadas quânticas consumidas do cache e registradas nesta partida."
+        analise["nota"] = "Índices descritivos das jogadas registradas; não certificam aleatoriedade quântica."
+    return analise
 
 def _resumo_partida(state):
     meta = state["meta"]
@@ -499,7 +525,7 @@ def _resumo_partida(state):
         "frota_jogador": _frota_adversaria(state, "jogador"),
         "circuito": meta.get("circuito"),
         "medicoes_brutas": meta.get("medicoes_brutas", []),
-        "analise": _analise_medicoes(meta.get("medicoes_brutas", []), int(state["tamanho_tabuleiro"])),
+        "analise": _analise_partida(state),
     }
 
 # ----------------------------

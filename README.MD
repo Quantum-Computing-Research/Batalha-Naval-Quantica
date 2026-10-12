@@ -67,12 +67,14 @@ No cache legado o circuito e apenas uma referencia, nao uma execucao verificada.
 Aquila usa computacao analogica: a futura integracao real deve ter um modelo
 especifico em vez de representar esse dispositivo como circuito de portas.
 
+entropia de Shannon e correlacao de Pearson lag 1 sobre valores inteiros.
 O resumo e o JSON incluem `medicoes_brutas` e `analise`, com frequencias por
 celula em ordem de linha/coluna, repeticoes, qui-quadrado e graus de liberdade,
-entropia de Shannon e correlacao de Pearson lag 1 sobre valores inteiros.
-Sao indicadores descritivos sobre o lote inteiro; nao certificam aleatoriedade
-quantica nem oferecem p-valor. Cache sem medicoes brutas retorna indisponivel,
-sem analisar ataques deduplicados. O PNG inclui circuito e painel estatistico.
+entropia de Shannon e correlacao de Pearson lag 1 sobre valores inteiros. Quando
+o cache nao possui o lote bruto, a analise usa as jogadas quanticas registradas
+na partida; ataques classicos continuam separados. Sao indicadores descritivos,
+nao certificam aleatoriedade nem oferecem p-valor. O PNG inclui circuito e
+painel estatistico.
 
 ## Plus - dificil
 

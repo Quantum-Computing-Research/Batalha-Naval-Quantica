@@ -335,6 +335,24 @@ class JogoLambdaTest(unittest.TestCase):
         del self.states[game_id]["navios_quantico"]
         self.assertIsNone(self.handler._resumo_partida(self.states[game_id])["estatisticas"]["jogador"]["navios_afundados"])
 
+    def test_legacy_cache_summary_analyses_recorded_quantum_attacks(self):
+        game_id = self.start_game(4, 2)
+        state = self.states[game_id]
+        state["meta"]["modo"] = "cache"
+        state["meta"]["medicoes_brutas"] = []
+        state["meta"]["historico"] = [
+            {"tipo": "ataque_quantico", "linha": 0, "coluna": 0, "acertou": False},
+            {"tipo": "ataque_classico", "linha": 0, "coluna": 1, "acertou": True},
+            {"tipo": "ataque_quantico", "linha": 2, "coluna": 3, "acertou": True},
+        ]
+
+        analise = self.handler._resumo_partida(state)["analise"]
+
+        self.assertTrue(analise["disponivel"])
+        self.assertEqual(analise["amostras"], 2)
+        self.assertEqual(analise["celulas_observadas"], 2)
+        self.assertIn("cache", analise["base"])
+
     def test_state_queue_and_cancel(self):
         self.assertFalse(self.request("/estado", method="GET")["em_andamento"])
         game_id = self.start_game(8)
