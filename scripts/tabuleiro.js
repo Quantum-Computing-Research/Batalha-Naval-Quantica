@@ -32,10 +32,10 @@ function ajustarLayoutPartida() {
 
 function focarAreaPartida() {
     ajustarLayoutPartida();
-    const tituloPartida = document.querySelector('.game-heading');
+    const area = document.querySelector('div.partida-layout');
     document.getElementById('playerMove').focus({ preventScroll: true });
-    if (!tituloPartida) return;
-    window.scrollTo({ top: window.scrollY + tituloPartida.getBoundingClientRect().top - 12, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+    if (!area) return;
+    window.scrollTo({ top: window.scrollY + area.getBoundingClientRect().top - 12, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
 }
 
 window.addEventListener('resize', agendarAjustePartida);
