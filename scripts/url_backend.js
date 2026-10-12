@@ -141,6 +141,9 @@ Object.assign(LANGUAGE_STRINGS, {
 Object.assign(LANGUAGE_STRINGS, {
     "Dados simulados (Sem custo)": ["Simulated data (No cost)", null, "模拟数据（免费）"],
     "Divirta-se!": ["Enjoy the game!", null, "祝你玩得开心！"],
+    "Links do projeto": ["Project links", null, "项目链接"],
+    "Código-fonte no GitHub": ["Source code on GitHub", null, "GitHub 源代码"],
+    "Página pessoal": ["Personal website", null, "个人网站"],
     "US$ 0 · sem execução de QPU": ["US$ 0 · no QPU execution", null, "US$ 0 · 不运行 QPU"],
 });
 

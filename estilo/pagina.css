@@ -106,6 +106,16 @@ svg.lucide { width: 18px; height: 18px; flex-shrink: 0; stroke-width: 1.7; }
 select, input[type='text'] { border: 1px solid #cad8d9; background: #fff; border-radius: 5px; color: var(--ink); min-height: 40px; padding: 8px 12px; }
 .top-section select { height: 27px; min-height: 27px; padding: 2px 12px; }
 .field-label { font-size: 11px; font-weight: 600; color: var(--muted); }
+.app-footer { width: 100%; border-top: 1px solid var(--line); background: var(--paper); color: var(--muted); }
+.footer-content { max-width: 1440px; margin: 0 auto; padding: 12px 40px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-copyright { margin: 0; font-size: 12px; line-height: 1.5; font-weight: 600; }
+.footer-links { display: flex; gap: 4px; }
+.footer-links a { display: grid; place-items: center; width: 40px; height: 40px; color: var(--muted); border-radius: 4px; }
+.footer-links a:hover { color: var(--accent); background: var(--surface); }
+.footer-links a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 600px) {
+  .footer-content { padding: 12px 18px; }
+}
 .pricing-field { width: 600px; max-width: 100%; min-width: 0; flex: 0 1 600px; order: 2; }
 .pricing-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; }
 .simulation-option { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
