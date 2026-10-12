@@ -465,9 +465,9 @@ def _analise_partida(state):
             ataques.append(f"{linha:0{bits_por_eixo}b}{coluna:0{bits_por_eixo}b}")
 
     analise = _analise_medicoes(ataques, tamanho)
-    if analise["disponivel"]:
-        analise["base"] = "Jogadas quânticas consumidas do cache e registradas nesta partida."
-        analise["nota"] = "Índices descritivos das jogadas registradas; não certificam aleatoriedade quântica."
+    # if analise["disponivel"]:
+    #     analise["base"] = "Jogadas quânticas consumidas do cache e registradas nesta partida."
+    #     analise["nota"] = "Índices descritivos das jogadas registradas; não certificam aleatoriedade quântica."
     return analise
 
 def _resumo_partida(state):
