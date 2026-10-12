@@ -8,6 +8,7 @@ const LANGUAGE_LOCALES = { pt: "pt-BR", en: "en", zh: "zh-CN" };
 const LANGUAGE_TRANSLATION_INDEX = { en: 0, zh: 2 };
 const LANGUAGE_STORAGE_KEY = "qb_language";
 const LANGUAGE_STRINGS = {
+    "Geração certificada de números aleatórios com processador quântico de íons aprisionados": ["Certified random number generation with a trapped-ion quantum processor", "Generación certificada de números aleatorios con un procesador cuántico de iones atrapados", "使用离子阱量子处理器生成经过认证的随机数"], "Gerador de números aleatórios — Profa. Kaline Coutinho": ["Random number generator — Professor Kaline Coutinho", "Generador de números aleatorios — Profesora Kaline Coutinho", "随机数生成器 — Kaline Coutinho 教授"], "Geração quântica de números aleatórios": ["Quantum random number generation", "Generación cuántica de números aleatorios", "量子随机数生成"],
     "Experimento · AWS Braket": ["Experiment · AWS Braket", "Experimento · AWS Braket", "实验 · AWS Braket"],
     "Batalha Naval Quântica": ["Quantum Battleship", "Batalla Naval Cuántica", "量子战舰"],
     "Experimento": ["Experiment", "Experimento", "实验"], "Análise": ["Analytics", "Análisis", "分析"], "Ranking": ["Leaderboard", "Clasificación", "排行榜"], "Referências": ["References", "Referencias", "参考资料"],
