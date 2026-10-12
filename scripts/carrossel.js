@@ -21,9 +21,10 @@ function atualizarEstimativaPreco() {
     const shotsMaximos = tabuleiro * tabuleiro;
     const hardware = document.querySelector(".card.selecionado")?.dataset.backend;
     const tarifa = tarifasBraket[hardware];
+    campo.classList.toggle("preco-simulado", getModoSelecionado() === "simulador" && Boolean(tarifa));
     const usd = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 6 });
     if (!tarifa) {
-        campo.value = "Selecione um hardware para calcular a tarifa.";
+        campo.value = t("Selecione um hardware para calcular a tarifa.");
         return;
     }
     const custoMinimo = shotsMinimos * tarifa.porShot;
@@ -90,5 +91,12 @@ document.getElementById("tamanhoTabuleiro").addEventListener("change", () => {
 });
 document.getElementById("numNavios").addEventListener("change", atualizarEstimativaPreco);
 document.getElementById("dificuldade").addEventListener("click", atualizarEstimativaPreco);
+document.getElementById("dadosSimulados").addEventListener("change", () => {
+    atualizarEstimativaPreco();
+    if (!getGameId()) {
+        atualizarCircuitoPartida(modeloCircuito(Number(document.getElementById("tamanhoTabuleiro").value), getModoSelecionado()));
+    }
+});
+document.addEventListener("site-language-change", atualizarEstimativaPreco);
 limitarQuantidadeNavios();
 atualizarEstimativaPreco();

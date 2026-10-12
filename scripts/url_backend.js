@@ -138,6 +138,11 @@ Object.assign(LANGUAGE_STRINGS, {
     "{base}. {note} Frequências esperadas baixas: aproximação χ² inadequada.": ["{base}. {note} Low expected frequencies: χ² approximation is unsuitable.", "{base}. {note} Frecuencias esperadas bajas: la aproximación χ² no es adecuada.", "{base}。{note} 期望频数较低：χ² 近似不适用。"],
 });
 
+Object.assign(LANGUAGE_STRINGS, {
+    "Dados simulados (Sem custo)": ["Simulated data (No cost)", null, "模拟数据（免费）"],
+    "US$ 0 · sem execução de QPU": ["US$ 0 · no QPU execution", null, "US$ 0 · 不运行 QPU"],
+});
+
 let currentLanguage = "pt";
 const textSources = new WeakMap();
 const textOutputs = new WeakMap();

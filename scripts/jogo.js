@@ -127,7 +127,7 @@ function setButtonsState({ startEnabled, waitEnabled, endEnabled }) {
     if (startBtn) startBtn.disabled = !startEnabled;
     if (waitBtn) waitBtn.disabled = !waitEnabled;
     if (endBtn) endBtn.disabled = !endEnabled;
-    for (const id of ["tamanhoTabuleiro", "numNavios", "dificuldade"]) {
+    for (const id of ["tamanhoTabuleiro", "numNavios", "dificuldade", "dadosSimulados"]) {
         const controle = document.getElementById(id);
         if (controle) controle.disabled = !startEnabled;
     }
@@ -144,6 +144,10 @@ function getBackendSelecionado() {
     const backendCard = document.querySelector(".card.selecionado");
     // tenta em ordem: data-backend, id, default
     return backendCard?.dataset?.backend || backendCard?.id || "simulador";
+}
+
+function getModoSelecionado() {
+    return document.getElementById("dadosSimulados")?.checked ? "simulador" : "cache";
 }
 
 function limparInputJogada() {
@@ -226,7 +230,7 @@ async function iniciarJogo(nome) {
     const tamanhoTabuleiro = parseInt(document.getElementById("tamanhoTabuleiro")?.value, 10);
 
     const backend = getBackendSelecionado();
-    const modo = "cache";
+    const modo = getModoSelecionado();
     const dificuldade = document.getElementById("dificuldade").value;
 
     // travar botões enquanto inicia

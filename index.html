@@ -208,7 +208,13 @@
           </select>
         </div>
         <div class="config-field pricing-field">
-          <span class="field-label">Tarifa e faixa estimada · AWS Braket</span>
+          <div class="pricing-heading">
+            <span class="field-label">Tarifa e faixa estimada · AWS Braket</span>
+            <label class="simulation-option" for="dadosSimulados">
+              <input type="checkbox" id="dadosSimulados">
+              <span>Dados simulados (Sem custo)</span>
+            </label>
+          </div>
           <textarea id="precoPartida" rows="1" readonly aria-live="polite"
             aria-label="Estimativa de custo no hardware quântico selecionado"></textarea>
         </div>
